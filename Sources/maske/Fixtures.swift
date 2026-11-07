@@ -405,11 +405,22 @@ enum Fixtures {
 
     // MARK: Drawing
 
+    /// Margin of table around the document, so finding its edges is part of the test.
+    static let margin: CGFloat = 90
+
     static func render(_ doc: Doc) -> (CGImage, Expected) {
         let w = Int(doc.size.width), h = Int(doc.size.height)
-        let ctx = CGContext(data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: 0,
+        let m = margin
+        let canvasW = CGFloat(w) + 2 * m, canvasH = CGFloat(h) + 2 * m
+        let ctx = CGContext(data: nil, width: Int(canvasW), height: Int(canvasH), bitsPerComponent: 8, bytesPerRow: 0,
                             space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)!
+        // A dark table, then the document on it with rounded corners.
+        ctx.setFillColor(CGColor(srgbRed: 0.22, green: 0.2, blue: 0.19, alpha: 1))
+        ctx.fill(CGRect(x: 0, y: 0, width: canvasW, height: canvasH))
+        ctx.translateBy(x: m, y: m)
         let W = CGFloat(w), H = CGFloat(h)
+        ctx.addPath(CGPath(roundedRect: CGRect(x: 0, y: 0, width: W, height: H), cornerWidth: H * 0.04, cornerHeight: H * 0.04, transform: nil))
+        ctx.clip()
         ctx.setFillColor(CGColor(srgbRed: doc.tint.0, green: doc.tint.1, blue: doc.tint.2, alpha: 1))
         ctx.fill(CGRect(x: 0, y: 0, width: W, height: H))
         // Faint guilloche, like security printing.
@@ -427,7 +438,8 @@ enum Fixtures {
         var hide: [Expected.Box] = []
         var keep: [Expected.Box] = []
         func record(_ role: Role, _ rect: CGRect, _ text: String) {
-            let n = CGRect(x: rect.minX / W, y: rect.minY / H, width: rect.width / W, height: rect.height / H)
+            // Expected boxes are measured on the whole photo, table included.
+            let n = CGRect(x: (rect.minX + m) / canvasW, y: (rect.minY + m) / canvasH, width: rect.width / canvasW, height: rect.height / canvasH)
             switch role {
             case .plain: break
             case .keep: keep.append(.init(kind: "keep", rect: n, text: text))
@@ -479,8 +491,14 @@ enum Fixtures {
             let width = CGFloat(CTLineGetTypographicBounds(line, &ascent, &descent, nil))
             let top = origin.y * H
             ctx.textPosition = CGPoint(x: x, y: H - top - ascent)
+            // The ink itself (not the line's typographic box): what a mask has to cover exactly.
+            // Measured before drawing, since drawing moves the text position along.
+            let ink = CTLineGetImageBounds(line, ctx)
             CTLineDraw(line, ctx)
-            record(role, CGRect(x: x, y: top, width: width, height: ascent + descent), text)
+            // Image bounds come back in the context's space with the text position applied (origin bottom left).
+            let inkRect = ink.isNull || ink.width <= 0 ? CGRect(x: x, y: top, width: width, height: ascent + descent)
+                : CGRect(x: ink.minX, y: H - ink.maxY, width: ink.width, height: ink.height)
+            record(role, inkRect, text)
             x += width
             }
         }

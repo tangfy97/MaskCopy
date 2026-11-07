@@ -1,8 +1,18 @@
 # Maske — development notes
 
+## How the engine works
+
+`Analyzer.analyze(photo:)` in `Sources/MaskeCore` takes a photo and:
+
+1. **Straightens the document** (`Rectifier`). A quick read of the photo each way up says which way up it is (readable MRZ lines count heavily) and where its text is. Vision's document outline is accepted only if most of that text is inside it, so the portrait or a barcode is never taken for the document. The document is then perspective-corrected and turned upright. What the user reviews and shares is this straightened document.
+2. **Finds what to hide** on it with the rules below.
+3. **Fits every text mask to the ink** (`InkFit`). Around each box from Vision it looks at the pixels, finds the text's own angle from the edges of its characters, and shrinks or extends the box to the first and last ink, plus a thin margin. A value on the same line as its label is cut at the ink gap where its characters say the label ends. Masks are four-cornered shapes, so tilted text gets a tilted mask.
+
+Debugging: `MASKE_DEBUG=1 maske analyze <image>` prints how each mask was made; `maske ocr <image>` compares text recognition in memory and from a file (see [KNOWN_ISSUES.md](KNOWN_ISSUES.md)).
+
 ## How the engine finds what to hide
 
-`Analyzer.analyze(_:)` in `Sources/MaskeCore` reads one page with Apple's Vision framework (text, faces, barcodes) and runs these steps. It does not rely on a template per country: almost every document follows one of a few international standards, and the rules below work from those.
+The rules work on the straightened page. It does not rely on a template per country: almost every document follows one of a few international standards, and the rules below work from those.
 
 | Step | What it looks for | Standard it relies on |
 |---|---|---|
@@ -30,9 +40,17 @@ Weak patterns (plain digit strings with a check digit) only run for their own co
 
 ## Testing
 
-`maske fixtures` draws 41 synthetic documents (made-up people with valid check digits) across Europe, North America, Oceania and Asia, and `expected.json` with the box of every field that must be hidden or kept. `maske eval` counts a field as hidden when 90% of it is covered, and as kept when at most 10% is. Current result: 41/41 documents, 110/110 sensitive fields hidden, 94/94 fields kept, kind and country right on all.
+`maske fixtures` draws 41 synthetic documents (made-up people with valid check digits) across Europe, North America, Oceania and Asia, each on a dark table so finding its edges is part of the test, and `expected.json` with the exact ink bounds of every field that must be hidden or kept. `maske eval` reports:
 
-These documents are drawn, not photographed, so they are easier than the real thing. Before release the engine needs checking against official specimen images (the EU's PRADO register, AAMVA and government samples) photographed with an iPhone under ordinary light. Keep those in `Fixtures/specimens/`, which is not committed, since the images are not ours to publish.
+- **Coverage:** a field counts as hidden only when at least 98% of its ink is under a mask.
+- **Kept:** a field that must stay visible may have at most 10% covered.
+- **Precision:** how much of each mask lies on its field (with a tolerance of about an eighth of the text height). 1.0 means no excess.
+
+Every run writes masked copies and overlays (green: the field's ink, red: the masks) to `Fixtures/synthetic/out`.
+
+`maske warp <dir> <out>` makes five photo-like copies of each image (tilted, rotated, turned 90°, upside down, steep), and `maske angles <out>` checks that the masks on each copy land where they do on the original.
+
+Real specimens: `scripts/fetch_specimens.py` collects specimens from Wikimedia Commons; PRADO (the Council of the EU's register) images were collected through the browser. Both go in `Fixtures/specimens/`, which is not committed, since the images are not ours to publish. `maske review <dir> <out>` masks every image in a folder for looking through by eye. Status and open problems: [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ## Known limits
 

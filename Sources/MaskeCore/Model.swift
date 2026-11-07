@@ -18,22 +18,34 @@ public enum FindingKind: String, Codable, CaseIterable, Sendable {
     ]
 }
 
-/// A suggested (or user-drawn) box. `rect` is normalized to the page, origin top-left.
+/// A suggested (or user-drawn) box. `rect` is normalized to the page, origin top-left; `quad`,
+/// when there is one, is the exact (possibly tilted) shape inside it.
 public struct Finding: Identifiable, Codable, Equatable, Sendable {
     public var id: UUID
     public var kind: FindingKind
     public var rect: CGRect
+    public var quad: Quad?
     public var isOn: Bool
     /// The rule that produced it, e.g. "NO fødselsnummer". For the CLI; never shown in the shared copy.
     public var note: String
 
-    public init(id: UUID = UUID(), kind: FindingKind, rect: CGRect, isOn: Bool = true, note: String = "") {
+    public init(id: UUID = UUID(), kind: FindingKind, rect: CGRect, quad: Quad? = nil, isOn: Bool = true, note: String = "") {
         self.id = id
         self.kind = kind
         self.rect = rect
+        self.quad = quad
         self.isOn = isOn
         self.note = note
     }
+
+    public init(kind: FindingKind, quad: Quad, note: String = "") {
+        self.init(kind: kind, rect: quad.boundingRect, quad: quad, note: note)
+    }
+
+    /// The shape that is painted over.
+    public var shape: Quad { quad ?? Quad(rect) }
+
+    public func contains(_ p: CGPoint) -> Bool { shape.contains(p) }
 }
 
 public enum DocumentKind: String, Codable, CaseIterable, Sendable {

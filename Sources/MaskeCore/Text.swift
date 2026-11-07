@@ -2,24 +2,29 @@ import CoreGraphics
 import Foundation
 import Vision
 
-/// One recognized line of text, with its box normalized to the page (origin top-left).
+/// One recognized line of text: its corners (tilted if the text is) and its upright bounding box,
+/// normalized to the page with the origin at the top left.
 struct TextLine {
     let text: String
-    let box: CGRect
+    let quad: Quad
     let candidate: VNRecognizedText?
 
-    /// The box of part of the line.
-    func box(for range: Range<String.Index>) -> CGRect {
-        if range == text.startIndex..<text.endIndex { return box }
-        if let candidate, let observation = try? candidate.boundingBox(for: range) {
-            let r = observation.boundingBox.flippedVertically
-            if r.width > 0, r.height > 0 { return r }
+    var box: CGRect { quad.boundingRect }
+
+    /// The corners of part of the line.
+    func quad(for range: Range<String.Index>) -> Quad {
+        if range == text.startIndex..<text.endIndex { return quad }
+        if let candidate, let o = try? candidate.boundingBox(for: range) {
+            let q = Rectifier.quad(o)
+            if q.area() > 0 { return q }
         }
         let total = CGFloat(max(text.count, 1))
         let start = CGFloat(text.distance(from: text.startIndex, to: range.lowerBound))
         let length = CGFloat(text.distance(from: range.lowerBound, to: range.upperBound))
-        return CGRect(x: box.minX + box.width * start / total, y: box.minY, width: box.width * length / total, height: box.height)
+        return quad.slice(start / total, (start + length) / total)
     }
+
+    func box(for range: Range<String.Index>) -> CGRect { quad(for: range).boundingRect }
 }
 
 /// A transformed copy of a string (folded, upper-cased, optionally without spaces) that remembers

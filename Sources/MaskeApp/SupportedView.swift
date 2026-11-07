@@ -4,14 +4,14 @@ struct SupportedView: View {
     var body: some View {
         List {
             Section {
-                Text("Passports from every country work through the machine-readable zone. The countries below are also checked field by field: personal numbers, document numbers, addresses and barcodes.")
+                Text("Maske is tested with the documents of these countries, field by field. Passports from other countries still have their machine-readable zone covered, but check every box yourself.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets(top: 4, leading: 20, bottom: 4, trailing: 20))
             }
             ForEach(Region.allCases, id: \.self) { region in
-                let countries = Countries.all.filter { $0.region == region }.sorted { $0.name() < $1.name() }
+                let countries = Countries.all.filter { $0.region == region && $0.isSupported }.sorted { $0.name() < $1.name() }
                 if !countries.isEmpty {
                     Section {
                         ForEach(countries) { c in

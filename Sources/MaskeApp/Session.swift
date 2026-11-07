@@ -36,8 +36,12 @@ final class Session: ObservableObject {
         path = [.review]
         Task {
             let results = await Task.detached(priority: .userInitiated) {
+                // Each photo is cut to the document and straightened first; that is what is reviewed and shared.
                 images.map { image -> (CGImage, PageAnalysis?) in
-                    do { return (image, try Analyzer().analyze(image)) } catch {
+                    do {
+                        let (doc, analysis) = try Analyzer().analyze(photo: image)
+                        return (doc.image, analysis)
+                    } catch {
                         NSLog("Maske analysis failed: %@", String(describing: error))
                         return (image, nil)
                     }

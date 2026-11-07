@@ -24,21 +24,27 @@
 		A4C7748890227CB99CE8A98E /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D3E578DF32764805FAE2B0D /* HomeView.swift */; };
 		AE21FBACAB12F8476DAD8D73 /* MRZ.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6118F749B0DDE1EFD59DC94 /* MRZ.swift */; };
 		D16E2BA61B55A10B6F515175 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E11C768EF1D07A0AF788F0 /* Theme.swift */; };
+		DFF4A451C4BDEA35DBF81ABA /* Rectifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32F3C0064D953D0A3D3A9E6A /* Rectifier.swift */; };
+		E4D62DD19AC76846FAD7B331 /* InkFit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F3481634B11340140A83E4E /* InkFit.swift */; };
 		E6A8C39B7BDB2678704A5AC5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B3BDA47AFB011977147143FC /* Assets.xcassets */; };
+		F2B5C49D74B70C712A87541E /* Geometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5979930A36A547DEF1F6ECAC /* Geometry.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0143A37D5AC0D67468C0EB7E /* Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Renderer.swift; sourceTree = "<group>"; };
 		082B5E48B442BD50BC7ABAD5 /* ReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewView.swift; sourceTree = "<group>"; };
 		2D37A1202A7C3F4D642FD5B5 /* Maske.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Maske.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		32F3C0064D953D0A3D3A9E6A /* Rectifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rectifier.swift; sourceTree = "<group>"; };
 		3373E6F28AAFDECBC6B70F37 /* Labels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Labels.swift; sourceTree = "<group>"; };
 		3A3ED11D2139AED01F324E08 /* Checksums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checksums.swift; sourceTree = "<group>"; };
 		513237328FF3285D43D0F1D2 /* Analyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Analyzer.swift; sourceTree = "<group>"; };
+		5979930A36A547DEF1F6ECAC /* Geometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Geometry.swift; sourceTree = "<group>"; };
 		5E43200AC0D7D46E718C7DF3 /* SupportedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportedView.swift; sourceTree = "<group>"; };
 		6FAF5B4C9BC182DCCC4351B3 /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		7D3E578DF32764805FAE2B0D /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		8366745B1FCCBCF5AF035B2B /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
 		84C4DEE6B3FEB13528E375ED /* Importing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Importing.swift; sourceTree = "<group>"; };
+		8F3481634B11340140A83E4E /* InkFit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InkFit.swift; sourceTree = "<group>"; };
 		94BDFFEEDCAECC25954CA96B /* Text.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Text.swift; sourceTree = "<group>"; };
 		9ADB22430D0E902F29E13B6A /* Countries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Countries.swift; sourceTree = "<group>"; };
 		B3BDA47AFB011977147143FC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -64,10 +70,13 @@
 				513237328FF3285D43D0F1D2 /* Analyzer.swift */,
 				3A3ED11D2139AED01F324E08 /* Checksums.swift */,
 				9ADB22430D0E902F29E13B6A /* Countries.swift */,
+				5979930A36A547DEF1F6ECAC /* Geometry.swift */,
+				8F3481634B11340140A83E4E /* InkFit.swift */,
 				3373E6F28AAFDECBC6B70F37 /* Labels.swift */,
 				6FAF5B4C9BC182DCCC4351B3 /* Model.swift */,
 				D6118F749B0DDE1EFD59DC94 /* MRZ.swift */,
 				F19ED39A12BFE5B8F649E079 /* NumberPatterns.swift */,
+				32F3C0064D953D0A3D3A9E6A /* Rectifier.swift */,
 				0143A37D5AC0D67468C0EB7E /* Renderer.swift */,
 				94BDFFEEDCAECC25954CA96B /* Text.swift */,
 			);
@@ -183,13 +192,16 @@
 				484EBB52C36D2E3AFA4A8235 /* Analyzer.swift in Sources */,
 				25A0B45328034FDCF79BADB2 /* Checksums.swift in Sources */,
 				2973A328ACEF5494DA5B0752 /* Countries.swift in Sources */,
+				F2B5C49D74B70C712A87541E /* Geometry.swift in Sources */,
 				A4C7748890227CB99CE8A98E /* HomeView.swift in Sources */,
 				36E4348D129C97080220DEC1 /* Importing.swift in Sources */,
+				E4D62DD19AC76846FAD7B331 /* InkFit.swift in Sources */,
 				6D99FFE7F6505551DA237AE7 /* Labels.swift in Sources */,
 				AE21FBACAB12F8476DAD8D73 /* MRZ.swift in Sources */,
 				55E6245F049799AC942F8462 /* MaskeApp.swift in Sources */,
 				4343FC67876C3FDFFF69D515 /* Model.swift in Sources */,
 				3C25B56E6DF89A094B69D7F8 /* NumberPatterns.swift in Sources */,
+				DFF4A451C4BDEA35DBF81ABA /* Rectifier.swift in Sources */,
 				2909A06690152CE4FB880F6C /* Renderer.swift in Sources */,
 				60232038FA47B65248BD2459 /* ReviewView.swift in Sources */,
 				0D4E3F6CC2FFDB1A02CF17A3 /* Session.swift in Sources */,
@@ -295,7 +307,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -353,7 +365,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;

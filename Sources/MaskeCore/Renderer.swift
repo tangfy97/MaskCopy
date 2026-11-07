@@ -53,13 +53,18 @@ public enum Renderer {
             let frame = CGRect(x: 0, y: height - top - h, width: width, height: h)
             ctx.draw(image, in: frame)
             ctx.setFillColor(maskColor)
+            ctx.setStrokeColor(maskColor)
+            ctx.setLineJoin(.round)
             for f in findings where f.isOn {
-                let r = CGRect(x: frame.minX + f.rect.minX * frame.width,
-                               y: frame.maxY - f.rect.maxY * frame.height,
-                               width: f.rect.width * frame.width, height: f.rect.height * frame.height)
-                let radius = min(r.width, r.height) * 0.12
-                ctx.addPath(CGPath(roundedRect: r, cornerWidth: radius, cornerHeight: radius, transform: nil))
-                ctx.fillPath()
+                // Every shape is painted as its four corners (tilted text stays tilted), with
+                // slightly rounded corners from the stroke.
+                let pts = f.shape.points.map { CGPoint(x: frame.minX + $0.x * frame.width, y: frame.maxY - $0.y * frame.height) }
+                let path = CGMutablePath()
+                path.addLines(between: pts)
+                path.closeSubpath()
+                ctx.addPath(path)
+                ctx.setLineWidth(max(2, frame.width * 0.003))
+                ctx.drawPath(using: .fillStroke)
             }
             top += h + gap
         }

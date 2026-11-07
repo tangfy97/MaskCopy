@@ -85,6 +85,10 @@ struct ReviewView: View {
                 Text("Not recognised. Maske found what it could; add boxes for the rest.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
+            } else if session.country?.isSupported == false {
+                Text("This country isn’t on Maske’s supported list yet. Check every box carefully.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
         }
     }
@@ -142,23 +146,27 @@ struct PageCanvas: View {
                     ZStack(alignment: .topLeading) {
                         Color.clear
                         ForEach($page.findings) { $f in
-                            let r = CGRect(x: f.rect.minX * size.width, y: f.rect.minY * size.height,
-                                           width: f.rect.width * size.width, height: f.rect.height * size.height)
-                            MaskBox(on: f.isOn)
-                                .frame(width: r.width, height: r.height)
-                                .contentShape(Rectangle())
-                                .onTapGesture { withAnimation(.snappy(duration: 0.2)) { f.isOn.toggle() } }
-                                .contextMenu {
-                                    if f.kind == .custom {
-                                        Button("Remove box", systemImage: "trash", role: .destructive) {
-                                            page.findings.removeAll { $0.id == f.id }
-                                        }
+                            // The exact shape that will be painted: tilted text gets a tilted mask.
+                            let shape = MaskShape(quad: f.shape)
+                            ZStack {
+                                shape.fill(f.isOn ? Color.mask : Color.fjord.opacity(0.08))
+                                if !f.isOn {
+                                    shape.stroke(Color.fjord, style: StrokeStyle(lineWidth: 1.5, lineJoin: .round, dash: [4, 3]))
+                                }
+                            }
+                            .frame(width: size.width, height: size.height)
+                            .contentShape(shape)
+                            .onTapGesture { withAnimation(.snappy(duration: 0.2)) { f.isOn.toggle() } }
+                            .contextMenu {
+                                if f.kind == .custom {
+                                    Button("Remove box", systemImage: "trash", role: .destructive) {
+                                        page.findings.removeAll { $0.id == f.id }
                                     }
                                 }
-                                .offset(x: r.minX, y: r.minY)
-                                .accessibilityLabel(Text(f.kind.title))
-                                .accessibilityValue(Text(f.isOn ? "Hidden" : "Shown"))
-                                .accessibilityAddTraits(.isButton)
+                            }
+                            .accessibilityLabel(Text(f.kind.title))
+                            .accessibilityValue(Text(f.isOn ? "Hidden" : "Shown"))
+                            .accessibilityAddTraits(.isButton)
                         }
                         if let d = drag {
                             RoundedRectangle(cornerRadius: 4)
@@ -191,17 +199,15 @@ struct PageCanvas: View {
     }
 }
 
-struct MaskBox: View {
-    let on: Bool
+/// A mask's four corners, in the page's normalized coordinates, drawn at the page's size.
+struct MaskShape: Shape {
+    let quad: Quad
 
-    var body: some View {
-        RoundedRectangle(cornerRadius: 3, style: .continuous)
-            .fill(on ? Color.mask : Color.fjord.opacity(0.08))
-            .overlay {
-                if !on {
-                    RoundedRectangle(cornerRadius: 3, style: .continuous)
-                        .strokeBorder(Color.fjord, style: StrokeStyle(lineWidth: 1.5, dash: [4, 3]))
-                }
-            }
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        let pts = quad.points.map { CGPoint(x: rect.minX + $0.x * rect.width, y: rect.minY + $0.y * rect.height) }
+        p.addLines(pts)
+        p.closeSubpath()
+        return p
     }
 }

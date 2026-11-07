@@ -18,6 +18,10 @@ public struct Country: Identifiable, Hashable, Sendable {
         code.unicodeScalars.compactMap { UnicodeScalar(127_397 + $0.value) }.map(String.init).joined()
     }
 
+    /// On the list Maske is tested against. Documents from elsewhere still get the machine-readable
+    /// zone and the general rules, with a warning to check carefully.
+    public var isSupported: Bool { Countries.supported.contains(code) }
+
     public func name(locale: Locale = .current) -> String {
         locale.localizedString(forRegionCode: code) ?? code
     }
@@ -75,6 +79,13 @@ public enum Countries {
         // Other
         c("IN", "IND", .other, [.passport, .idCard, .drivingLicence]),
         c("BR", "BRA", .other, [.passport, .idCard, .drivingLicence]),
+    ]
+
+    /// The first supported countries: the most common documents among people who move between
+    /// Europe, North America, Oceania and East and Southeast Asia. Grows as each is tested.
+    public static let supported: Set<String> = [
+        "NL", "DE", "FR", "GB", "IT", "ES", "NO", "SE", "DK", "FI", "BE", "PL", "IE", "CH", "AT", "PT",
+        "US", "CA", "AU", "NZ", "CN", "HK", "TW", "JP", "KR", "SG", "MY",
     ]
 
     public static let byCode: [String: Country] = Dictionary(uniqueKeysWithValues: all.map { ($0.code, $0) })
