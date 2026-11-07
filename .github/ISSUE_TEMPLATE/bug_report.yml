@@ -1,0 +1,29 @@
+name: Bug report
+description: Something was left visible, hidden by mistake, or doesn't work as it should.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: "**Never attach a photo of a real identity document**, not even a masked one. Describe the document instead, or use a specimen image published by its issuing authority."
+  - type: input
+    id: document
+    attributes:
+      label: Document
+      description: Country, kind and roughly when it was issued.
+      placeholder: Norway, driving licence, issued 2021
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Which field was left visible or hidden by mistake (for example "the personal number below the date of birth"), or what went wrong.
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Maske and iOS versions
+      placeholder: Maske 0.1.0, iOS 26.1, iPhone 16
+    validations:
+      required: true
