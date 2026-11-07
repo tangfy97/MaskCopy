@@ -32,6 +32,8 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Maske
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
+        # No encryption beyond what iOS provides, so TestFlight and App Review don't ask.
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
         INFOPLIST_KEY_NSCameraUsageDescription: "Maske uses the camera to scan your document. The scan stays on your iPhone."
         INFOPLIST_KEY_NSHumanReadableCopyright: "Copyright © 2026 TangSpark. Apache License 2.0."
         INFOPLIST_KEY_UILaunchScreen_Generation: YES

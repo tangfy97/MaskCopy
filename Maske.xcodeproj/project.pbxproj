@@ -214,6 +214,7 @@
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Maske;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Maske uses the camera to scan your document. The scan stays on your iPhone.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 TangSpark. Apache License 2.0.";
@@ -242,6 +243,7 @@
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Maske;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Maske uses the camera to scan your document. The scan stays on your iPhone.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 TangSpark. Apache License 2.0.";
