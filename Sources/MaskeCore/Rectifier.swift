@@ -42,6 +42,20 @@ public enum Rectifier {
         return DocumentImage(image: image, corners: turned, fillsFrame: found != nil, quarterTurns: turns, quickLines: text.count)
     }
 
+    static func halfTurn(_ document: DocumentImage) -> DocumentImage? {
+        let width = document.image.width, height = document.image.height
+        guard let bitmap = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
+                                     space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                                     bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+        bitmap.translateBy(x: CGFloat(width), y: CGFloat(height))
+        bitmap.scaleBy(x: -1, y: -1)
+        bitmap.draw(document.image, in: CGRect(x: 0, y: 0, width: width, height: height))
+        guard let image = bitmap.makeImage() else { return nil }
+        return DocumentImage(image: image, corners: rotated(document.corners, quarterTurns: 2),
+                             fillsFrame: document.fillsFrame, quarterTurns: (document.quarterTurns + 2) % 4,
+                             quickLines: document.quickLines)
+    }
+
     // MARK: Finding the document
 
     /// Reads a small copy of the photo each way up. Returns the quarter turns that make its text read

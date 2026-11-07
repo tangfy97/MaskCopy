@@ -2,9 +2,18 @@
 
 All notable changes to Maske are listed here. Versions follow [Semantic Versioning](https://semver.org).
 
-## [0.1.0] - 2026-11-07
+## [0.1.0] - 2026-11-08
 
-Build 2: masks that fit.
+Build 3: mask fixes from specimen testing.
+
+- Keep estimated portrait masks within nearby field columns when several separate text rows mark the same boundary.
+- Reject text fits that spread into adjacent rows or rotate away from the text. Use distinct Vision character boxes to guide cuts between labels and values.
+- Correct the document orientation when the full OCR pass consistently finds upside-down text.
+- Recover missing or split passport MRZ rows with a cropped OCR pass and row geometry. Recognise the one-line Dutch driving licence MRZ, including rows without fillers.
+- Keep licence field rules off passports, recognise Norway's 4d value beside the expiry date, and stop the Chinese driving licence address mask before the issuer's stamp.
+- Fail the synthetic check on missed or overmasked fields. Let the angle check compare against known field positions.
+
+Build 2 (2026-11-07): masks that fit.
 
 - Photos taken at an angle, turned or with background now work: the document is found, straightened and turned upright before anything is read, and that straightened document is what you review and share.
 - Masks follow the text exactly: fitted to the ink of the characters, at the text's own angle, with a thin margin. A value next to its label no longer takes the label with it.

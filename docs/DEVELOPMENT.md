@@ -4,9 +4,9 @@
 
 `Analyzer.analyze(photo:)` in `Sources/MaskeCore` takes a photo and:
 
-1. **Straightens the document** (`Rectifier`). A quick read of the photo each way up says which way up it is (readable MRZ lines count heavily) and where its text is. Vision's document outline is accepted only if most of that text is inside it, so the portrait or a barcode is never taken for the document. The document is then perspective-corrected and turned upright. What the user reviews and shares is this straightened document.
+1. **Straightens the document** (`Rectifier`). A quick read of the photo each way up scores the text, with a bonus for readable MRZ lines. Vision's document outline is accepted only if most of that text is inside it, so the portrait or a barcode is never taken for the document. The document is then perspective-corrected. If most text boxes in the full read point backward, turn the page 180° and read it again. What the user reviews and shares is this straightened document.
 2. **Finds what to hide** on it with the rules below.
-3. **Fits every text mask to the ink** (`InkFit`). Around each box from Vision it looks at the pixels, finds the text's own angle from the edges of its characters, and shrinks or extends the box to the first and last ink, plus a thin margin. A value on the same line as its label is cut at the ink gap where its characters say the label ends. Masks are four-cornered shapes, so tilted text gets a tilted mask.
+3. **Fits every text mask to the ink** (`InkFit`). Around each box from Vision it looks at the pixels, finds the text's own angle from the edges of its characters, and shrinks or extends the box to the first and last ink, plus a thin margin. A turn must tighten the band without losing end ink. If the band extends into adjacent rows, use the OCR box with a margin. For a value on the same line as its label, use the gap between distinct Vision character boxes when available, then fall back to estimated character widths. Masks are four-cornered shapes, so tilted text gets a tilted mask.
 
 Debugging: `MASKE_DEBUG=1 maske analyze <image>` prints how each mask was made; `maske ocr <image>` compares text recognition in memory and from a file (see [KNOWN_ISSUES.md](KNOWN_ISSUES.md)).
 
@@ -16,7 +16,7 @@ The rules work on the straightened page. It does not rely on a template per coun
 
 | Step | What it looks for | Standard it relies on |
 |---|---|---|
-| Machine-readable zone | The bottom-most run of lines of `A–Z 0–9 <`; read as TD3 (passports), TD1 (ID cards, residence permits), TD2, or the ISO 18013 licence line, with check digits | ICAO 9303 |
+| Machine-readable zone | The bottom-most run of lines of `A–Z 0–9 <`, read as TD3 (passports), TD1 (ID cards, residence permits), TD2, or a licence line. For an incomplete passport result, retry OCR in a crop and use aligned rows to cover text that could not be parsed | ICAO 9303, ISO 18013, Dutch eDL reading manual |
 | Kind and country | The MRZ's issuing state; otherwise words printed on the document (`KONINKRIJK DER NEDERLANDEN`, `居民身份证`, US state names…); otherwise a number only one country uses | |
 | Personal and document numbers | About 45 national formats, each a pattern plus its check (BSN 11-proef, fødselsnummer, PESEL, codice fiscale, 身份证号, NRIC, HKID, CURP…), in `NumberPatterns.swift` | National rules |
 | Values from the MRZ | The document and personal numbers read from the MRZ, wherever else they are printed | ICAO 9303 |
@@ -25,7 +25,7 @@ The rules work on the straightened page. It does not rely on a template per coun
 | Unlabelled numbers | A line that is one code mixing letters and digits, or 7+ digits (not a date) | |
 | Card access number | A six-digit line on an ID card | EU Regulation 2019/1157 cards |
 | Street addresses | `12 GEORGE ST`, `NO 12 JALAN …` and the postcode line below | |
-| Photo | Each face, grown to the portrait around it; if no face is found, the ICAO portrait zone of a passport or field 6 of a licence | ICAO 9303, ISO 18013 |
+| Photo | Each face, grown to the portrait around it. Several nearby text rows can limit the width. Use a detected frame if it contains the face and respects those limits. If no face is found, try the passport portrait zone or field 6 of a licence | ICAO 9303, ISO 18013 |
 | Barcodes | Every barcode, including the PDF417 on the back of North American cards (AAMVA) | |
 
 Weak patterns (plain digit strings with a check digit) only run for their own country, or when the country is unknown; distinctive ones run everywhere. Overlapping boxes of the same kind are merged. Every box can be undone in the app, so the engine leans towards hiding too much.
@@ -46,9 +46,9 @@ Weak patterns (plain digit strings with a check digit) only run for their own co
 - **Kept:** a field that must stay visible may have at most 10% covered.
 - **Precision:** how much of each mask lies on its field (with a tolerance of about an eighth of the text height). 1.0 means no excess.
 
-Every run writes masked copies and overlays (green: the field's ink, red: the masks) to `Fixtures/synthetic/out`.
+Every run writes masked copies and overlays (green: the field's ink, red: the masks) to `Fixtures/synthetic/out`. A missing fixture or a field that fails the coverage or visibility threshold makes the command fail.
 
-`maske warp <dir> <out>` makes five photo-like copies of each image (tilted, rotated, turned 90°, upside down, steep), and `maske angles <out>` checks that the masks on each copy land where they do on the original.
+`maske warp <dir> <out>` makes five photo-like copies of each image (tilted, rotated, turned 90°, upside down, steep). Run `maske angles <out> <dir>/expected.json` to project the known field boxes onto each copy and check coverage and visibility. For unlabelled specimens, `maske angles <out>` compares the copy with the original's masks to check consistency.
 
 Real specimens: `scripts/fetch_specimens.py` collects specimens from Wikimedia Commons; PRADO (the Council of the EU's register) images were collected through the browser. Both go in `Fixtures/specimens/`, which is not committed, since the images are not ours to publish. `maske review <dir> <out>` masks every image in a folder for looking through by eye. Status and open problems: [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 

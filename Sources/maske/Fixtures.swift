@@ -303,8 +303,11 @@ enum Fixtures {
             d.t("9. AM/B", 0.32, 0.80, 28)
             return d
         }
+        let dutchLicenceNumber = "5123456789"
+        let dutchLicenceMRZ = "D1NLD3" + dutchLicenceNumber + "ABC12345K789X"
         docs.append(euLicence("dl-nld", "NL", title: "RIJBEWIJS  NEDERLAND", surname: "DE VRIES", given: "ANNA", birth: "10.03.1990 AMSTERDAM",
-                              authority: "Burg. Amsterdam", personal: "111222333", number: "5123456789"))
+                              authority: "Burg. Amsterdam", personal: "111222333", number: dutchLicenceNumber)
+            .t(dutchLicenceMRZ + MRZBuilder.cd(dutchLicenceMRZ), 0.04, 0.94, 42, .hide(.machineReadableZone), font: "Menlo"))
         docs.append(euLicence("dl-nor", "NO", title: "FØRERKORT  NORGE", surname: "NORDMANN", given: "KARI", birth: "15.07.1985 OSLO",
                               authority: "Statens vegvesen", personal: fnr, number: "10 12345 67 8"))
         docs.append(euLicence("dl-fra", "FR", title: "PERMIS DE CONDUIRE  RÉPUBLIQUE FRANÇAISE", surname: "MARTIN", given: "CLAIRE",

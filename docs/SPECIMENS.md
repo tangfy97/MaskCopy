@@ -47,6 +47,17 @@ Uses the Commons API with a descriptive user agent, one request at a time. It se
 
 **Known problem:** the search also matched botanical "specimens" (herbarium envelopes), so of 147 files many are not documents. Before using them, filter by document words in the title/description (passport, identity, ID card, licence, permis, Ausweis, 护照, 身份证…) or look through them.
 
+## First mask comparison
+
+The first before-and-after comparison used these local files. Use `maske review` on a directory containing just the selected files to regenerate the masked copies. The Commons manifest gives the original title and source for each file.
+
+| Collection | Local files |
+|---|---|
+| PRADO | `DEU-B-DEU-BO-02004-front.jpg`, `NLD-B-NLD-BO-08001-front.jpg`, `NOR-B-NOR-BO-02002-front.jpg`, `NLD-F-NLD-FO-07001-front.jpg`, `NOR-F-NOR-FO-08002-front.jpg`, `CHN-F-CHN-FO-02002-front.jpg` |
+| Wikimedia Commons | `NL-passport-01.jpg`, `NL-idCard-05.jpg`, `NO-passport-01.jpg`, `CN-passport-01.jpg`, `FI-drivingLicence-01.jpg`, `FR-idCard-03.jpg` (German ID despite the local file name) |
+
+For the Dutch licence's one-line MRZ, see Table 44 of the [Dutch eDL reading manual](https://www.ilent.nl/binaries/ilt/documenten/transport/taxi/boordcomputer-taxi-bct/publicaties/definitief-startpakket-cdt/DA42EN-Electronic-Driving-Licence-Reading-Manual-v2-3.pdf).
+
 ## Other sources to consider
 
 - AAMVA's DL/ID card design standard (sample US and Canadian layouts, PDF417 contents).

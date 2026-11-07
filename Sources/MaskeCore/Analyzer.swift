@@ -9,21 +9,45 @@ public struct Analyzer {
 
     /// Finds the document in a photo, straightens it, and analyzes it.
     public func analyze(photo: CGImage) throws -> (DocumentImage, PageAnalysis) {
-        let doc = Rectifier.straighten(photo)
-        return (doc, try analyze(doc.image, fillsFrame: doc.fillsFrame, expectedLines: doc.quickLines))
+        var doc = Rectifier.straighten(photo)
+        var observations = try recognize(doc.image, expectedLines: doc.quickLines)
+        // The quick read can choose an inverted page because Vision still reads the text.
+        // A consistent backward direction in the full read is stronger evidence.
+        if Self.isUpsideDown(observations.lines), let upright = Rectifier.halfTurn(doc),
+           let reread = try? recognize(upright.image, expectedLines: doc.quickLines),
+           !reread.lines.isEmpty, !Self.isUpsideDown(reread.lines) {
+            doc = upright
+            observations = reread
+        }
+        return (doc, analyze(doc.image, fillsFrame: doc.fillsFrame, observations: observations))
     }
 
     /// Analyzes an upright image. `fillsFrame` says the image is the document edge to edge,
     /// which lets layout rules use the image's edges.
     public func analyze(_ image: CGImage, fillsFrame: Bool = false, expectedLines: Int = 0) throws -> PageAnalysis {
+        try analyze(image, fillsFrame: fillsFrame, observations: recognize(image, expectedLines: expectedLines))
+    }
+
+    private typealias Observations = (lines: [TextLine], faces: [CGRect], barcodes: [(Quad, String?)])
+
+    private static func isUpsideDown(_ lines: [TextLine]) -> Bool {
+        let lines = lines.filter { $0.text.count >= 3 }
+        let reversed = lines.filter { line in
+            let across = minus(line.quad.tr, line.quad.tl)
+            return across.x < -abs(across.y)
+        }
+        return reversed.count >= 2 && reversed.count * 5 >= lines.count * 4
+    }
+
+    private func analyze(_ image: CGImage, fillsFrame: Bool, observations: Observations) -> PageAnalysis {
         let aspect = CGFloat(image.width) / CGFloat(max(image.height, 1))
-        let (lines, faces, barcodes) = try recognize(image, expectedLines: expectedLines)
+        var (lines, faces, barcodes) = observations
+        let (mrz, mrzLines) = readMRZ(in: image, lines: &lines)
         var page = Page(lines: lines, aspect: aspect)
         page.fillsFrame = fillsFrame
         page.luma = Luma(image)
 
         // 1. Machine-readable zone: the most reliable thing on a passport or ID card.
-        let (mrz, mrzLines) = MRZReader.find(in: lines)
         page.mrzLines = mrzLines
         if !mrzLines.isEmpty {
             // Each line fitted to its ink; the zone runs from the first line's top to the last line's
@@ -37,12 +61,14 @@ public struct Analyzer {
 
         // 2. Which document, from which country.
         let folded = lines.map { $0.text.foldedUpper }
-        let country = mrz.flatMap { Countries.country(mrzCode: $0.issuingState) }
-            ?? Self.keywordCountry(folded)
-            ?? Self.strongPatternCountry(page)
         let numbered = Self.isNumberedLayout(folded)
         var kind = mrz?.documentKind ?? Self.keywordKind(folded) ?? (numbered ? .drivingLicence : .unknown)
         if kind == .unknown, numbered { kind = .drivingLicence }
+        // Multilingual security print on EU licences can name a different country's licence.
+        let licenceHeading = kind == .drivingLicence
+            ? Self.keywordCountry(lines.filter { $0.box.midY < 0.3 }.map { $0.text.foldedUpper }) : nil
+        let country = mrz.flatMap { Countries.country(mrzCode: $0.issuingState) }
+            ?? licenceHeading ?? Self.keywordCountry(folded) ?? Self.strongPatternCountry(page)
         page.country = country?.code
         page.kind = kind
 
@@ -57,9 +83,9 @@ public struct Analyzer {
 
         // 5. Labelled fields and numbered licence fields.
         page.findLabelledValues()
-        page.findFieldCodes(numbered: numbered)
+        if kind == .drivingLicence || kind == .unknown { page.findFieldCodes(numbered: numbered) }
         if kind != .passport { page.findStandaloneNumbers() }
-        if kind == .idCard || kind == .residencePermit || mrz?.format == .td1 || country.map({ $0.region == .europe }) == true && kind != .passport {
+        if kind == .idCard || kind == .residencePermit || mrz?.format == .td1 || country?.region == .europe && kind == .unknown {
             page.findCardAccessNumber()
         }
         if let code = country?.code, ["US", "CA", "AU", "NZ", "GB", "IE", "SG", "MY"].contains(code) || country == nil {
@@ -67,12 +93,22 @@ public struct Analyzer {
         }
 
         // 6. Photos and barcodes.
-        for face in faces { page.addPhoto(around: face) }
-        if faces.isEmpty { page.addLayoutPhoto() }
-        // Where the portrait has a visible edge, the mask is that edge exactly.
-        for i in page.findings.indices where page.findings[i].kind == .photo {
-            if let edge = portraitEdge(near: page.findings[i].shape, face: faces.first { page.findings[i].rect.contains(CGPoint(x: $0.midX, y: $0.midY)) }, in: image) {
-                page.findings[i] = Finding(kind: .photo, quad: edge, note: page.findings[i].note + ", portrait edge")
+        for face in faces {
+            let estimate = page.photoEstimate(around: face)
+            let bounds = page.photoBounds(around: face, within: estimate)
+            if let edge = portraitEdge(near: Quad(estimate), face: face, within: bounds, in: image) {
+                page.findings.append(Finding(kind: .photo, quad: edge, note: "face, portrait edge"))
+            } else {
+                page.findings.append(Finding(kind: .photo, rect: bounds, note: "face estimate"))
+            }
+        }
+        if faces.isEmpty {
+            page.addLayoutPhoto()
+            for i in page.findings.indices where page.findings[i].kind == .photo {
+                let photo = page.findings[i]
+                if let edge = portraitEdge(near: photo.shape, face: nil, within: nil, in: image) {
+                    page.findings[i] = Finding(kind: .photo, quad: edge, note: photo.note + ", portrait edge")
+                }
             }
         }
         for (quad, _) in barcodes { page.add(.barcode, quad, padding: 0.02, note: "barcode", fit: false) }
@@ -84,7 +120,7 @@ public struct Analyzer {
 
     // MARK: Vision
 
-    private func recognize(_ image: CGImage, expectedLines: Int = 0) throws -> ([TextLine], [CGRect], [(Quad, String?)]) {
+    private func recognize(_ image: CGImage, expectedLines: Int = 0) throws -> Observations {
         func textRequest() -> VNRecognizeTextRequest {
             let text = VNRecognizeTextRequest()
             text.recognitionLevel = .accurate
@@ -138,11 +174,57 @@ public struct Analyzer {
         }
     }
 
+    /// A whole-page OCR pass can omit both passport MRZ rows. Retry on the bottom
+    /// of the actual pixels so Vision only has to read the machine-readable text there.
+    private func readMRZ(in image: CGImage, lines: inout [TextLine]) -> (MRZ?, [TextLine]) {
+        let original = MRZReader.find(in: lines)
+        guard original.0?.checksumsValid != true,
+              Self.keywordKind(lines.map { $0.text.foldedUpper }) == .passport
+                || original.1.contains(where: { MRZReader.normalize($0.text).count >= 40 }) else { return original }
+        let top = image.height * 5 / 8
+        guard let bottom = image.cropping(to: CGRect(x: 0, y: top, width: image.width, height: image.height - top)) else { return original }
+        let request = VNRecognizeTextRequest()
+        request.recognitionLevel = .accurate
+        request.usesLanguageCorrection = false
+        request.recognitionLanguages = ["en-US"]
+        try? perform(request, on: bottom)
+        let recovered = Self.lines(from: request.results ?? []).map { line in
+            let quad = line.quad.mapped { point in
+                CGPoint(x: point.x, y: (CGFloat(top) + point.y * CGFloat(bottom.height)) / CGFloat(image.height))
+            }
+            return TextLine(text: line.text, quad: quad, candidate: nil)
+        }
+        let retry = MRZReader.find(in: recovered)
+        let result: (MRZ?, [TextLine])
+        if retry.0?.format == .td3, retry.0?.checksumsValid == true {
+            result = retry
+        } else {
+            let fullRows = MRZReader.passportRows(in: lines)
+            let cropRows = MRZReader.passportRows(in: recovered)
+            let rows = fullRows.isEmpty ? cropRows : fullRows
+            if !rows.isEmpty {
+                // The name can be noisy while the number row still passes its check digits.
+                let parsed = MRZReader.parse(rows.map { MRZReader.normalize($0.text) })
+                result = (parsed?.checksumsValid == true ? parsed : nil, rows)
+            } else if retry.0?.format == .td3, retry.1.count > original.1.count {
+                result = retry
+            } else {
+                return original
+            }
+        }
+        lines.removeAll { line in
+            result.1.contains { $0.box.intersectionArea(line.box) > line.box.area * 0.5 }
+        }
+        lines.append(contentsOf: result.1)
+        if Page.debug { print("  · MRZ retry: found \(result.1.count) rows") }
+        return result
+    }
+
     // MARK: Portrait edge
 
     /// The portrait's own rectangle near an estimate: an upright frame, about as tall as passport
     /// photos are for their width, that holds the face (if one was found) and is close to the estimate's size.
-    private func portraitEdge(near estimate: Quad, face: CGRect?, in image: CGImage) -> Quad? {
+    private func portraitEdge(near estimate: Quad, face: CGRect?, within bounds: CGRect?, in image: CGImage) -> Quad? {
         let est = estimate.boundingRect
         let roi = est.insetBy(dx: -est.width * 0.35, dy: -est.height * 0.25).clampedToUnit()
         guard roi.width > 0.02, roi.height > 0.02 else { return nil }
@@ -156,7 +238,8 @@ public struct Analyzer {
         r.maximumObservations = 6
         guard (try? perform(r, on: image)) != nil else { return nil }
         let aspect = CGFloat(image.width) / CGFloat(image.height)
-        let estArea = est.width * est.height
+        let estArea = est.area
+        let targetArea = bounds?.area ?? estArea
         // Read each result both as relative to the region of interest and to the whole image;
         // only the reading that lands on the portrait passes the checks below.
         let candidates = (r.results ?? []).flatMap { o -> [Quad] in
@@ -168,10 +251,17 @@ public struct Analyzer {
             guard (0.6...0.95).contains(ratio) else { return false }
             let area = b.width * b.height
             guard area > estArea * 0.45, area < estArea * 2.2 else { return false }
-            if let face { return q.contains(CGPoint(x: face.midX, y: face.midY)) && b.contains(face.insetBy(dx: face.width * 0.15, dy: face.height * 0.15)) }
+            if let face, let bounds {
+                // A detected frame may sit on the boundary, but must keep the face inside all four edges.
+                let core = Quad(face.insetBy(dx: face.width * 0.08, dy: face.height * 0.08))
+                let tolerance = 2 / CGFloat(image.width)
+                return core.points.allSatisfy { q.contains($0) }
+                    && (bounds.minX == est.minX || b.minX >= bounds.minX - tolerance)
+                    && (bounds.maxX == est.maxX || b.maxX <= bounds.maxX + tolerance)
+            }
             return b.intersectionArea(est) > 0.5 * area
         }
-        return candidates.min { abs($0.boundingRect.width * $0.boundingRect.height - estArea) < abs($1.boundingRect.width * $1.boundingRect.height - estArea) }
+        return candidates.min { abs($0.boundingRect.area - targetArea) < abs($1.boundingRect.area - targetArea) }
     }
 
     // MARK: Classification
@@ -275,7 +365,10 @@ struct Page {
             let total = line.text.reduce(0) { $0 + InkFit.advance($1) }
             let before = line.text[..<range.lowerBound].reduce(0) { $0 + InkFit.advance($1) }
             let inside = line.text[range].reduce(0) { $0 + InkFit.advance($1) }
-            if total > 0, let part = InkFit.fitPart(of: line.quad, in: luma, boundary: w.fromEnd ? before / total : (before + inside) / total, keepEnd: w.fromEnd) {
+            let cut = line.cutPoint(at: w.fromEnd ? range.lowerBound : range.upperBound)
+            if total > 0, let part = InkFit.fitPart(of: line.quad, in: luma,
+                                                  boundary: w.fromEnd ? before / total : (before + inside) / total,
+                                                  cut: cut, keepEnd: w.fromEnd) {
                 // Only if its width is about what its characters need.
                 let expected = inside / total * line.box.width
                 let got = part.boundingRect.width
@@ -358,7 +451,7 @@ struct Page {
         for (index, line) in lines.enumerated() {
             let v = MappedText(line.text, dropSpaces: false)
             for (kind, labels) in Labels.rules {
-                for label in labels {
+                for label in labels where label != "FIN" || country == nil || country == "SG" {
                     for r in tokenRanges(of: label, in: v.value) {
                         guard let o = v.originalRange(r) else { continue }
                         addValue(after: o, in: line, index: index, among: lines, kind: kind, note: "label \(label)")
@@ -415,8 +508,10 @@ struct Page {
     /// Addresses run over two or three lines.
     mutating func addContinuation(below box: CGRect, among lines: [TextLine], note: String) {
         var current = box
+        // On Chinese licences the issuer's stamp can sit just below the address.
+        let maxGap: CGFloat = country == "CN" && kind == .drivingLicence ? 0.85 : 1.7
         for _ in 0..<2 {
-            guard let next = lineBelow(current, among: lines, maxGap: 1.7) else { return }
+            guard let next = lineBelow(current, among: lines, maxGap: maxGap) else { return }
             let folded = next.text.foldedUpper
             if Analyzer.fieldCode(of: folded) != nil || Labels.rules.contains(where: { $0.1.contains { folded.hasPrefix($0) } }) { return }
             add(.address, next.quad, note: note + " (continued)")
@@ -430,7 +525,14 @@ struct Page {
         let lines = textLines
         for (index, line) in lines.enumerated() {
             let folded = line.text.foldedUpper
-            guard let (code, _) = Analyzer.fieldCode(of: folded), var kind = Labels.fieldCodes[code] else { continue }
+            guard let (code, _) = Analyzer.fieldCode(of: folded) else { continue }
+            // Norwegian licences print 4b and 4d side by side. Vision sometimes reads "4d" as "Ad".
+            if country == "NO", numbered, code == "4B",
+               let field = line.text.range(of: #"(?i)(?<=\s)[4A]D[.:\s]+[0-9]{11}\s*$"#, options: .regularExpression),
+               let value = line.text.range(of: #"[0-9]{11}"#, options: .regularExpression, range: field) {
+                addPart(.personalNumber, of: line, value, note: "field 4D")
+            }
+            guard var kind = Labels.fieldCodes[code] else { continue }
             if code != "4D" && !numbered { continue }
             if code == "4D", folded.contains("DLN") || country == "US" || country == "CA" { kind = .documentNumber }
             // The code itself in the original string: as many characters as the folded code.
@@ -502,11 +604,36 @@ struct Page {
 
     /// A face found by Vision, grown to the portrait around it: ICAO portraits are about twice
     /// the face's height, with the hair above and the shoulders below.
-    mutating func addPhoto(around face: CGRect) {
+    func photoEstimate(around face: CGRect) -> CGRect {
         let h = face.height * 2.05
-        let w = min(face.width * 1.75, h / aspect * 0.95)
-        let r = CGRect(x: face.midX - w / 2, y: face.minY - face.height * 0.55, width: w, height: h)
-        findings.append(Finding(kind: .photo, rect: r.clampedToUnit(), note: "face"))
+        let w = max(face.width, min(face.width * 1.75, h / aspect * 0.95))
+        return CGRect(x: face.midX - w / 2, y: face.minY - face.height * 0.55, width: w, height: h).clampedToUnit()
+    }
+
+    /// Several separate rows beside a face are evidence of a text column. Stop the photo
+    /// before that column, while keeping a buffer around the whole face. A single OCR box
+    /// could be a watermark across the portrait and never sets a limit on its own.
+    func photoBounds(around face: CGRect, within estimate: CGRect) -> CGRect {
+        let faceBand = face.insetBy(dx: 0, dy: -face.height * 0.22)
+        let beside = textLines.map(\.box).filter {
+            $0.midY > faceBand.minY && $0.midY < faceBand.maxY
+                && $0.height < face.height * 0.28 && $0.width > face.width * 0.2
+        }
+        let buffer = face.width * 0.12
+        let right = beside.filter { $0.minX >= face.maxX + buffer && $0.minX < estimate.maxX }
+        let left = beside.filter { $0.maxX <= face.minX - buffer && $0.maxX > estimate.minX }
+        func columnEdge(_ rows: [CGRect], at edge: KeyPath<CGRect, CGFloat>, outward: CGFloat) -> CGFloat? {
+            let nearest = rows.sorted { outward * $0[keyPath: edge] < outward * $1[keyPath: edge] }
+            return nearest.first { row in
+                nearest.contains {
+                    abs($0.midY - row.midY) > max($0.height, row.height)
+                        && abs($0[keyPath: edge] - row[keyPath: edge]) < face.width * 0.25
+                }
+            }?[keyPath: edge]
+        }
+        let minX = columnEdge(left, at: \.maxX, outward: -1) ?? estimate.minX
+        let maxX = columnEdge(right, at: \.minX, outward: 1) ?? estimate.maxX
+        return CGRect(x: minX, y: estimate.minY, width: maxX - minX, height: estimate.height)
     }
 
     /// Where the portrait sits by standard, for when no face is found (worn or glossy photos).

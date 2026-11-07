@@ -10,8 +10,23 @@ maske eval <dir>              check the engine against them; writes masked copie
 maske analyze <image>         print what the engine finds on one photo
 maske review <dir> <out>      straighten and mask every image in <dir>, for looking through
 maske warp <dir> <out>        photograph-like copies: tilted, turned, on a table
-maske angles <warped dir>     do the masks land in the same places on the tilted copies?
+maske angles <warped dir> [expected.json]
+                              compare tilted masks against fixture boxes or the original's masks
 """
+
+/// Share of the field covered by active masks, sampled in the field's own frame.
+func coverage(_ field: Quad, _ findings: [Finding]) -> Double {
+    let on = findings.filter(\.isOn)
+    let toField = Homography(unitSquareTo: field)
+    var hits = 0
+    for i in 0..<48 {
+        for j in 0..<12 {
+            let point = toField.apply(CGPoint(x: (CGFloat(i) + 0.5) / 48, y: (CGFloat(j) + 0.5) / 12))
+            if on.contains(where: { $0.contains(point) }) { hits += 1 }
+        }
+    }
+    return Double(hits) / (48 * 12)
+}
 
 let args = CommandLine.arguments.dropFirst()
 guard let command = args.first, let path = args.dropFirst().first else {
@@ -51,27 +66,15 @@ case "eval":
     let out = url.appendingPathComponent("out")
     try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
 
-    /// Share of `box` covered by the boxes that are on, sampled on a grid.
-    func coverage(_ box: CGRect, _ findings: [Finding]) -> Double {
-        let on = findings.filter(\.isOn)
-        var hit = 0, total = 0
-        for i in 0..<48 {
-            for j in 0..<12 {
-                let p = CGPoint(x: box.minX + box.width * (CGFloat(i) + 0.5) / 48, y: box.minY + box.height * (CGFloat(j) + 0.5) / 12)
-                total += 1
-                if on.contains(where: { $0.contains(p) }) { hit += 1 }
-            }
-        }
-        return Double(hit) / Double(total)
-    }
-
     var hidden = 0, toHide = 0, kept = 0, toKeep = 0, docsOK = 0, kindsOK = 0, countriesOK = 0
     var precisions: [Double] = []
-    var coverages: [Double] = []
     var loosest: [(String, Double)] = []
     var problems: [String] = []
     for e in expected {
-        guard let image = Fixtures.load(url.appendingPathComponent(e.name + ".png")) else { continue }
+        guard let image = Fixtures.load(url.appendingPathComponent(e.name + ".png")) else {
+            problems.append("\(e.name): fixture image missing or unreadable")
+            continue
+        }
         let (doc, analysis) = try Analyzer().analyze(photo: image)
         var a = analysis
         // Expected boxes are in the original image; bring the findings back there.
@@ -80,8 +83,7 @@ case "eval":
         var ok = true
         for b in e.hide {
             toHide += 1
-            let cov = coverage(b.rect, a.findings)
-            coverages.append(cov)
+            let cov = coverage(Quad(b.rect), a.findings)
             if cov >= 0.98 { hidden += 1 } else { ok = false; problems.append(String(format: "%@: not fully hidden (%.0f%%) %@ “%@”", e.name, cov * 100, b.kind, b.text)) }
         }
         // Precision: how much of each mask lies on what it should hide (with a thin tolerance).
@@ -108,7 +110,7 @@ case "eval":
         }
         for b in e.keep {
             toKeep += 1
-            if coverage(b.rect, a.findings) <= 0.1 { kept += 1 } else { ok = false; problems.append("\(e.name): hidden by mistake “\(b.text)”") }
+            if coverage(Quad(b.rect), a.findings) <= 0.1 { kept += 1 } else { ok = false; problems.append("\(e.name): hidden by mistake “\(b.text)”") }
         }
         if a.kind.rawValue == e.kind { kindsOK += 1 } else { problems.append("\(e.name): kind \(a.kind.rawValue), expected \(e.kind)") }
         if a.country?.code == e.country { countriesOK += 1 } else { problems.append("\(e.name): country \(a.country?.code ?? "?"), expected \(e.country)") }
@@ -134,7 +136,7 @@ case "eval":
     for (n, p) in loosest.sorted(by: { $0.1 < $1.1 }).prefix(8) { print(String(format: "  %.2f  %@", p, n as NSString)) }
     print("Sensitive fields hidden: \(hidden)/\(toHide)   Fields kept visible: \(kept)/\(toKeep)")
     print("Document kind right: \(kindsOK)/\(expected.count)   Country right: \(countriesOK)/\(expected.count)")
-    exit(problems.contains { $0.contains("not hidden") } ? 1 : 0)
+    exit(docsOK == expected.count ? 0 : 1)
 
 case "ocr":
     // Debug: straighten, then read the straightened image as it is in memory and after a round trip through PNG.
@@ -200,23 +202,70 @@ case "warp":
     print("Wrote \(records.count) photo-like copies to \(out.path)")
 
 case "angles":
-    // Masks found on the straight original, carried into each tilted copy, against masks found on the copy itself.
+    // Use drawn field bounds when available; original masks are a consistency check for unlabelled photos.
     let records = try JSONDecoder().decode([WarpRecord].self, from: Data(contentsOf: url.appendingPathComponent("warps.json")))
+    var fixtures: [String: Expected]?
+    if let expectedPath = args.dropFirst(2).first {
+        let labels = try JSONDecoder().decode([Expected].self, from: Data(contentsOf: URL(fileURLWithPath: expectedPath)))
+        fixtures = Dictionary(uniqueKeysWithValues: labels.map { ($0.name, $0) })
+    }
     let overlays = url.appendingPathComponent("overlays")
     try FileManager.default.createDirectory(at: overlays, withIntermediateDirectories: true)
     var originals: [String: [Finding]] = [:]
     var stats: [String: (matched: Int, total: Int, iou: Double, extra: Int)] = [:]
     var worst: [(String, Double)] = []
+    var hidden = 0, toHide = 0, kept = 0, toKeep = 0
     for r in records {
-        if originals[r.source] == nil, let image = Fixtures.load(URL(fileURLWithPath: r.source)) {
+        let source = URL(fileURLWithPath: r.source)
+        let toCopy = Homography(unitSquareTo: r.corners)
+        let fixture = fixtures?[source.deletingPathExtension().lastPathComponent]
+        if fixtures != nil && fixture == nil {
+            print("Missing expected fields for \(r.file)")
+            exit(1)
+        }
+        if fixtures == nil, originals[r.source] == nil, let image = Fixtures.load(source) {
             let (doc, a) = try Analyzer().analyze(photo: image)
             originals[r.source] = a.findings.map { Finding(kind: $0.kind, quad: doc.toSource.apply($0.shape), note: $0.note) }
         }
-        guard let original = originals[r.source], let photo = Fixtures.load(url.appendingPathComponent(r.file)) else { continue }
-        let toCopy = Homography(unitSquareTo: r.corners)
+        guard let photo = Fixtures.load(url.appendingPathComponent(r.file)) else {
+            print("Missing or unreadable warped image: \(r.file)")
+            exit(1)
+        }
+        let original: [Finding]
+        if let fixture {
+            let mrz = fixture.hide.filter { $0.kind == FindingKind.machineReadableZone.rawValue }
+            var fields = fixture.hide.filter { $0.kind != FindingKind.machineReadableZone.rawValue }.compactMap { box in
+                FindingKind(rawValue: box.kind).map { Finding(kind: $0, rect: box.rect) }
+            }
+            if let first = mrz.first {
+                fields.append(Finding(kind: .machineReadableZone, rect: mrz.dropFirst().reduce(first.rect) { $0.union($1.rect) }))
+            }
+            original = fields
+        } else if let findings = originals[r.source] {
+            original = findings
+        } else {
+            print("Missing or unreadable source image: \(r.source)")
+            exit(1)
+        }
         let expected = original.map { Finding(kind: $0.kind, quad: toCopy.apply($0.shape)) }
         let (doc, a) = try Analyzer().analyze(photo: photo)
         let found = a.findings.map { Finding(kind: $0.kind, quad: doc.toSource.apply($0.shape)) }
+        if let fixture {
+            for field in fixture.hide {
+                toHide += 1
+                let share = coverage(toCopy.apply(Quad(field.rect)), found)
+                if share >= 0.98 { hidden += 1 } else {
+                    print(String(format: "%@: %@ only %.0f%% covered", r.file, field.kind, share * 100))
+                }
+            }
+            for field in fixture.keep {
+                toKeep += 1
+                let share = coverage(toCopy.apply(Quad(field.rect)), found)
+                if share <= 0.1 { kept += 1 } else {
+                    print(String(format: "%@: kept field %.0f%% covered", r.file, share * 100))
+                }
+            }
+        }
         var used = Set<UUID>()
         var docScore = 0.0, docCount = 0
         for e in expected {
@@ -246,6 +295,10 @@ case "angles":
     }
     print("\nLowest mean IoU:")
     for (f, m) in worst.sorted(by: { $0.1 < $1.1 }).prefix(15) { print(String(format: "  %.2f  %@", m, f as NSString)) }
+    if fixtures != nil {
+        print("Sensitive fields hidden: \(hidden)/\(toHide)   Fields kept visible: \(kept)/\(toKeep)")
+        exit(hidden == toHide && kept == toKeep ? 0 : 1)
+    }
 
 default:
     print(usage)

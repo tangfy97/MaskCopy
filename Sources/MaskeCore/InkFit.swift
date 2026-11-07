@@ -56,6 +56,13 @@ enum InkFit {
         func u(_ c: Int) -> CGFloat { u0 + CGFloat(c) * step }
         func v(_ r: Int) -> CGFloat { v0 + CGFloat(r) * step }
 
+        func column(at point: CGPoint) -> CGFloat {
+            let delta = minus(CGPoint(x: point.x * size.width, y: point.y * size.height), origin)
+            // The OCR frame can be skewed. Project along the frame's vertical axis.
+            let along = (delta.x * vy.y - delta.y * vy.x) / (ux.x * vy.y - ux.y * vy.x)
+            return (along - u0) / step
+        }
+
         /// Ink columns grouped into runs separated by gaps of at least `gap` pixels.
         func runs(gap: CGFloat) -> [(Int, Int)] {
             let split = max(2, Int((gap / step).rounded()))
@@ -139,12 +146,19 @@ enum InkFit {
             tops.append((CGFloat(c), CGFloat(lo)))
         }
         guard bottoms.count >= 6 else { return nil }
-        let slope = (theilSen(bottoms) + theilSen(tops)) / 2
-        let degrees = atan(slope) * 180 / .pi
+        let topAngle = atan(theilSen(tops)) * 180 / .pi
+        let bottomAngle = atan(theilSen(bottoms)) * 180 / .pi
+        let degrees = (topAngle + bottomAngle) / 2
         if ProcessInfo.processInfo.environment["MASKE_DEBUG"] != nil {
             print(String(format: "    frame: vision angle %.1f°, text leans %+.2f° in it", atan2(base.ux.y, base.ux.x) * 180 / .pi, degrees))
         }
-        guard abs(degrees) > 0.25, abs(degrees) < 10, let level = measureFrame(turned(degrees), in: luma, extend: extend) else { return nil }
+        // Background print and mixed glyph heights can pull just one edge off the text.
+        // Keep the original frame when a turn makes the band taller or cuts off end ink.
+        guard abs(topAngle - bottomAngle) < 4,
+              abs(degrees) > 0.25, abs(degrees) < 10,
+              let level = measureFrame(turned(degrees), in: luma, extend: extend),
+              level.u(level.right) - level.u(level.left) + max(2, base.h * 0.08) >= base.u(base.right) - base.u(base.left),
+              level.v(level.bottom) - level.v(level.top) < base.v(base.bottom) - base.v(base.top) else { return nil }
         return (level, degrees)
     }
 
@@ -214,6 +228,10 @@ enum InkFit {
         r = seed + 1; gap = 0
         while r < rows { if rowInk[r] >= rowMin { bottom = r; gap = 0 } else { gap += 1; if gap > rowGap { break } }; r += 1 }
 
+        // A band much taller than the OCR line is usually security print or another row.
+        // Fall back to the original text box instead of letting those pixels steer the fit.
+        guard CGFloat(bottom - top + 1) * step <= h * 1.25 else { return nil }
+
         // Columns: from the first to the last ink inside the box, then on through ink that runs on
         // past its edges (a character Vision's box cut). Gaps inside a word (even "1 1" in many
         // typefaces) are bridged; a clear word gap ends it. Leaving ink uncovered is worse than a little extra.
@@ -237,7 +255,7 @@ enum InkFit {
     /// from the start (or, with `fromEnd`, the end): for a value whose box also took in a label.
     static func fit(_ quad: Quad, in luma: Luma, margin: CGFloat = 0.12, words: (count: Int, fromEnd: Bool)? = nil, extend: Bool = true) -> Quad? {
         guard let ink = measure(quad, in: luma, extend: extend) else { return nil }
-        var l = ink.left, r = ink.right
+        let l = ink.left, r = ink.right
         if !extend, ProcessInfo.processInfo.environment["MASKE_DEBUG"] != nil {
             print("    refit: w \(Int(ink.w)) h \(Int(ink.h)) step \(ink.step) u0 \(Int(ink.u0)) ink cols \(l)...\(r) = u \(Int(ink.u(l)))...\(Int(ink.u(r))) colInk head \(Array(ink.colInk[max(0,l-8)..<min(ink.colInk.count, l+8)]))")
         }
@@ -255,12 +273,13 @@ enum InkFit {
 
     /// Part of a line: the ink after (or before) the gap nearest to where the part should begin
     /// (or end), `boundary` being that place as a share of the line's text. Nil when no gap is near it.
-    static func fitPart(of line: Quad, in luma: Luma, boundary: CGFloat, keepEnd: Bool, margin: CGFloat = 0.12) -> Quad? {
+    static func fitPart(of line: Quad, in luma: Luma, boundary: CGFloat, cut: CGPoint?, keepEnd: Bool, margin: CGFloat = 0.12) -> Quad? {
         guard let ink = measure(line, in: luma), ink.right > ink.left else { return nil }
         // Gaps between characters at least as wide as a narrow space.
         let runs = ink.runs(gap: 0.15 * ink.h)
         guard runs.count >= 2 else { return nil }
-        let target = CGFloat(ink.left) + boundary * CGFloat(ink.right - ink.left)
+        let target = cut.map { ink.column(at: $0) }
+            ?? (CGFloat(ink.left) + boundary * CGFloat(ink.right - ink.left))
         if ProcessInfo.processInfo.environment["MASKE_DEBUG"] != nil {
             print("    cut: ink \(ink.left)...\(ink.right) boundary \(boundary) target \(Int(target)) runs \(runs)")
         }

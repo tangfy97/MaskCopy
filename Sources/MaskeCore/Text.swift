@@ -25,6 +25,22 @@ struct TextLine {
     }
 
     func box(for range: Range<String.Index>) -> CGRect { quad(for: range).boundingRect }
+
+    /// Vision may return the same word box for two characters. Use its cut only when the
+    /// nearest non-space characters on either side actually have separate, ordered boxes.
+    func cutPoint(at boundary: String.Index) -> CGPoint? {
+        guard let candidate,
+              let before = text[..<boundary].lastIndex(where: { !$0.isWhitespace }),
+              let after = text[boundary...].firstIndex(where: { !$0.isWhitespace }),
+              let left = try? candidate.boundingBox(for: before..<text.index(after: before)),
+              let right = try? candidate.boundingBox(for: after..<text.index(after: after)) else { return nil }
+        let a = Rectifier.quad(left), b = Rectifier.quad(right)
+        let end = lerp(a.tr, a.br, 0.5), start = lerp(b.tl, b.bl, 0.5)
+        guard a.area() > 0, b.area() > 0, start.x >= end.x,
+              start.x - end.x <= box.width * 0.15,
+              abs(start.y - end.y) <= box.height * 0.5 else { return nil }
+        return lerp(end, start, 0.5)
+    }
 }
 
 /// A transformed copy of a string (folded, upper-cased, optionally without spaces) that remembers
