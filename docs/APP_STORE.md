@@ -21,6 +21,8 @@
 | Bundle ID `com.feiyangtang.Maske` | Registered by the first archive (`-allowProvisioningUpdates`) |
 | App record | Created 7 November 2026, Apple ID 6832059753 |
 | TestFlight | Internal group TangSpark, automatic distribution on, Feiyang Tang added |
+| Builds uploaded | 0.1.0 (1) and 0.1.0 (2), both 7 November 2026 |
+| Developer Program License Agreement | An update was waiting for the account holder to accept (needed before App Review; not needed for internal TestFlight) |
 | Export compliance | `ITSAppUsesNonExemptEncryption` is NO in `project.yml` |
 
 ## App Store Connect

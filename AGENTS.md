@@ -1,0 +1,121 @@
+# Maske: handoff for coding agents
+
+Everything a coding agent needs to pick up this project without the conversation it came from. Read this first, then [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md) and [docs/ROADMAP.md](docs/ROADMAP.md).
+
+## What this is
+
+Maske is a native iPhone app (SwiftUI, iOS 18+) for sharing a copy of a passport, ID card, residence permit or driving licence with the sensitive parts hidden. It is a privacy-first alternative to the Dutch government's KopieID, which only handles Dutch documents. The user scans or picks a photo, Maske straightens the document, suggests masks (machine-readable zone, personal and document numbers, card access number, address, barcode, photo), the user reviews them, says who the copy is for, and shares a watermarked JPEG.
+
+- Owner: Feiyang Tang (TangSpark). Repository: <https://github.com/tangfy97/Maske> (public, Apache 2.0).
+- Status: prototype 0.1.0, TestFlight build 2 (see [Releasing](#releasing)).
+- The owner works in Chinese and English; replies to them in Chinese are welcome, code and docs are in English.
+
+## Non-negotiable rules
+
+1. **Never commit, upload, attach or paste a real person's identity document**, masked or not. Test with the synthetic documents (`maske fixtures`) and official specimens kept in `Fixtures/specimens/`, which is git-ignored because those images are not ours to publish.
+2. **The app stays offline.** No networking code, analytics, crash reporting, accounts or third-party code. All recognition is Apple's Vision framework on the device. If something changes what Maske keeps or shares, update [PRIVACY.md](PRIVACY.md) in the same change.
+3. **Masks must cover exactly what needs covering: nothing left visible, nothing extra.** The owner was explicit about this ("完美覆盖，不多不少"). When the two conflict, leaving a sensitive character visible is worse than covering a little extra.
+4. **Masks are painted into the pixels**, never blurred or pixelated (both can be reversed). The shared file has no metadata.
+5. `project.yml` is the source of truth for the Xcode project. Edit it, then `xcodegen generate`. Never hand-edit `Maske.xcodeproj`.
+6. Follow the TangSpark house standards (from the owner's other apps in `~/Documents`, e.g. Rydd, Kvikkshot, Glimt, Spolo): the standard doc set (README, CHANGELOG, PRIVACY, SECURITY, CONTRIBUTING, CODE_OF_CONDUCT, LICENSE, NOTICE), XcodeGen, `scripts/`, plain English docs, standard system controls, no custom styling beyond `Theme.swift`.
+7. Work step by step. The owner prefers a working prototype now and documented problems over fixing everything at once: record open problems in [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md) rather than leaving them in a conversation.
+
+## Repository map
+
+```
+project.yml                 XcodeGen spec for the iOS app (bundle com.feiyangtang.Maske)
+Package.swift               Swift package: MaskeCore library, `maske` CLI, MaskeCoreTests
+Sources/MaskeCore/          The engine, shared by the app and the CLI (compiled into the app target directly)
+  Analyzer.swift            Entry point: analyze(photo:) → straighten → rules → merged findings
+  Rectifier.swift           Finds the document outline, orientation, perspective correction; VisionRunner
+  InkFit.swift              Fits a text box to its ink (angle, edges, label/value cut); Luma image buffer
+  Geometry.swift            Quad (four corners, normalized, origin top-left) and Homography
+  MRZ.swift                 ICAO 9303 TD1/TD2/TD3 + ISO 18013 licence line reader with check digits
+  NumberPatterns.swift      ~45 national number formats (regex + check), strong vs country-gated
+  Checksums.swift           The check-digit algorithms
+  Labels.swift              Field labels in many languages, numbered licence field codes
+  Countries.swift           Country table, supported list (27), country/document keywords
+  Text.swift                TextLine (Vision line + corners), MappedText (folded/compacted text with index map)
+  Model.swift               Finding (kind, rect, quad, isOn), PageAnalysis, DocumentKind
+  Renderer.swift            The shared copy: masks painted as polygons, watermark, JPEG without metadata
+Sources/MaskeApp/           SwiftUI app: Home, Review (PageCanvas, MaskShape), Share (watermark), Supported list
+Sources/maske/              CLI: fixtures, eval, analyze, review, warp, angles, ocr (see below)
+  Fixtures.swift            41 synthetic documents drawn on a "table", with exact ink bounds per field
+  Warp.swift                Photo-like copies (tilt, rotation, 90°, 180°, steep) and overlays
+Tests/MaskeCoreTests/       Check digits with published examples, ICAO specimen MRZs
+scripts/                    build.sh, check.sh, device.sh, appstore.sh, icon.swift, fetch_specimens.py,
+                            prado_receiver.py, prado_collect.js
+Design/AppIcon-1024.png     Rendered by scripts/icon.swift
+docs/                       DEVELOPMENT (engine), KNOWN_ISSUES, ROADMAP, DECISIONS, SPECIMENS, APP_STORE, user-journey (Chinese)
+Fixtures/                   Generated and downloaded test images; git-ignored (only the generator is committed)
+```
+
+## Build, run, test
+
+Needs Xcode 26+ (developed on Xcode 27.2, Swift 6.4, Swift 5 language mode) and XcodeGen (`brew install xcodegen`).
+
+```sh
+scripts/check.sh                 # unit tests + regenerate the 41 synthetic documents + evaluate them
+scripts/build.sh                 # app for the iOS Simulator → build/Maske.app
+scripts/device.sh                # signed build installed and opened on a connected iPhone (Developer Mode on)
+scripts/appstore.sh upload       # archive, sign and upload to App Store Connect / TestFlight
+```
+
+The CLI (`swift build`, then `.build/debug/maske …`):
+
+| Command | Purpose |
+|---|---|
+| `maske fixtures Fixtures/synthetic` | Draw the synthetic documents and `expected.json` (ink bounds of every field to hide or keep) |
+| `maske eval Fixtures/synthetic` | Coverage (≥98% of a field's ink under a mask), kept fields (≤10% covered), precision (share of each mask on its field); writes masked copies and green/red overlays to `Fixtures/synthetic/out` |
+| `maske analyze <image>` | What the engine finds on one photo; `MASKE_DEBUG=1` prints how every mask was made |
+| `maske review <dir> <out>` | Mask every image in a folder, for looking through by eye; `report.txt` with one line per image |
+| `maske warp <dir> <out>` then `maske angles <out>` | Do masks land in the same place on tilted, turned copies? Writes overlays |
+| `maske ocr <image>` | Debug: Vision text recognition on the straightened image, in memory vs via PNG |
+
+Current numbers (synthetic, 7 Nov 2026): 109/110 sensitive fields fully covered, 94/94 kept, mean precision 0.96 (worst 0.80), kind and country right 41/41 when text recognition is complete. Angle test before ink fitting: personal numbers 115/115 matched, document numbers 177/180, MRZ 55/60, address 88/95.
+
+App launch arguments for the Simulator (Debug builds only, `DebugLaunch` in `MaskeApp.swift`):
+
+```sh
+xcrun simctl launch booted com.feiyangtang.Maske -MaskeFixture /abs/path/front.png,/abs/path/back.png \
+  -MaskeRecipient "Hotel Nord" -MaskePurpose "Check-in" -MaskeStep share   # or -MaskeStep supported
+```
+
+## How the engine works (short)
+
+Full description: [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
+
+1. **Straighten** (`Rectifier.straighten`): quick `.fast` text reads of a ≤1300 px copy in all four orientations pick the orientation (readable MRZ lines score +80) and give the text positions. `VNDetectDocumentSegmentationRequest` (fallback `VNDetectRectanglesRequest`) outlines are accepted only if ≥80% of that text lies inside and the aspect is < 2.1. Then `CIPerspectiveCorrection` with corners reordered for the quarter turns. Output ≤2600 px. `DocumentImage.corners` maps back to the source (used by the CLI to compare with expected boxes).
+2. **Read** (`Analyzer.recognize`): accurate text recognition (automatic language; a second pass in zh/ja/ko when the page has CJK), faces, barcodes, each request separately so one failing cannot lose the others. Re-reads up to twice if the result has fewer than 80% of the quick read's lines.
+3. **Find**: MRZ (bottom-most run of `[A-Z0-9<]` lines) → kind and issuing country; else keywords; else a strong number pattern. Then number patterns (country-gated unless distinctive), values the MRZ names elsewhere on the page, labelled values (same line, right, or below), numbered licence fields (EU/ISO 18013/AAMVA: 4d, 5, 8), unlabelled codes, the 6-digit CAN on European ID cards, street addresses, faces → portrait (snapped to the portrait's rectangle when found), ICAO portrait zone measured from the MRZ when no face, barcodes.
+4. **Fit** (`InkFit`): every text mask is measured on the pixels (Otsu threshold; ink is the minority class), levelled to the text's own angle (Theil–Sen line through per-column ink tops/bottoms, iterated), extended through ink Vision's box cut (gaps up to 0.35× height) and shrunk to the first/last ink, margin max(3 px, 12% of ink height). Values beside a label: `addPart` predicts where the label ends from character widths (CJK 1.0, Latin caps/digits 0.65, space 0.3 of the height) and cuts at the nearest ink gap (≥0.15×h), accepting it only if the value's width matches within 20%; then re-measures the value alone.
+5. **Merge**: overlapping findings of one kind keep the most exactly measured shape (cut > ink-fitted > estimate), else the larger.
+
+## Gotchas learned the hard way
+
+- **iOS Simulator has no Neural Engine.** Vision's face, barcode and document-outline requests return nothing there (text works on the CPU via `VisionRunner`). So the Simulator never crops the table away and never finds faces or barcodes. Verify those on a device or on the Mac (`maske`).
+- **Vision text recognition is not deterministic across processes and time.** The same straightened image read 17 lines in a standalone script and 13 inside `maske` (both MRZ lines lost). Not caused by the image, request settings, revision, earlier requests, Core Image or the deployment target. See issue 1 in KNOWN_ISSUES.
+- **Heavy load on the Mac makes Vision crawl or fail** (`CRImageReaderError.unknownError` after minutes). Games and some system cleaners compete for the GPU/Neural Engine. Check `uptime` before trusting a slow or failing test run.
+- `CTLineDraw` advances the text position: measure `CTLineGetImageBounds` before drawing (bit us in the fixture generator).
+- In Helvetica-like fonts the gap after a "1" is as wide as a word space; never split values on small gaps.
+- Vision's line boxes can lean a few degrees off the actual text; `InkFit` levels them. Mixed CJK/Latin lines bias baseline estimates (CJK glyphs sit lower), so the value part is re-measured alone.
+- `VNRecognizedText.boundingBox(for:)` may return word-level boxes, and OCR may merge a label and its value into one word.
+- Vision returns Cyrillic look-alikes in Latin numbers ("А123456(3)"); `MappedText(latinize:)` maps them back.
+- Germany's MRZ issuing state is `D<<`; Kosovo's is `RKS`.
+
+## Releasing
+
+Details: [docs/APP_STORE.md](docs/APP_STORE.md).
+
+- Team X933P26489 (Feiyang Tang). Distribution signing is cloud-managed by Xcode (`-allowProvisioningUpdates`); local development certificate "Apple Development: Feiyang Tang (F72B32W28N)".
+- App Store Connect: app "Maske: Privacy-First ID Copy", Apple ID 6832059753, SKU `maske-ios`, bundle `com.feiyangtang.Maske`, primary language English (U.S.).
+- TestFlight: internal group **TangSpark**, automatic distribution on, the owner added. Builds: 0.1.0 (1) on 7 Nov 2026, 0.1.0 (2) on 7 Nov 2026 (straightening and ink fitting).
+- Every upload needs a higher `CURRENT_PROJECT_VERSION` in `project.yml`. `ITSAppUsesNonExemptEncryption` is NO.
+- The Apple Developer Program License Agreement update was pending acceptance by the account holder (needed before App Review). Do not accept agreements on the owner's behalf.
+- The owner's site tang-spark.no is a personal studio site, not this product's website; don't add pages there unless asked.
+
+## Where to go next
+
+[docs/ROADMAP.md](docs/ROADMAP.md) has the ordered list. The most valuable next step is running `maske review` over the PRADO specimens of the 27 supported countries and turning each mistake into a fix plus a synthetic fixture. Then on-device testing (barcodes, faces, speed).
+
+Decisions and the reasons for them: [docs/DECISIONS.md](docs/DECISIONS.md). Where test images come from and how to collect more: [docs/SPECIMENS.md](docs/SPECIMENS.md).
