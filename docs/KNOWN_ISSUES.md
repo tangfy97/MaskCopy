@@ -11,6 +11,8 @@ Build 4 checks: 14 unit tests; 43/43 straight synthetic documents, 121/121 sensi
 
 Build 5 changes the interface and session flow, without changing the recognition engine. Core checks remained 14/14 tests and 43/43 synthetic documents (121/121 sensitive fields at the existing threshold, 96/96 kept). The full light-mode app/UI suite passed 11/11; four compact dark/maximum-text journeys passed. After the final focused-field scroll correction, both affected normal-size Share journeys and the compact keyboard/share journey passed again, including a check that the input stays fully above the keyboard. Final result bundles have no runtime warnings. See AUDIT.md for evidence and unverified device behavior.
 
+Build 6 replaces the interface and watermark, without changing recognition. Native zoom, constant-size corner targets, a cache guarded by document/mask/input revisions and local watermark input are implemented. Final evidence and actual performance measurements are in AUDIT.md. A loaded debug Simulator launch averaged 3.71 seconds, and Animation Hitches was unsupported: neither establishes acceptable real-device performance. No physical iPhone was attached. Keep device latency/frame-pacing work open rather than calling the app universally smooth.
+
 ## Open
 
 ### 1. Text recognition sometimes misses lines (most important)

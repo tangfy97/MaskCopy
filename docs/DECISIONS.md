@@ -1,12 +1,12 @@
 # Decisions
 
-Why Maske is the way it is. Newest last. Change a decision only with the owner, and record the change here.
+Why MaskCopy is the way it is. Newest last. Change a decision only with the owner, and record the change here.
 
 | Date | Decision | Why |
 |---|---|---|
 | 2026-11-07 | Build an alternative to KopieID that works for documents from any (supported) country | KopieID only handles Dutch documents; the owner's audience includes people who moved between countries |
 | 2026-11-07 | Native iOS app (SwiftUI), local only | The owner asked for a local, private phone app; scanning is a phone task |
-| 2026-11-07 | Name **Maske** (Norwegian for "mask"); App Store name "Maske: Privacy-First ID Copy" | TangSpark apps have short Norwegian names (Kvikkshot, Glimt, Rydd, Spolo); the owner wanted it simple and privacy-first, and asked for "privacy first id copy" in the store name |
+| 2026-11-07 | Name **MaskCopy** (Norwegian for "mask"); App Store name "MaskCopy: Privacy-First ID Copy" | TangSpark apps have short Norwegian names (Kvikkshot, Glimt, Rydd, Spolo); the owner wanted it simple and privacy-first, and asked for "privacy first id copy" in the store name |
 | 2026-11-07 | Nordic, minimal design: paper, ink and one cold blue (`Theme.swift`), standard controls | The owner's request; matches the house style |
 | 2026-11-07 | No templates per country; rules from international standards (ICAO 9303 MRZ, EU driving licence fields, ISO 18013, AAMVA) plus national number formats with check digits | Covers many documents with little code; check digits keep false matches rare |
 | 2026-11-07 | Every suggested mask is on by default, including the photo; the user can show any of them | Hiding too much is safer than too little; the Dutch government advises crossing out the photo and BSN on copies |
@@ -25,3 +25,7 @@ Why Maske is the way it is. Newest last. Change a decision only with the owner, 
 | 2026-11-08 | Replace dense tiled watermarks with a wrapping recipient/purpose/date footer and one faint diagonal recipient mark per page; use opaque blue-grey masks | The owner found black blocks ugly and the repeated watermark obstructive. Opaque pixel replacement remains unchanged; the new layout prioritises reading the document |
 | 2026-11-08 | Add zoom and direct four-corner editing of existing masks | Automatic borders on borderless and security portraits remain uncertain. The user needs a precise way to correct the actual exported geometry |
 | 2026-11-08 | Keep the UI self-explanatory with very little instructional text | The owner explicitly dislikes explanation paragraphs. Tapping a mask opens its editor; visible corner handles, zoom, Hide, Reset, Cancel and Save communicate the actions |
+
+## 8 November 2026: MaskCopy and the three-stage copy flow
+
+The owner chose MaskCopy after rejecting MaskID (an existing same-purpose iPhone app), CopyVeil (not direct enough), and build 5's flat homepage. Keep the existing app identity/bundle ID and internal developer names, while changing the installed product, public name and GitHub repository. Native source-to-editor zoom and UIScrollView manipulation preserve document context. Separate Watermark input from final Share so typing never starts bitmap rendering. Use a strong opaque mask and one adaptive dark/light watermark block on every page, informed by official KopieID visuals. General OCR, watermarks and flattened export are also offered by MaskID and are not claimed as unique. Our proposed distinction is document-specific geometry with precise review; proving better accuracy needs a matched, annotated comparison.

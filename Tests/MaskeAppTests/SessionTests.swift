@@ -1,4 +1,5 @@
 import XCTest
+import os
 @testable import Maske
 
 private actor ImportGate {
@@ -97,5 +98,62 @@ final class SessionTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: file.path))
         _ = Session()
         XCTAssertFalse(FileManager.default.fileExists(atPath: file.path))
+    }
+
+    func testCopiesAreRenderedOffMainAndReusedUntilInputsChange() async throws {
+        let calls = OSAllocatedUnfairLock(initialState: 0)
+        let session = Session(render: { pages, _ in
+            XCTAssertFalse(Thread.isMainThread)
+            calls.withLock { $0 += 1 }
+            return pages.first?.image
+        })
+        session.pages = [Session.Page(image: try image(), kind: .passport, country: nil,
+                                     findings: [Finding(kind: .photo, rect: CGRect(x: 0, y: 0, width: 0.3, height: 0.5))])]
+        let first = await session.prepareCopy(recipient: "Hotel Nord", purpose: "Check-in")
+        XCTAssertTrue(first)
+        let repeated = await session.prepareCopy(recipient: " Hotel Nord ", purpose: "Check-in")
+        XCTAssertTrue(repeated)
+        XCTAssertEqual(calls.withLock { $0 }, 1)
+        let changed = await session.prepareCopy(recipient: "Hotel Nord", purpose: "Reservation")
+        XCTAssertTrue(changed)
+        XCTAssertEqual(calls.withLock { $0 }, 2)
+        session.pages[0].findings[0].isOn = false
+        XCTAssertNil(session.copy)
+        let edited = await session.prepareCopy(recipient: "Hotel Nord", purpose: "Reservation")
+        XCTAssertTrue(edited)
+        XCTAssertEqual(calls.withLock { $0 }, 3)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: Exporter.directory.path))
+        session.finish()
+    }
+
+    func testFinishingDuringRenderingCannotPublishACopy() async throws {
+        let started = expectation(description: "Copy rendering started")
+        let release = DispatchSemaphore(value: 0)
+        defer { release.signal() }
+        let session = Session(render: { pages, _ in
+            started.fulfill()
+            release.wait()
+            return pages.first?.image
+        })
+        session.pages = [Session.Page(image: try image(), kind: .passport, country: nil, findings: [])]
+        let work = Task { await session.prepareCopy(recipient: "Test hotel", purpose: "Check-in") }
+        await fulfillment(of: [started], timeout: 2)
+        session.finish()
+        release.signal()
+        let ready = await work.value
+        XCTAssertFalse(ready)
+        XCTAssertNil(session.copy)
+        XCTAssertTrue(session.path.isEmpty)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: Exporter.directory.path))
+    }
+
+    func testFourPageRenderingPerformance() throws {
+        let page = Session.Page(image: try image(width: 2600), kind: .passport, country: nil,
+                                findings: [Finding(kind: .photo, rect: CGRect(x: 0.05, y: 0.15, width: 0.25, height: 0.65))])
+        let pages = Array(repeating: page, count: 4)
+        measure(metrics: [XCTClockMetric(), XCTMemoryMetric()]) {
+            let result = Exporter.preview(pages, recipient: "Test hotel", purpose: "Check-in only")
+            XCTAssertNotNil(result)
+        }
     }
 }

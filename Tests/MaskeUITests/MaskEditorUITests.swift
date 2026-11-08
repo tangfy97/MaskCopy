@@ -23,8 +23,15 @@ final class MaskEditorUITests: XCTestCase {
         add(screenshot)
         let zoom = app.sliders["Zoom"]
         XCTAssertTrue(zoom.exists)
-        zoom.adjust(toNormalizedSliderPosition: 0.3)
         let canvas = app.scrollViews["mask-editor-canvas"]
+        let initialZoom = zoom.value as? String
+        canvas.doubleTap()
+        XCTAssertNotEqual(zoom.value as? String, initialZoom)
+        canvas.doubleTap()
+        canvas.pinch(withScale: 2, velocity: 1)
+        XCTAssertNotEqual(zoom.value as? String, initialZoom)
+        zoom.adjust(toNormalizedSliderPosition: 0.3)
+        XCTAssertEqual(handle.frame.width, 44, accuracy: 1, "Corner targets must keep their screen size while zooming")
         for _ in 0..<6 {
             let frame = handle.frame
             let toolbarBottom = app.buttons["Save"].frame.maxY + 30
@@ -59,6 +66,7 @@ final class MaskEditorUITests: XCTestCase {
         app.buttons["Cancel"].tap()
         XCTAssertTrue(photo.waitForExistence(timeout: 5))
         app.buttons["Continue"].tap()
+        app.buttons["Preview copy"].tap()
         let ready = XCTNSPredicateExpectation(predicate: NSPredicate(format: "enabled == true"), object: app.buttons["Share copy"])
         wait(for: [ready], timeout: 10)
         let share = XCTAttachment(screenshot: app.screenshot())

@@ -1,8 +1,17 @@
 # Changelog
 
-All notable changes to Maske are listed here. Versions follow [Semantic Versioning](https://semver.org).
+All notable changes to MaskCopy are listed here. Versions follow [Semantic Versioning](https://semver.org).
 
 ## [0.1.0] - 2026-11-08
+
+Build 6: MaskCopy, a document-focused workflow. Uploaded on 8 November at 13:26 Amsterdam time; Apple reported Processing, with Ready to Test unconfirmed.
+
+- Rename the app's display/product name and GitHub repository to MaskCopy. Keep the existing bundle ID and internal module names so installed copies and TestFlight continue updating the same app.
+- Rebuild Home around a document motif, one primary scan action and secondary photo/file sources. Use directly visible mask switches and explicit Hide → Watermark → Share stages.
+- Replace pale masks with opaque charcoal. Burn recipient, purpose and date into every page as one diagonal watermark, using dark lettering on the document and light lettering on masked areas. Remove the separate footer.
+- Keep watermark input local to its screen; render once off the main actor before showing the final copy, cache matching copies, and invalidate them after edits. Generate the JPEG only when sharing.
+- Replace layout-driven zoom with native pinch, momentum and double-tap zoom. Keep corner targets at 44 screen points at every zoom and connect the editor presentation to its source document.
+- Add copy-cancellation/cache regressions, every-page watermark checks, native zoom/target-size tests, an isolated synthetic-photo import journey and recorded launch/render metrics. Device frame pacing remains unverified.
 
 Build 5: a quieter native interface and safer session flow.
 

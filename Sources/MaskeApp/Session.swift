@@ -14,10 +14,12 @@ final class Session: ObservableObject {
         private(set) var revision = UUID()
     }
 
-    enum Step: Hashable { case review, share, supported }
+    enum Step: Hashable { case review, share, preview, supported }
 
     @Published var path: [Step] = []
-    @Published var pages: [Page] = []
+    @Published var pages: [Page] = [] { didSet { copy = nil; copyStamp = nil } }
+    @Published private(set) var copy: CGImage?
+    @Published private(set) var copyDate = Date()
     enum Activity: Equatable { case idle, preparing, reading }
     @Published private(set) var activity = Activity.idle
     @Published private(set) var previewImage: CGImage?
@@ -30,10 +32,23 @@ final class Session: ObservableObject {
     private var generation = UUID()
     private var importTask: Task<Void, Never>?
     private var analysisTask: Task<[(CGImage, PageAnalysis?)], Never>?
+    private var copyTask: Task<CGImage?, Never>?
+    private struct CopyStamp: Equatable {
+        let document: UUID
+        let revisions: [UUID]
+        let recipient: String
+        let purpose: String
+    }
+    private var copyStamp: CopyStamp?
     private let read: @Sendable (CGImage) -> (CGImage, PageAnalysis?)
+    private let render: @Sendable ([Page], Watermark) -> CGImage?
 
-    init(read: (@Sendable (CGImage) -> (CGImage, PageAnalysis?))? = nil) {
+    init(render: (@Sendable ([Page], Watermark) -> CGImage?)? = nil,
+         read: (@Sendable (CGImage) -> (CGImage, PageAnalysis?))? = nil) {
         Exporter.clear()
+        self.render = render ?? { pages, watermark in
+            Renderer.render(pages: pages.map { ($0.image, $0.findings) }, watermark: watermark)
+        }
         self.read = read ?? { image in
             do {
                 let (document, analysis) = try Analyzer().analyze(photo: image)
@@ -64,7 +79,7 @@ final class Session: ObservableObject {
     func start(with images: [CGImage]) {
         clear()
         guard !images.isEmpty else { failImport(); return }
-        path = [.review]
+        withAnimation(FlowMotion.navigation) { path = [.review] }
         beginReading(images, ticket: generation)
     }
 
@@ -72,7 +87,7 @@ final class Session: ObservableObject {
         clear()
         let ticket = generation
         activity = .preparing
-        path = [.review]
+        withAnimation(FlowMotion.navigation) { path = [.review] }
         importTask = Task {
             let images = await load()
             guard !Task.isCancelled, generation == ticket else { return }
@@ -132,13 +147,44 @@ final class Session: ObservableObject {
         pages.flatMap(\.findings).filter { $0.kind == kind }.count
     }
 
+    /// Render once after editing, never while typing or on a navigation frame.
+    func prepareCopy(recipient: String, purpose: String) async -> Bool {
+        let recipient = recipient.trimmingCharacters(in: .whitespacesAndNewlines)
+        let purpose = purpose.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !recipient.isEmpty, !pages.isEmpty else { return false }
+        let stamp = CopyStamp(document: generation, revisions: pages.map(\.revision), recipient: recipient, purpose: purpose)
+        self.recipient = recipient
+        self.purpose = purpose
+        if copyStamp == stamp, copy != nil { return true }
+        copyTask?.cancel()
+        let snapshot = pages
+        let date = copyDate
+        let render = self.render
+        let work = Task.detached(priority: .userInitiated) {
+            render(snapshot, Watermark(recipient: recipient, purpose: purpose, date: date))
+        }
+        copyTask = work
+        let image = await withTaskCancellationHandler(operation: { await work.value }, onCancel: { work.cancel() })
+        guard !Task.isCancelled, !work.isCancelled, generation == stamp.document,
+              pages.map(\.revision) == stamp.revisions, let image else { return false }
+        copy = image
+        copyStamp = stamp
+        copyTask = nil
+        return true
+    }
+
     /// Forget everything: pages, names and the exported file.
     func clear() {
         generation = UUID()
         importTask?.cancel()
         analysisTask?.cancel()
+        copyTask?.cancel()
         importTask = nil
         analysisTask = nil
+        copyTask = nil
+        copy = nil
+        copyStamp = nil
+        copyDate = Date()
         activity = .idle
         previewImage = nil
         completedPages = 0
@@ -152,7 +198,7 @@ final class Session: ObservableObject {
 
     func finish() {
         clear()
-        path = []
+        withAnimation(FlowMotion.navigation) { path = [] }
     }
 }
 

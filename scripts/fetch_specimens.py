@@ -17,7 +17,7 @@ import urllib.parse
 import urllib.request
 
 API = "https://commons.wikimedia.org/w/api.php"
-AGENT = "MaskeSpecimenFetcher/0.1 (test data for an open-source privacy app; https://github.com/tangfy97/Maske)"
+AGENT = "MaskeSpecimenFetcher/0.1 (test data for an open-source privacy app; https://github.com/tangfy97/MaskCopy)"
 OUT = sys.argv[1] if len(sys.argv) > 1 else "Fixtures/specimens/commons"
 
 COUNTRIES = {

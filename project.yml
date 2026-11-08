@@ -11,7 +11,7 @@ configs:
 settings:
   base:
     MARKETING_VERSION: "0.1.0"
-    CURRENT_PROJECT_VERSION: "5"
+    CURRENT_PROJECT_VERSION: "6"
     SWIFT_VERSION: "5.0"
 targets:
   Maske:
@@ -23,18 +23,19 @@ targets:
       - path: Resources
     settings:
       base:
-        PRODUCT_NAME: Maske
+        PRODUCT_NAME: MaskCopy
+        PRODUCT_MODULE_NAME: Maske
         PRODUCT_BUNDLE_IDENTIFIER: com.feiyangtang.Maske
         # Release scripts pass the team; local builds sign automatically.
         DEVELOPMENT_TEAM: ""
         CODE_SIGN_STYLE: Automatic
         TARGETED_DEVICE_FAMILY: "1"
         GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_CFBundleDisplayName: Maske
+        INFOPLIST_KEY_CFBundleDisplayName: MaskCopy
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
         # No encryption beyond what iOS provides, so TestFlight and App Review don't ask.
         INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
-        INFOPLIST_KEY_NSCameraUsageDescription: "Maske uses the camera to scan your document. The scan stays on your iPhone."
+        INFOPLIST_KEY_NSCameraUsageDescription: "MaskCopy uses the camera to scan your document. The scan stays on your iPhone."
         INFOPLIST_KEY_NSHumanReadableCopyright: "Copyright © 2026 TangSpark. Apache License 2.0."
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
@@ -53,7 +54,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.feiyangtang.Maske.AppTests
         GENERATE_INFOPLIST_FILE: YES
-        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Maske.app/Maske"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/MaskCopy.app/MaskCopy"
         BUNDLE_LOADER: "$(TEST_HOST)"
   MaskeUITests:
     type: bundle.ui-testing

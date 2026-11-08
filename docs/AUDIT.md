@@ -1,4 +1,50 @@
-# Native interface and usability audit
+# Interface and usability verification
+
+## Build 6: MaskCopy
+
+The owner rejected build 5's homepage, flow, motion and pale masks. The archived audit below describes checks performed on that build, not acceptance by the owner. Build 6 replaces the design. Current rules are in DESIGN.md.
+
+### Research and scope
+
+Read RvIG's KopieID FAQ, official App Store screenshots and the current MaskID description from Apple's public lookup endpoint (app 6790398619). KopieID uses one primary start action, visible field switches, opaque dark masks and an in-document diagonal watermark. MaskID already provides OCR suggestions, manual masks, watermarks, flattened exports, metadata checks, a vault and optional cloud features. Shared capabilities are not claimed as unique. The proposed distinction is a focused multi-country ID workflow and document-specific geometry/precise review, whose remaining limits are in KNOWN_ISSUES. No competitor code or image is bundled.
+
+Sources: https://www.rvig.nl/veelgestelde-vragen-kopieid-app , https://apps.apple.com/nl/app/kopieid/id932970330 , https://apps.apple.com/ca/app/maskid-protect-what-you-share/id6790398619 . Motion reference: https://developer.apple.com/videos/play/wwdc2024/10145/ .
+
+### Implemented
+
+- Home uses a deliberate document motif, one scan action and secondary Photos/Files, replacing the flat launch list. Visible native switches replace the hidden mask menu. Hide → Watermark → Share makes each decision explicit with short labels.
+- Watermark text stays local to its screen; typing triggers no bitmap work. The final image is rendered off-main before navigation, reused while document/mask/input revisions match, and invalidated on edits. Cancellation and generation checks guard late completion. Share and inspection use the same CGImage, and only Share creates a JPEG.
+- Opaque charcoal replaces the pale fill. Every page includes recipient, purpose and date in one diagonal block, dark over the document and light over redactions. The removable footer and outlined lettering are gone. The watermark never reduces redaction opacity.
+- Native UIScrollView replaces layout-driven zoom in the editor and final copy. The bitmap is installed once; pinch, double-tap and momentum use native transforms. Four corner targets keep a 44-point on-screen size at every zoom. The editor grows from its source document through the iOS 18 native zoom transition. Camera decoding starts after dismissal. The ready screen retains its image during dismissal and has its own privacy shield.
+- Large-text review exposed real issues: giant source symbols, broken progress labels, horizontally compressed dates and overly tall actions. Source choices and dates now stack, progress shows the active stage/count, and labels shorten without shrinking the selected text size.
+
+### Verified evidence
+
+Generated images only; no real identity document was collected or committed. Final light captures are in `build/Redesign6/light/`, dark maximum-text captures in `compact-ax/`, and the system photo-import journey in `import/`. Build 5 comparison captures remain in `build/UXReview/after-light/`.
+
+- Core: 15 tests passed after the final renderer changes, including a regression proving that a mask cannot paint another page or its gap. The 43-document synthetic check passed 121/121 sensitive fields at the existing ≥98% threshold and 96/96 kept fields, mean precision 0.96, worst 0.75. Recognition code is unchanged; this does not establish complete redaction on all photographs.
+- Final normal-size suite: 14 app/UI checks passed, with the guarded photo import intentionally skipped on the personal/main simulator. The launch test was run separately. All final result bundles report no runtime warnings.
+- Compact iPhone SE, dark appearance, maximum accessibility text: Home/search, keyboard/system sharing and editor pinch/zoom/Save/Cancel passed. The first import test failed because the system picker's first-use notice hid the photo and its confirmation is now Done. After adapting the test to the observed picker, the isolated normal-size photo import passed end to end. The default suite skips this test unless explicitly enabled on a synthetic-only library.
+- Corner testing includes double-tap, pinch, zoomed scrolling/dragging, 44-point targets, Save and Cancel. Cache/cancellation tests verify off-main rendering, reuse, edit invalidation and no late publication after finishing.
+
+### Performance measurements and limits
+
+Measurements are descriptive, not a smoothness guarantee. No physical iPhone was attached. Host load was unusually high (observed load averages approximately 119–284), with simulator first-use services and other active processes. No unrelated app was stopped.
+
+- Same generated-pixel Mac workload, ten measured renders after warm-up: build 5 mean 1.58 ms for one page / 5.71 ms for four; final dual-tone watermark mean 1.87 / 8.65 ms. The richer watermark costs more rendering work. The architectural change removes it from typing and transitions rather than claiming a faster renderer.
+- iPhone 18 Pro Simulator debug four-page render, five XCTest samples: mean 66.4 ms, maximum 67.4 ms. Peak process footprint mean 91.9 MB, maximum 94.5 MB; measured per-run physical growth 0–16.4 kB. These are test-process measurements, not a whole-session memory bound.
+- Responsive launch with only the main simulator running, five XCTest samples: mean 3.71 s, range 3.63–3.80 s. This loaded debug-simulator result is not an acceptable real-device launch claim or evidence of improvement; measure an optimized device build before setting a release budget.
+- Animation Hitches recording was attempted and returned “Hitches is not supported on this platform.” No frame-rate or dropped-frame result is claimed. The editor journey passed again during a motion recording (`build/Redesign6/editor-motion.mp4`); this is visual evidence, not a frame-pacing benchmark.
+
+Still needed: optimized real-iPhone launch/recognition latency, continuous gesture/frame pacing under Instruments, physical scanner capture, manual VoiceOver/Switch Control/Reduce Motion and photographed printed-specimen tests. Functional tests and visual inspection do not establish those results.
+
+### Naming and release
+
+The owner chose MaskCopy after rejecting MaskID and CopyVeil. GitHub is now https://github.com/tangfy97/MaskCopy . The product/display name is MaskCopy; bundle ID and internal project/modules stay stable for updates. The owner will change the App Store Connect title manually; do not claim it has changed until confirmed. Release upload status is recorded in APP_STORE.md.
+
+---
+
+# Archived build 5 audit
 
 8 November 2026. Baseline: c2d3ec3, build 4. Scope: Home, import/loading/recovery, Review, mask controls, corner editor, Share, copy inspector, system share sheet and supported documents. Test documents are generated fixtures only. The masking engine and icon artwork are unchanged.
 

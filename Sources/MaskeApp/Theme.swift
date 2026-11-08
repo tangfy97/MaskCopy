@@ -3,11 +3,11 @@ import UIKit
 
 /// A quiet palette: paper, ink and one cold blue. Everything else is the system's.
 extension Color {
-    static let paper = Color(light: 0xF3F5F3, dark: 0x121B1E)
+    static let paper = Color(light: 0xF5F5F1, dark: 0x141B1F)
     static let ink = Color(light: 0x1C2B30, dark: 0xEDF2F1)
     static let hairline = Color(light: 0xD8E0DD, dark: 0x344247)
     static let card = Color(light: 0xFFFFFF, dark: 0x1C292D)
-    static let fjord = Color(light: 0x365963, dark: 0xB1C9CE)
+    static let fjord = Color(light: 0x234E61, dark: 0xA9CDD9)
     static let muted = Color(light: 0x586A70, dark: 0xA6B8BB)
     /// Masks look the same in light and dark mode: they are what the shared copy will show.
     static let mask = Color(cgColor: Renderer.maskColor)
@@ -17,57 +17,6 @@ extension Color {
             let v = traits.userInterfaceStyle == .dark ? dark : light
             return UIColor(red: CGFloat((v >> 16) & 0xFF) / 255, green: CGFloat((v >> 8) & 0xFF) / 255, blue: CGFloat(v & 0xFF) / 255, alpha: 1)
         })
-    }
-}
-
-/// Shared controls stay native; the document provides the visual content.
-struct SourceRow: View {
-    @Environment(\.isEnabled) private var enabled
-    @Environment(\.dynamicTypeSize) private var textSize
-    let title: LocalizedStringKey
-    let symbol: String
-
-    var body: some View {
-        HStack(spacing: 18) {
-            if !textSize.isAccessibilitySize {
-                Image(systemName: symbol)
-                    .font(.system(size: 24))
-                    .foregroundStyle(Color.fjord.opacity(enabled ? 1 : 0.35))
-                    .frame(width: 30)
-                    .accessibilityHidden(true)
-            }
-            Text(title)
-                .font(.body.weight(.medium))
-                .fixedSize(horizontal: false, vertical: true)
-                .foregroundStyle(Color.ink.opacity(enabled ? 1 : 0.4))
-            Spacer(minLength: 12)
-            Image(systemName: "chevron.right")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(.tertiary)
-                .accessibilityHidden(true)
-        }
-        .padding(.vertical, 22)
-        .frame(minHeight: 64)
-        .contentShape(Rectangle())
-    }
-}
-
-struct DetailRow<Content: View>: View {
-    @Environment(\.dynamicTypeSize) private var textSize
-    let title: LocalizedStringKey
-    @ViewBuilder var content: Content
-
-    var body: some View {
-        if textSize.isAccessibilitySize {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(title)
-                content.accessibilityLabel(Text(title))
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        } else {
-            LabeledContent(title) { content }
-                .multilineTextAlignment(.trailing)
-        }
     }
 }
 
@@ -81,8 +30,80 @@ struct ActionBar<Content: View>: View {
             .tint(.fjord)
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
-            .background(Color.paper)
-            .overlay(alignment: .top) { Color.hairline.frame(height: 0.5) }
+            .background(.bar)
+    }
+}
+
+enum FlowMotion {
+    static var navigation: Animation {
+        UIAccessibility.isReduceMotionEnabled ? .linear(duration: 0.12) : .smooth(duration: 0.34)
+    }
+}
+
+struct FlowProgress: View {
+    @Environment(\.dynamicTypeSize) private var textSize
+    let step: Int
+    private let titles = ["Hide", "Watermark", "Share"]
+    var body: some View {
+        VStack(spacing: 8) {
+            HStack(spacing: 12) {
+                ForEach(0..<3) { index in
+                    VStack(alignment: .leading, spacing: 8) {
+                        Capsule().fill(index <= step ? Color.fjord : Color.hairline).frame(height: 3)
+                        if !textSize.isAccessibilitySize {
+                            Text(titles[index]).font(.caption.weight(index == step ? .semibold : .regular))
+                                .foregroundStyle(index == step ? Color.ink : Color.muted)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+            if textSize.isAccessibilitySize {
+                HStack {
+                    Text(titles[step]).foregroundStyle(Color.ink)
+                    Spacer()
+                    Text("\(step + 1) / 3").monospacedDigit().foregroundStyle(Color.muted)
+                }
+                .font(.caption)
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Step \(step + 1) of 3, \(titles[step])")
+    }
+}
+
+/// An abstract document, not a stored identity or a third-party illustration.
+struct IdentityCardArtwork: View {
+    var body: some View {
+        GeometryReader { geometry in
+            let w = geometry.size.width
+            ZStack(alignment: .topLeading) {
+                RoundedRectangle(cornerRadius: 18).fill(Color.hairline)
+                    .rotationEffect(.degrees(-5)).offset(x: -5, y: 5)
+                RoundedRectangle(cornerRadius: 18).fill(Color(white: 0.99))
+                    .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(Color.hairline, lineWidth: 1))
+                VStack(alignment: .leading, spacing: w * 0.09) {
+                    HStack {
+                        Text("ID").font(.system(size: w * 0.055, weight: .semibold, design: .monospaced))
+                        Spacer()
+                        Image(systemName: "checkmark.shield").font(.system(size: w * 0.07, weight: .light))
+                    }
+                    .foregroundStyle(Color(red: 0.14, green: 0.31, blue: 0.38))
+                    HStack(alignment: .top, spacing: w * 0.08) {
+                        RoundedRectangle(cornerRadius: 3).fill(Color.mask).frame(width: w * 0.23, height: w * 0.29)
+                        VStack(alignment: .leading, spacing: w * 0.045) {
+                            Capsule().fill(Color.hairline).frame(width: w * 0.35, height: w * 0.018)
+                            RoundedRectangle(cornerRadius: 2).fill(Color.mask).frame(width: w * 0.25, height: w * 0.04)
+                            Capsule().fill(Color.hairline).frame(width: w * 0.29, height: w * 0.018)
+                            RoundedRectangle(cornerRadius: 2).fill(Color.mask).frame(width: w * 0.32, height: w * 0.04)
+                        }
+                    }
+                }
+                .padding(w * 0.09)
+            }
+        }
+        .aspectRatio(1.586, contentMode: .fit)
+        .accessibilityHidden(true)
     }
 }
 

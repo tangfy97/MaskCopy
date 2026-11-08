@@ -1,4 +1,10 @@
-# Releasing Maske
+# Releasing MaskCopy
+
+## MaskCopy name (build 6)
+
+The owner approved MaskCopy. The GitHub repository and installed product/display name have been renamed. Keep bundle ID `com.feiyangtang.Maske`, app ID 6832059753, and the current TestFlight app record. Internal project/scheme/module names remain Maske. The product is now MaskCopy.app, while the release script's archive container remains `build/appstore/Maske.xcarchive`.
+
+Requested App Store Connect title: **MaskCopy: Safe ID Copies**. The browser tools still reported local browser use disabled after the owner enabled settings; the owner chose to perform the backend rename themselves. This metadata change is pending confirmation and is not done by uploading a differently named bundle. Do not create a new app record.
 
 ## Every build
 
@@ -17,6 +23,8 @@ Build 4 upload completed at 01:49 Amsterdam time on 8 November. Xcode reported `
 
 Build 5 upload completed at 11:54 Amsterdam time on 8 November. Xcode reported `Upload succeeded`, `Uploaded package is processing` and `EXPORT SUCCEEDED`. Ready to Test / installation availability has not been confirmed. Its actual archive is 0.1.0 (5), bundle com.feiyangtang.Maske; strict signature verification passed, the compiled AppIcon includes a 1024 × 1024 image, and no fixtures or test bundles are embedded. Icon artwork is unchanged. App/UI, accessibility-size and keyboard verification is recorded in [AUDIT.md](AUDIT.md).
 
+Build 6 upload completed at 13:26 Amsterdam time on 8 November. Xcode reported `Upload succeeded`, `Uploaded package is processing` and `EXPORT SUCCEEDED`. Ready to Test is unconfirmed. The signed archive identifies itself as MaskCopy, version 0.1.0 (6), bundle `com.feiyangtang.Maske`; strict signature verification passed, the compiled AppIcon includes 1024 × 1024 pixels, and no fixtures or test bundles are embedded. Icon artwork is unchanged. App Store Connect metadata still requires the owner’s separate rename.
+
 Run `scripts/ui-check.sh` on a booted Simulator for the editor/export regression before a UI release. The build 4 checks are recorded in KNOWN_ISSUES; the iOS Simulator still misses the photo and MRZ of one synthetic Chinese passport turned 90°, while the Mac passes that case.
 
 ## One-time setup
@@ -27,7 +35,7 @@ Run `scripts/ui-check.sh` on a booted Simulator for the editor/export regression
 | Bundle ID `com.feiyangtang.Maske` | Registered by the first archive (`-allowProvisioningUpdates`) |
 | App record | Created 7 November 2026, Apple ID 6832059753 |
 | TestFlight | Internal group TangSpark, automatic distribution on, Feiyang Tang added |
-| Builds uploaded | 0.1.0 (1) and (2), 7 November; (3), (4) and (5), 8 November 2026 |
+| Builds uploaded | 0.1.0 (1) and (2), 7 November; (3), (4), (5) and (6), 8 November 2026 |
 | Developer Program License Agreement | An update was waiting for the account holder to accept (needed before App Review; not needed for internal TestFlight) |
 | Export compliance | `ITSAppUsesNonExemptEncryption` is NO in `project.yml` |
 
@@ -36,7 +44,7 @@ Run `scripts/ui-check.sh` on a booted Simulator for the editor/export regression
 | Field | Value |
 |---|---|
 | Platform | iOS |
-| Name | Maske: Privacy-First ID Copy |
+| Last confirmed name | Maske: Privacy-First ID Copy; owner will change to MaskCopy: Safe ID Copies |
 | Bundle ID | `com.feiyangtang.Maske` |
 | SKU | `maske-ios` |
 | Primary language | English (U.S.) |
@@ -50,4 +58,4 @@ Before submitting for review: screenshots, description, support and privacy URLs
 
 ## Notes for App Review (draft)
 
-Maske reads identity documents only on the device, with Apple's Vision framework, to suggest which parts to hide. It has no networking code and keeps nothing after sharing. To test without a document, use any of the synthetic images made by `maske fixtures` (made-up people) from the Photos picker.
+MaskCopy reads identity documents only on the device, with Apple's Vision framework, to suggest which parts to hide. It has no networking code and keeps nothing after sharing. To test without a document, use any of the synthetic images made by `maske fixtures` (made-up people) from the Photos picker.

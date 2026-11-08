@@ -1,4 +1,4 @@
-# Maske — development notes
+# MaskCopy — development notes
 
 ## How the engine works
 
@@ -68,3 +68,11 @@ The exported JPEG has a wrapping recipient/purpose/date footer outside the docum
 - The drawn portraits in the synthetic documents aren't faces to Vision; the photo on ID cards is only found when a real face is there.
 - Signatures are not detected; draw a box.
 - No reading of the chip (NFC): it isn't needed to make a copy.
+
+## MaskCopy workflow (build 6)
+
+The installed product is MaskCopy.app; the legacy project, target, modules and bundle ID stay stable. Session.Step now includes review, share (watermark entry) and preview (final copy). Watermark text is local state until leaving that screen or preparing a copy. `Session.prepareCopy` owns background rendering and a cache stamp containing the document ID, page revisions and trimmed input. Old/cancelled work cannot publish; page edits invalidate the image. The date is fixed for the session. The ready screen retains its rendered image while navigating away, and its own privacy cover shields it when inactive.
+
+DocumentViewport wraps UIScrollView with an installed UIImageView, a vector overlay and four native corner controls. UIScrollView applies zoom transforms rather than relaying out a resizable SwiftUI bitmap. Inverse handle transforms preserve a 44-point hit target while zooming. Pan deltas convert through image coordinates and remain clamped/convex. Native double-tap and pinch are covered by UI checks.
+
+Renderer paints opaque charcoal, then draws the watermark in dark ink on the document and light ink clipped to redactions. Recipient, purpose and date stay inside each page. `RenderCopy` signposts expose timing without document contents. The copy stays in memory until Share creates a metadata-free JPEG.

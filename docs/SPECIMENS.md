@@ -1,6 +1,6 @@
 # Test images
 
-Maske is tested on three kinds of images. Real people's documents are never among them.
+MaskCopy is tested on three kinds of images. Real people's documents are never among them.
 
 | Kind | Where | Committed? |
 |---|---|---|

@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct MaskeApp: App {
+struct MaskCopyApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
@@ -19,6 +19,7 @@ struct RootView: View {
                     switch step {
                     case .review: ReviewView()
                     case .share: ShareView()
+                    case .preview: ReadyCopyView()
                     case .supported: SupportedView()
                     }
                 }

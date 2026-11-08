@@ -24,8 +24,11 @@
 		6D99FFE7F6505551DA237AE7 /* Labels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3373E6F28AAFDECBC6B70F37 /* Labels.swift */; };
 		80431E25C243ECC1BAD84857 /* JourneyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0258ACF72C2640B9F0C509C /* JourneyUITests.swift */; };
 		8AF5AAD0F06C44730FA78466 /* Text.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BDFFEEDCAECC25954CA96B /* Text.swift */; };
+		8F3C72AA8D8F0F7830D17F6B /* DocumentViewport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A69B0238E42D019895765C /* DocumentViewport.swift */; };
+		9DD61B7C3D0F28601959ACEF /* PerformanceUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81A068DD303F8A141291FC33 /* PerformanceUITests.swift */; };
 		A4C7748890227CB99CE8A98E /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D3E578DF32764805FAE2B0D /* HomeView.swift */; };
 		AE21FBACAB12F8476DAD8D73 /* MRZ.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6118F749B0DDE1EFD59DC94 /* MRZ.swift */; };
+		C3FC08AE6EA9CDFD2D44908C /* ImportUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A319E54621E3ACBE494106EE /* ImportUITests.swift */; };
 		CFD3F7E84FD655FDE6CC4FA3 /* Portraits.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B34BA5D28224147AA0D1811 /* Portraits.swift */; };
 		D16E2BA61B55A10B6F515175 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E11C768EF1D07A0AF788F0 /* Theme.swift */; };
 		DDC34D8459428C75C8BD56C6 /* MaskEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37B542DC651FAED01390CF98 /* MaskEditorView.swift */; };
@@ -57,6 +60,7 @@
 		039A8A75CD2259FBEEE3EF9B /* MaskeAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = MaskeAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		082B5E48B442BD50BC7ABAD5 /* ReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewView.swift; sourceTree = "<group>"; };
 		0B34BA5D28224147AA0D1811 /* Portraits.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Portraits.swift; sourceTree = "<group>"; };
+		13A69B0238E42D019895765C /* DocumentViewport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentViewport.swift; sourceTree = "<group>"; };
 		2D37A1202A7C3F4D642FD5B5 /* Maske.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Maske.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		32F3C0064D953D0A3D3A9E6A /* Rectifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rectifier.swift; sourceTree = "<group>"; };
 		3373E6F28AAFDECBC6B70F37 /* Labels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Labels.swift; sourceTree = "<group>"; };
@@ -69,12 +73,14 @@
 		6FAF5B4C9BC182DCCC4351B3 /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		78F729484B3006C05C146C5A /* MaskEditorUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskEditorUITests.swift; sourceTree = "<group>"; };
 		7D3E578DF32764805FAE2B0D /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		81A068DD303F8A141291FC33 /* PerformanceUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceUITests.swift; sourceTree = "<group>"; };
 		8366745B1FCCBCF5AF035B2B /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
 		84C4DEE6B3FEB13528E375ED /* Importing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Importing.swift; sourceTree = "<group>"; };
 		8F3481634B11340140A83E4E /* InkFit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InkFit.swift; sourceTree = "<group>"; };
 		94BDFFEEDCAECC25954CA96B /* Text.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Text.swift; sourceTree = "<group>"; };
 		9ADB22430D0E902F29E13B6A /* Countries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Countries.swift; sourceTree = "<group>"; };
 		9D7CF6275B74A8E6DBAF3395 /* MaskeUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = MaskeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A319E54621E3ACBE494106EE /* ImportUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportUITests.swift; sourceTree = "<group>"; };
 		B3BDA47AFB011977147143FC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C2E11C768EF1D07A0AF788F0 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		D0258ACF72C2640B9F0C509C /* JourneyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyUITests.swift; sourceTree = "<group>"; };
@@ -127,8 +133,10 @@
 		5697EA3B725AB8240F77C200 /* MaskeUITests */ = {
 			isa = PBXGroup;
 			children = (
+				A319E54621E3ACBE494106EE /* ImportUITests.swift */,
 				D0258ACF72C2640B9F0C509C /* JourneyUITests.swift */,
 				78F729484B3006C05C146C5A /* MaskEditorUITests.swift */,
+				81A068DD303F8A141291FC33 /* PerformanceUITests.swift */,
 			);
 			name = MaskeUITests;
 			path = Tests/MaskeUITests;
@@ -158,6 +166,7 @@
 		9F15940E115945EDE9B6E460 /* MaskeApp */ = {
 			isa = PBXGroup;
 			children = (
+				13A69B0238E42D019895765C /* DocumentViewport.swift */,
 				7D3E578DF32764805FAE2B0D /* HomeView.swift */,
 				84C4DEE6B3FEB13528E375ED /* Importing.swift */,
 				F5EB8B3859559C90CC3E7498 /* MaskeApp.swift */,
@@ -284,8 +293,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C3FC08AE6EA9CDFD2D44908C /* ImportUITests.swift in Sources */,
 				80431E25C243ECC1BAD84857 /* JourneyUITests.swift in Sources */,
 				0998FDEBF0626664C9352C75 /* MaskEditorUITests.swift in Sources */,
+				9DD61B7C3D0F28601959ACEF /* PerformanceUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -304,6 +315,7 @@
 				484EBB52C36D2E3AFA4A8235 /* Analyzer.swift in Sources */,
 				25A0B45328034FDCF79BADB2 /* Checksums.swift in Sources */,
 				2973A328ACEF5494DA5B0752 /* Countries.swift in Sources */,
+				8F3C72AA8D8F0F7830D17F6B /* DocumentViewport.swift in Sources */,
 				F2B5C49D74B70C712A87541E /* Geometry.swift in Sources */,
 				A4C7748890227CB99CE8A98E /* HomeView.swift in Sources */,
 				36E4348D129C97080220DEC1 /* Importing.swift in Sources */,
@@ -355,7 +367,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.feiyangtang.Maske.AppTests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Maske.app/Maske";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MaskCopy.app/MaskCopy";
 			};
 			name = Debug;
 		};
@@ -386,10 +398,10 @@
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = Maske;
+				INFOPLIST_KEY_CFBundleDisplayName = MaskCopy;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				INFOPLIST_KEY_NSCameraUsageDescription = "Maske uses the camera to scan your document. The scan stays on your iPhone.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "MaskCopy uses the camera to scan your document. The scan stays on your iPhone.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 TangSpark. Apache License 2.0.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -399,7 +411,8 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.feiyangtang.Maske;
-				PRODUCT_NAME = Maske;
+				PRODUCT_MODULE_NAME = Maske;
+				PRODUCT_NAME = MaskCopy;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -415,10 +428,10 @@
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = Maske;
+				INFOPLIST_KEY_CFBundleDisplayName = MaskCopy;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				INFOPLIST_KEY_NSCameraUsageDescription = "Maske uses the camera to scan your document. The scan stays on your iPhone.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "MaskCopy uses the camera to scan your document. The scan stays on your iPhone.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 TangSpark. Apache License 2.0.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -428,7 +441,8 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.feiyangtang.Maske;
-				PRODUCT_NAME = Maske;
+				PRODUCT_MODULE_NAME = Maske;
+				PRODUCT_NAME = MaskCopy;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -447,7 +461,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.feiyangtang.Maske.AppTests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Maske.app/Maske";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MaskCopy.app/MaskCopy";
 			};
 			name = Release;
 		};
@@ -502,7 +516,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -560,7 +574,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;

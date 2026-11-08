@@ -29,26 +29,13 @@ struct ReviewView: View {
             }
         }
         .background(Color.paper.ignoresSafeArea())
-        .navigationTitle("Review")
+        .navigationTitle("Hide details")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(session.analyzing)
         .toolbar {
             if session.analyzing {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { session.finish() } }
             } else {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        ForEach(session.kindsPresent, id: \.self) { kind in
-                            Toggle(isOn: Binding(get: { session.isOn(kind) }, set: { session.set(kind, on: $0) })) {
-                                Label(kind.title, systemImage: kind.symbol)
-                            }
-                            .accessibilityIdentifier("mask-type-\(kind.rawValue)")
-                        }
-                    } label: {
-                        Label("Masks", systemImage: "slider.horizontal.3")
-                    }
-                    .disabled(session.kindsPresent.isEmpty)
-                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.18)) { drawing.toggle() }
@@ -63,6 +50,7 @@ struct ReviewView: View {
     private var content: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
+                FlowProgress(step: 0)
                 header
 
                 if drawing {
@@ -76,12 +64,26 @@ struct ReviewView: View {
                 }
 
                 if session.kindsPresent.isEmpty { nothingFound }
+                else {
+                    VStack(spacing: 0) {
+                        ForEach(session.kindsPresent, id: \.self) { kind in
+                            Toggle(isOn: Binding(get: { session.isOn(kind) }, set: { session.set(kind, on: $0) })) {
+                                Label(kind.title, systemImage: kind.symbol)
+                            }
+                            .accessibilityIdentifier("mask-type-\(kind.rawValue)")
+                            .padding(.vertical, 12)
+                            if kind != session.kindsPresent.last { Divider() }
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .background(Color.card, in: RoundedRectangle(cornerRadius: 16))
+                }
             }
             .padding(20)
         }
         .safeAreaInset(edge: .bottom) {
             ActionBar {
-                Button { session.path.append(.share) } label: {
+                Button { withAnimation(FlowMotion.navigation) { session.path.append(.share) } } label: {
                     Text("Continue").frame(maxWidth: .infinity).foregroundStyle(Color.paper)
                 }
             }
@@ -128,6 +130,7 @@ struct ReviewView: View {
 struct PageCanvas: View {
     @Binding var page: Session.Page
     let drawing: Bool
+    @Namespace private var editorTransition
     @State private var drag: CGRect?
     @State private var editing: Finding?
 
@@ -202,6 +205,7 @@ struct PageCanvas: View {
                 }
             }
             .documentFrame()
+            .matchedTransitionSource(id: page.id, in: editorTransition)
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("page-canvas")
             .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(drawing ? Color.fjord : .clear, lineWidth: 2))
@@ -211,6 +215,7 @@ struct PageCanvas: View {
                         page.findings[index] = updated
                     }
                 }
+                .navigationTransition(.zoom(sourceID: page.id, in: editorTransition))
             }
     }
 

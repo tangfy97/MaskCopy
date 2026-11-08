@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Builds Maske for an iPhone, signed with the team's development certificate, then installs
+# Builds MaskCopy for an iPhone, signed with the team's development certificate, then installs
 # and opens it on the connected iPhone (USB, or the same Wi-Fi once paired in Xcode).
 #
 #   scripts/device.sh              the first connected iPhone
@@ -16,7 +16,7 @@ xcodebuild -project Maske.xcodeproj -scheme Maske -configuration Debug \
     -destination 'generic/platform=iOS' -derivedDataPath build/DerivedData \
     DEVELOPMENT_TEAM="$team" CODE_SIGN_STYLE=Automatic -allowProvisioningUpdates \
     -quiet build
-app=build/DerivedData/Build/Products/Debug-iphoneos/Maske.app
+app=build/DerivedData/Build/Products/Debug-iphoneos/MaskCopy.app
 codesign --verify --strict "$app"
 echo "Signed $app for team $team"
 [[ "$1" == "--build-only" ]] && exit 0
@@ -41,4 +41,4 @@ fi
 
 xcrun devicectl device install app --device "$device" "$app"
 xcrun devicectl device process launch --device "$device" com.feiyangtang.Maske
-echo "Maske is open on the iPhone"
+echo "MaskCopy is open on the iPhone"

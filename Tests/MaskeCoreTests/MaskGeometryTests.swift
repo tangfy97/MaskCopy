@@ -60,7 +60,7 @@ final class MaskGeometryTests: XCTestCase {
         XCTAssertFalse(Quad(tl: frame.tl, tr: frame.br, br: frame.tr, bl: frame.bl).isConvex)
     }
 
-    func testOpaqueMaskReplacesAllSourcePixelsAndFooterWraps() throws {
+    func testOpaqueMasksAndWatermarkOnEveryPage() throws {
         func page(_ level: CGFloat) throws -> CGImage {
             let context = try XCTUnwrap(CGContext(data: nil, width: 400, height: 250, bitsPerComponent: 8,
                                                  bytesPerRow: 400, space: CGColorSpaceCreateDeviceGray(),
@@ -71,20 +71,48 @@ final class MaskGeometryTests: XCTestCase {
         }
         let white = try page(1), black = try page(0)
         let masks = [Finding(kind: .photo, rect: CGRect(x: 0, y: 0, width: 1, height: 1))]
-        let a = try XCTUnwrap(Renderer.render(pages: [(white, masks)], watermark: nil))
-        let b = try XCTUnwrap(Renderer.render(pages: [(black, masks)], watermark: nil))
-        XCTAssertEqual(try XCTUnwrap(a.dataProvider?.data) as Data, try XCTUnwrap(b.dataProvider?.data) as Data)
-        let short = try XCTUnwrap(Renderer.render(pages: [(white, [])], watermark: Watermark(recipient: "Hotel Nord")))
-        let long = try XCTUnwrap(Renderer.render(pages: [(white, [])], watermark: Watermark(
-            recipient: String(repeating: "A long recipient name ", count: 8),
-            purpose: "Only for the reservation, with a purpose that must be kept in full")))
-        XCTAssertEqual(short.width, white.width)
-        XCTAssertGreaterThan(short.height, white.height)
-        XCTAssertGreaterThan(long.height, short.height)
-        let luma = try XCTUnwrap(Luma(long))
-        XCTAssertTrue((250..<luma.height - 16).contains { y in
-            (16..<luma.width - 16).contains { x in luma.at(CGFloat(x), CGFloat(y)) < 140 }
-        })
+        let mark = Watermark(recipient: "Hotel Nord", purpose: "Check-in only", date: Date(timeIntervalSince1970: 0))
+        for watermark in [nil, mark] {
+            let a = try XCTUnwrap(Renderer.render(pages: [(white, masks)], watermark: watermark))
+            let b = try XCTUnwrap(Renderer.render(pages: [(black, masks)], watermark: watermark))
+            XCTAssertEqual(try XCTUnwrap(a.dataProvider?.data) as Data, try XCTUnwrap(b.dataProvider?.data) as Data)
+        }
+        let plain = try XCTUnwrap(Luma(try XCTUnwrap(Renderer.render(pages: [(white, masks)], watermark: nil))))
+        XCTAssertLessThan(plain.at(100, 100), 70, "Redaction must be visibly dark, as well as opaque")
+        let single = try XCTUnwrap(Luma(try XCTUnwrap(Renderer.render(pages: [(white, masks)], watermark: mark))))
+        let pair = try XCTUnwrap(Luma(try XCTUnwrap(Renderer.render(pages: [(white, masks), (white, masks)], watermark: mark))))
+        XCTAssertEqual(pair.height, 250 * 2 + 400 / 24)
+        var lightPixels = 0
+        for y in 0..<250 {
+            for x in 0..<400 {
+                let value = single.at(CGFloat(x), CGFloat(y))
+                if value > 120 { lightPixels += 1 }
+                XCTAssertLessThanOrEqual(abs(Int(pair.at(CGFloat(x), CGFloat(y))) - Int(value)), 1)
+                XCTAssertLessThanOrEqual(abs(Int(pair.at(CGFloat(x), CGFloat(y + 250 + 400 / 24))) - Int(value)), 1)
+            }
+        }
+        XCTAssertGreaterThan(lightPixels, 300, "Watermark must remain visible over a masked photo")
+        XCTAssertTrue(mark.text.contains("Hotel Nord"))
+        XCTAssertTrue(mark.text.contains("Check-in only"))
+        XCTAssertTrue(mark.text.contains("1970"))
+        let long = try XCTUnwrap(Renderer.render(pages: [(white, masks)], watermark: Watermark(
+            recipient: String(repeating: "A long recipient name ", count: 8), purpose: "Reservation only")))
+        XCTAssertEqual(long.height, 250, "Watermark belongs inside the document, not in a removable footer")
+    }
+
+    func testMaskCannotPaintOutsideItsOwnPage() throws {
+        let context = try XCTUnwrap(CGContext(data: nil, width: 400, height: 250, bitsPerComponent: 8,
+                                             bytesPerRow: 400, space: CGColorSpaceCreateDeviceGray(),
+                                             bitmapInfo: CGImageAlphaInfo.none.rawValue))
+        context.setFillColor(gray: 1, alpha: 1)
+        context.fill(CGRect(x: 0, y: 0, width: 400, height: 250))
+        let page = try XCTUnwrap(context.makeImage())
+        let outside = Finding(kind: .custom, rect: CGRect(x: 0, y: -1, width: 1, height: 1.4))
+        let output = try XCTUnwrap(Renderer.render(pages: [(page, []), (page, [outside])], watermark: nil))
+        let luma = try XCTUnwrap(Luma(output))
+        XCTAssertGreaterThan(luma.at(200, 200), 250, "The first page must remain untouched")
+        XCTAssertGreaterThan(luma.at(200, 255), 250, "The page gap must remain untouched")
+        XCTAssertLessThan(luma.at(200, 300), 70, "The selected part of the second page must be hidden")
     }
 
     func testPortraitEstimateStopsAtAdjacentFieldColumn() {

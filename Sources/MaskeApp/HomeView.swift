@@ -8,42 +8,60 @@ struct HomeView: View {
     @State private var scanning = false
     @State private var importing = false
     @State private var photos: [PhotosPickerItem] = []
+    @State private var pendingScan: [UIImage]?
+    @State private var scanFailed = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        GeometryReader { geometry in
             ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    Text("New copy")
-                        .font(.title2.weight(.medium))
-                        .foregroundStyle(Color.ink)
-                        .padding(.bottom, 24)
-                    Button {
-                        scanning = true
-                    } label: {
-                        SourceRow(title: "Scan document", symbol: "doc.viewfinder")
+                VStack(spacing: 28) {
+                    VStack(spacing: 28) {
+                        IdentityCardArtwork()
+                            .frame(maxWidth: 310)
+                            .padding(.horizontal, 24)
+                        Text("Make an ID copy")
+                            .font(.largeTitle.weight(.semibold))
+                            .tracking(-0.8)
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(Color.ink)
                     }
-                    .disabled(!DocumentScanner.isAvailable)
-                    Divider().overlay(Color.hairline)
-                    PhotosPicker(selection: $photos, maxSelectionCount: 2, matching: .images) {
-                        SourceRow(title: "Choose photos", symbol: "photo.on.rectangle")
-                    }
-                    Divider().overlay(Color.hairline)
-                    Button {
-                        importing = true
-                    } label: {
-                        SourceRow(title: "Choose a file", symbol: "folder")
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: textSize.isAccessibilitySize ? 240 : max(240, geometry.size.height - 260))
+                    VStack(spacing: 14) {
+                        Button { scanning = true } label: {
+                            Group {
+                                if textSize.isAccessibilitySize { Text("Scan") }
+                                else { Label("Scan document", systemImage: "doc.viewfinder") }
+                            }
+                            .frame(maxWidth: .infinity).foregroundStyle(Color.paper)
+                        }
+                        .accessibilityLabel("Scan document")
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
+                        .disabled(!DocumentScanner.isAvailable)
+                        Group {
+                            if textSize.isAccessibilitySize {
+                                VStack(spacing: 12) { photoSource; fileSource }
+                            } else {
+                                HStack(spacing: 12) { photoSource; fileSource }
+                            }
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.large)
+                        Label("Only on your iPhone", systemImage: "lock")
+                            .font(.footnote)
+                            .foregroundStyle(Color.muted)
+                            .padding(.top, 8)
                     }
                 }
-                .buttonStyle(.plain)
                 .padding(.horizontal, 24)
-                .padding(.top, 32)
-                if textSize.isAccessibilitySize { privacyNote }
+                .padding(.bottom, 24)
             }
-            if !textSize.isAccessibilitySize { privacyNote }
+            .scrollBounceBehavior(.basedOnSize)
         }
         .background(Color.paper.ignoresSafeArea())
-        .navigationTitle("Maske")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationTitle("MaskCopy")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink(value: Session.Step.supported) {
@@ -51,20 +69,15 @@ struct HomeView: View {
                 }
             }
         }
-        .fullScreenCover(isPresented: $scanning) {
+        .fullScreenCover(isPresented: $scanning, onDismiss: finishScan) {
             DocumentScanner { images in
+                pendingScan = images
                 scanning = false
-                session.importImages {
-                    await Task.detached {
-                        let pages = images.compactMap { $0.upright() }
-                        return pages.count == images.count ? pages : []
-                    }.value
-                }
             } onCancel: {
                 scanning = false
             } onError: {
+                scanFailed = true
                 scanning = false
-                session.importFailed = true
             }
             .ignoresSafeArea()
             .privacyShield()
@@ -94,11 +107,30 @@ struct HomeView: View {
         }
     }
 
-    private var privacyNote: some View {
-        Label("On-device", systemImage: "lock")
-            .font(.footnote)
-            .foregroundStyle(Color.muted)
-            .padding(24)
-            .frame(maxWidth: .infinity, alignment: .leading)
+    private var photoSource: some View {
+        PhotosPicker(selection: $photos, maxSelectionCount: 2, matching: .images) {
+            Label("Photos", systemImage: "photo").frame(maxWidth: .infinity)
+        }
+        .accessibilityLabel("Choose photos")
     }
+
+    private var fileSource: some View {
+        Button { importing = true } label: {
+            Label("Files", systemImage: "folder").frame(maxWidth: .infinity)
+        }
+        .accessibilityLabel("Choose a file")
+    }
+
+    private func finishScan() {
+        if scanFailed { scanFailed = false; session.importFailed = true }
+        guard let images = pendingScan else { return }
+        pendingScan = nil
+        session.importImages {
+            await Task.detached {
+                let pages = images.compactMap { $0.upright() }
+                return pages.count == images.count ? pages : []
+            }.value
+        }
+    }
+
 }

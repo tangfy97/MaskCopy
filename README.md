@@ -1,25 +1,25 @@
-<p align="center"><img src="Design/AppIcon-1024.png" width="128" height="128" alt="Maske icon: a card with one line blacked out"></p>
+<p align="center"><img src="Design/AppIcon-1024.png" width="128" height="128" alt="MaskCopy icon: a card with one line blacked out"></p>
 
-# Maske
+# MaskCopy
 
-An iPhone app for sharing a copy of your passport, ID card or driving licence without giving away more than the other side needs. Scan the document, check what Maske covers, say who the copy is for, and share. *Maske* is Norwegian for "mask".
+An iPhone app for sharing a copy of your passport, ID card or driving licence without giving away more than the other side needs. Scan the document, check what MaskCopy covers, say who the copy is for, and share.
 
 - Suggests masks using passport machine-readable zones and country-specific rules for ID cards, residence permits and driving licences ([supported list](Sources/MaskeCore/Countries.swift)). Recognition varies by document version and photograph; review every copy before sharing
 - Covers the machine-readable zone, personal numbers (BSN, fødselsnummer, PESEL, codice fiscale, 身份证号, NRIC, MyKad and about 40 more, each checked by its check digit), document and licence numbers, the card access number, addresses, barcodes and the photo
 - Tap a box to adjust its corners with zoom, show or hide it, or draw your own
-- Opaque masks are painted into the pixels (never blurred). The recipient, purpose and date appear in a footer, with a light recipient watermark across each page. The copy is resized and has no metadata
+- Opaque masks are painted into the pixels (never blurred). The recipient, purpose and date are watermarked into every page. The copy is resized and has no metadata
 - Everything happens on the iPhone with Apple's Vision framework. No network code, accounts, analytics, third-party code or history. Temporary share files are removed when the session ends or the app next opens ([privacy policy](PRIVACY.md))
 
-**Status:** prototype 0.1.0, build 5 uploaded to App Store Connect (Apple reported Processing; TestFlight installation availability is not yet confirmed). Not yet on the App Store. What still goes wrong: [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md). What comes next: [docs/ROADMAP.md](docs/ROADMAP.md).
+**Status:** prototype 0.1.0, build 6 uploaded to App Store Connect (Apple reported Processing; TestFlight installation availability is not yet confirmed). Not yet on the App Store. What still goes wrong: [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md). What comes next: [docs/ROADMAP.md](docs/ROADMAP.md).
 
-**Working on Maske with a coding agent?** Start with [AGENTS.md](AGENTS.md): the rules, the map of the code, how to test, and what was learned so far.
+**Working on MaskCopy with a coding agent?** Start with [AGENTS.md](AGENTS.md): the rules, the map of the code, how to test, and what was learned so far.
 
 ## Build
 
 Requires Xcode 26 or later and [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`).
 
 ```sh
-scripts/build.sh      # the app for the iOS Simulator, in build/Maske.app
+scripts/build.sh      # the app for the iOS Simulator, in build/MaskCopy.app
 scripts/check.sh      # unit tests, then the engine against the synthetic documents
 scripts/ui-check.sh   # session, editing, keyboard and sharing checks on a booted Simulator
 scripts/device.sh     # signed build, installed and opened on the connected iPhone (Developer Mode on)

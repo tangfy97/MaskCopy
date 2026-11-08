@@ -1,27 +1,24 @@
-# Interface direction
+# MaskCopy interface
 
-Maske is a private document tool. The document and the next action take priority. The owner asked for a quieter Nordic character, more usable interactions and very little explanation text.
+The owner rejected build 5's flat landing list and hidden mask menu. Revision 6 uses a focused ID-copy workflow, informed by the actual official KopieID screenshots and MaskID's published functionality. Competitor assets and code are not included.
 
-## Visual roles
+## Journey
 
-- Use SF system typography and native navigation. Large title for the app's entry screen, inline titles for tasks, body text for actions and values, subheadline/caption for context. No custom display font or marketing headline.
-- Use the semantic colours in Theme.swift: cool paper, white/dark surface, graphite text, readable muted text and one grey-blue accent. The opaque export mask colour remains separate from interface colours.
-- Keep source choices and input rows flat and aligned. Use thin rules where grouping needs them. Document previews have a small edge radius and hairline, without floating-card shadows.
-- At accessibility text sizes, stack input labels and document types vertically. Keep source choices and their footer in the same scrollable area. Omit source-row symbols at those sizes and keep other decorative symbols compact so that text has room to grow.
-- Use standard spacing roles: 8–12 points within controls, 20–24 at screen edges, 28 between task groups. Source rows and editor handles have touch-friendly targets. A small text mask is selected by its nearest edge within 22 points; its exported geometry is unchanged.
+- Home: an abstract, clearly redacted document; one primary Scan action; secondary Photos and Files. No slogan, tutorial, recent-document library or explanatory paragraph.
+- Hide: document first, directly visible native field switches, optional Add box and precise corner editing. The reviewed polygons remain the export polygons.
+- Watermark: recipient, purpose and date. Input stays local to this screen. Next/Done and focus scrolling support the keyboard. No bitmap rendering runs while typing.
+- Share: generate the immutable copy in the background before navigating here. Show those exact pixels in a native zooming viewport, with one Share action. Returning to edit preserves the draft; matching copies are reused. Only Share writes a JPEG.
 
-## Interaction roles
+## Visual and motion roles
 
-- Home presents three sources directly. No introduction, tutorial or permanent history.
-- Review keeps the document prominent. Bulk mask switches live in the native Masks menu. Tapping a mask opens its editor; drawing a new mask opens that editor for precise adjustment.
-- Use native scrolling, keyboard behaviour, menus and sheet transitions. Custom drawing-mode feedback uses a short fade and respects Reduce Motion. Corner dragging tracks the gesture directly.
-- Importing and recognition acknowledge work immediately, allow Cancel, and discard late results from an old session. A currently running Vision request may finish offscreen; further pages are skipped.
-- Share keeps the preview in memory and writes a JPEG only when Share copy is tapped. The active recipient, purpose and mask revision must match the rendered preview before sharing is enabled. The preview itself opens a zoomable inspector.
-- While entering copy details, the keyboard owns the bottom area. Next moves from Recipient to Purpose; the focused row scrolls above the keyboard. Done dismisses the keyboard and restores Share copy.
-- Use native alerts for actual failures, with a short recovery action. Preserve input on share failures. Privacy covers apply to document screens and modal previews when the scene is inactive.
+Theme.swift owns the warm paper/graphite/deep blue palette, system typography, restrained document motif and shared controls. Physical document artwork stays light in dark mode, so its dark masks remain apparent. Short labels explain actions; progress uses Hide / Watermark / Share. Accessibility sizes show the current stage and count instead of squeezing three labels, stack source choices and dates, and shorten primary labels without reducing the selected text size.
 
-## Verification
+Opaque charcoal replaces the pale blue-grey redaction. A single diagonal recipient/purpose/date block is burned into every page. Text is dark over the document and light where it intersects masks, so unmasked text remains readable. There is no detachable watermark footer, dense repeating pattern or recoverable blur.
 
-Run scripts/ui-check.sh for app-state regressions and the complete synthetic UI journey. Inspect the attached screenshots at normal and accessibility text sizes, in light and dark appearance, and on a compact iPhone. Run scripts/check.sh before committing. Source images used for UI checks are generated fixtures only.
+Forward/back changes use the native navigation stack with explicit animated path mutations. The document is the source of the native iOS 18 zoom transition into its editor. Scan decoding begins after the camera cover dismisses. UIKit's UIScrollView owns pinch, momentum and double-tap zoom; the bitmap is installed once rather than resized on every slider tick. Corner controls retain 44-point screen targets at every zoom and update the polygon directly. No opacity animation weakens a redaction. Reduce Motion selects a gentler navigation animation, and native scroll/zoom transitions remain system-owned.
 
-The direction follows Apple's guidance on [purposeful, interruptible motion](https://developer.apple.com/design/human-interface-guidelines/motion) and [honest progress with cancellation](https://developer.apple.com/design/human-interface-guidelines/progress-indicators). It does not imply measured frame-rate improvements or a complete accessibility certification.
+## Product distinction and limits
+
+MaskID already offers on-device OCR, manual masking, watermarks, flattened exports and metadata checks. Those are shared capabilities, not unique advantages. MaskCopy focuses on country/document-specific geometry, MRZ and number checks, complete photo rectangles and secondary portraits/windows, followed by precise review. Its current specimen coverage and recognition failures are in KNOWN_ISSUES. No claim of superior accuracy or universal performance is supported by the current evidence.
+
+Verification and measured performance are in AUDIT.md. Physical-camera behavior, frame pacing on an iPhone and manual VoiceOver use still require device testing. Official motion reference: https://developer.apple.com/videos/play/wwdc2024/10145/ .
