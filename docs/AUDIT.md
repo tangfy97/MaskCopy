@@ -1,5 +1,11 @@
 # Interface and usability verification
 
+## Unreleased: compact brand header and privacy-logo studies
+
+The owner rejected the oversized brand title and requested privacy-focused logo alternatives. Home now has a 40-point leading card mark, with an accessible MaskCopy name and no decorative glass-button background. Review, Watermark, Your copy and Documents use compact native inline titles. Theme’s mark now includes the original artwork’s lower visible line. The installed AppIcon and build number remain unchanged; three native vector-path studies are proposals in Design/Studies/2026-11-08.
+
+On the iPhone 18 Pro Simulator, `CompactTitles.xcresult` passed Home/Documents/search and review→watermark→copy→zoom→Close (2/2). Visual inspection found that the decorative logo initially inherited a misleading glass background; this was explicitly hidden. `FinalHeader.xcresult` then passed the affected Home/Documents/search journey (1/1). Both result bundles report no runtime warnings. Final Home and compact review captures were inspected and kept under build/BrandStudy. These focused light-mode checks do not establish dark/maximum-text layout, VoiceOver navigation or real-device performance for this change. The logo comparison was inspected at large and small sizes; B’s lock detail is intentionally documented as weaker when small.
+
 ## Build 8: researched Liquid Glass alignment
 
 Research consulted Apple's WWDC26 Design guide, current Materials HIG, Adopting Liquid Glass, Applying Liquid Glass to custom views, the WWDC25 new-design-system transcript and the installed iOS 27.2 SDK interfaces. The detailed sources and decisions are in `docs/plans/2026-11-08-liquid-glass-design.md`. Key interpretation: glass is a functional layer, and stronger leading typography applies to key situations rather than every control/title.

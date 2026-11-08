@@ -332,6 +332,10 @@ struct Mark: View {
                 .fill(Color.ink.opacity(0.35))
                 .frame(width: s * 0.32, height: s * 0.05)
                 .offset(x: s * 0.45, y: s * 0.38)
+            RoundedRectangle(cornerRadius: s * 0.02)
+                .fill(Color.ink.opacity(0.35))
+                .frame(width: s * 0.74, height: s * 0.05)
+                .offset(x: s * 0.13, y: s * 0.48)
         }
         .frame(width: s, height: s * 0.66, alignment: .topLeading)
         .accessibilityHidden(true)

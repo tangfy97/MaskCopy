@@ -30,7 +30,7 @@ struct ReviewView: View {
         }
         .background(Color.paper.ignoresSafeArea())
         .navigationTitle("Hide details")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(session.analyzing)
         .toolbar {
             if session.analyzing {

@@ -2,6 +2,11 @@
 
 All notable changes to MaskCopy are listed here. Versions follow [Semantic Versioning](https://semver.org).
 
+## Unreleased
+
+- Replace Home’s oversized brand title with a small accessible card logo; use compact native titles throughout the document workflow. Keep the decorative logo outside glass button backgrounds.
+- Add three reproducible privacy-logo studies for owner comparison, including dark and small-size variants. Production AppIcon remains unchanged.
+
 ## [0.1.0] - 2026-11-08
 
 Build 8: native Liquid Glass alignment. Uploaded 8 November at 17:36 Amsterdam time; Apple reports Processing. Installation availability is not yet confirmed.

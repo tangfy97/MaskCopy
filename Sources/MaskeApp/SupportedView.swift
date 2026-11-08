@@ -47,7 +47,7 @@ struct SupportedView: View {
         .scrollContentBackground(.hidden)
         .background(Color.paper.ignoresSafeArea())
         .navigationTitle("Documents")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $query, prompt: "Search countries")
     }
 }

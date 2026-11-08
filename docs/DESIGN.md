@@ -4,7 +4,7 @@ Revision 8 aligns the existing minimal workflow with Apple's current Liquid Glas
 
 ## Native material and navigation
 
-Home uses the system inline-large leading title. Scrollable content uses native large titles and system collapse; the corner editor keeps the standard inline Cancel/Save arrangement. Apple's leading-typography guidance covers key moments such as alerts/onboarding, rather than requiring every navigation title or control to align left.
+After the owner rejected the oversized brand title, Home uses a small leading card mark without a glass-button background. The mark is decorative, with an accessible MaskCopy name. Functional screens use compact native inline titles; the corner editor keeps the standard Cancel/Save arrangement. Apple's leading-typography guidance covers key moments such as alerts/onboarding, rather than requiring every navigation title or control to align left.
 
 On iOS 26 and newer, source and action buttons use glass/glassProminent styles. The framework owns touch highlights, vibrancy, shape and motion. Related controls use GlassEffectContainer; bottom controls use safeAreaBar for the system scroll edge. Remove the old opaque footer backing. A single regular-glass editing surface groups zoom, Hide and Reset. Document pixels, redactions, watermark and form content use their original content surfaces.
 
@@ -14,7 +14,9 @@ Sources: [WWDC26 Design](https://developer.apple.com/wwdc26/guides/design/), [Ma
 
 ## Home and icon language
 
-Home contains a native leading brand title, one central Scan control and lightweight Photos/Files actions. No hero illustration, large cards, slogan, tutorial or introductory heading. The supported list is behind the native information control. At accessibility sizes the source actions may stack and the whole layout can scroll without shrinking the selected text size.
+Home contains a 40-point leading brand mark, one central Scan control and lightweight Photos/Files actions. No large brand text, hero illustration, large cards, slogan, tutorial or introductory heading. The supported list is behind the native information control. At accessibility sizes the source actions may stack and the whole layout can scroll without shrinking the selected text size.
+
+Three privacy-logo proposals are in `Design/Studies/2026-11-08`, rendered reproducibly by `scripts/brand-study.swift`. A replaces the portrait with a lock; B integrates a negative-space lock into the redaction; C adds a larger corner lock. They are proposals for comparison, not the installed AppIcon. Keep the existing production artwork until a direction is selected.
 
 Three source symbols share a 24-point drawing grid, round joins and consistent stroke ratios. The scan symbol contains an ID card with a redacted line, keeping the product identity inside a functional control. Icons have accessible names, and the brief Scan/Photos/Files labels make the choices recognizable. Existing system icons remain for familiar editing and export actions.
 

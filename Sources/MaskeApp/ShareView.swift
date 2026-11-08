@@ -47,7 +47,7 @@ struct ShareView: View {
         .scrollDismissesKeyboard(.interactively)
         .background(Color.paper.ignoresSafeArea())
         .navigationTitle("Watermark")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .floatingBar {
             if focus == nil {
                 ActionBar {
@@ -144,7 +144,7 @@ struct ReadyCopyView: View {
         }
         .background(Color.paper.ignoresSafeArea())
         .navigationTitle("Your copy")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Close") { session.finish() } } }
         .floatingBar {
             ActionBar {
