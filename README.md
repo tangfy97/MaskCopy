@@ -4,13 +4,13 @@
 
 An iPhone app for sharing a copy of your passport, ID card or driving licence without giving away more than the other side needs. Scan the document, check what Maske covers, say who the copy is for, and share. *Maske* is Norwegian for "mask".
 
-- Works with documents from any country: passports through the machine-readable zone, and European ID cards, residence permits and driving licences checked field by field, along with documents from the US, Canada, Mexico, Australia, New Zealand, China, Hong Kong, Taiwan, Japan, South Korea, Singapore and Malaysia ([full list](Sources/MaskeCore/Countries.swift))
+- Suggests masks using passport machine-readable zones and country-specific rules for ID cards, residence permits and driving licences ([supported list](Sources/MaskeCore/Countries.swift)). Recognition varies by document version and photograph; review every copy before sharing
 - Covers the machine-readable zone, personal numbers (BSN, fødselsnummer, PESEL, codice fiscale, 身份证号, NRIC, MyKad and about 40 more, each checked by its check digit), document and licence numbers, the card access number, addresses, barcodes and the photo
 - Tap a box to adjust its corners with zoom, show or hide it, or draw your own
 - Opaque masks are painted into the pixels (never blurred). The recipient, purpose and date appear in a footer, with a light recipient watermark across each page. The copy is resized and has no metadata
-- Everything happens on the iPhone with Apple's Vision framework. No network code, no accounts, no analytics, no third-party code, and nothing is kept after you share ([privacy policy](PRIVACY.md))
+- Everything happens on the iPhone with Apple's Vision framework. No network code, accounts, analytics, third-party code or history. Temporary share files are removed when the session ends or the app next opens ([privacy policy](PRIVACY.md))
 
-**Status:** prototype 0.1.0, uploaded to TestFlight (build 4). Not yet on the App Store. What still goes wrong: [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md). What comes next: [docs/ROADMAP.md](docs/ROADMAP.md).
+**Status:** prototype 0.1.0, build 5 uploaded to App Store Connect (Apple reported Processing; TestFlight installation availability is not yet confirmed). Not yet on the App Store. What still goes wrong: [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md). What comes next: [docs/ROADMAP.md](docs/ROADMAP.md).
 
 **Working on Maske with a coding agent?** Start with [AGENTS.md](AGENTS.md): the rules, the map of the code, how to test, and what was learned so far.
 
@@ -21,7 +21,7 @@ Requires Xcode 26 or later and [XcodeGen](https://github.com/yonaskolb/XcodeGen)
 ```sh
 scripts/build.sh      # the app for the iOS Simulator, in build/Maske.app
 scripts/check.sh      # unit tests, then the engine against the synthetic documents
-scripts/ui-check.sh   # mask editing and export on a booted iOS Simulator
+scripts/ui-check.sh   # session, editing, keyboard and sharing checks on a booted Simulator
 scripts/device.sh     # signed build, installed and opened on the connected iPhone (Developer Mode on)
 ```
 
@@ -45,6 +45,8 @@ In the simulator, which has no camera, launch with `-MaskeFixture /path/to/front
 | [docs/DECISIONS.md](docs/DECISIONS.md) | Why things are the way they are |
 | [docs/SPECIMENS.md](docs/SPECIMENS.md) | Test images: synthetic documents, PRADO, Wikimedia Commons |
 | [docs/APP_STORE.md](docs/APP_STORE.md) | Releasing, App Store Connect and TestFlight |
+| [docs/DESIGN.md](docs/DESIGN.md) | Native interface direction and interaction rules |
+| [docs/AUDIT.md](docs/AUDIT.md) | Rendered interface findings, fixes and verification limits |
 | [docs/user-journey.md](docs/user-journey.md) | The user journey (in Chinese) |
 
 ## License

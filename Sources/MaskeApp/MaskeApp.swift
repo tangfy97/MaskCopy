@@ -11,7 +11,6 @@ struct MaskeApp: App {
 
 struct RootView: View {
     @StateObject private var session = Session()
-    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         NavigationStack(path: $session.path) {
@@ -27,13 +26,17 @@ struct RootView: View {
         .environmentObject(session)
         .tint(.fjord)
         // Hide the document in the app switcher.
-        .overlay {
-            if scenePhase != .active && !session.pages.isEmpty {
-                ZStack {
-                    Color.paper.ignoresSafeArea()
-                    Mark(size: 72)
-                }
-            }
+        .privacyShield(session.hasDocument)
+        .onChange(of: session.path) { old, new in
+            if old.contains(.review), !new.contains(.review), session.hasDocument { session.clear() }
+        }
+        .alert("Couldn’t open document", isPresented: Binding(get: { session.importFailed }, set: { shown in
+            // The system may dismiss an alert while updating its presenter.
+            Task { @MainActor in session.importFailed = shown }
+        })) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Choose another photo or file.")
         }
         #if DEBUG
         .task { DebugLaunch.run(session) }

@@ -2,16 +2,26 @@ import SwiftUI
 
 struct ReviewView: View {
     @EnvironmentObject private var session: Session
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var textSize
     @State private var drawing = false
 
     var body: some View {
         Group {
             if session.analyzing {
-                VStack(spacing: 14) {
-                    ProgressView()
-                    Text("Reading document…")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
+                ScrollView {
+                    VStack(spacing: 28) {
+                        if let image = session.previewImage {
+                            Image(decorative: image, scale: 1)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .documentFrame()
+                        }
+                        ProgressView(session.progressTitle)
+                            .font(.subheadline)
+                            .foregroundStyle(Color.muted)
+                    }
+                    .padding(20)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
@@ -21,11 +31,27 @@ struct ReviewView: View {
         .background(Color.paper.ignoresSafeArea())
         .navigationTitle("Review")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(session.analyzing)
         .toolbar {
-            if !session.analyzing {
+            if session.analyzing {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { session.finish() } }
+            } else {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        ForEach(session.kindsPresent, id: \.self) { kind in
+                            Toggle(isOn: Binding(get: { session.isOn(kind) }, set: { session.set(kind, on: $0) })) {
+                                Label(kind.title, systemImage: kind.symbol)
+                            }
+                            .accessibilityIdentifier("mask-type-\(kind.rawValue)")
+                        }
+                    } label: {
+                        Label("Masks", systemImage: "slider.horizontal.3")
+                    }
+                    .disabled(session.kindsPresent.isEmpty)
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        withAnimation(.snappy) { drawing.toggle() }
+                        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.18)) { drawing.toggle() }
                     } label: {
                         if drawing { Text("Done").bold() } else { Label("Add box", systemImage: "plus.rectangle.on.rectangle") }
                     }
@@ -39,94 +65,62 @@ struct ReviewView: View {
             VStack(alignment: .leading, spacing: 18) {
                 header
 
+                if drawing {
+                    Label("Draw a box", systemImage: "hand.draw")
+                        .font(.footnote)
+                        .foregroundStyle(Color.fjord)
+                }
+
                 ForEach($session.pages) { $page in
                     PageCanvas(page: $page, drawing: drawing)
                 }
 
-                Text(drawing
-                     ? "Drag to add a box."
-                     : "Tap a box to adjust.")
-                    .font(.footnote)
-                    .foregroundStyle(drawing ? Color.fjord : .secondary)
-                    .animation(.default, value: drawing)
-
-                if !session.kindsPresent.isEmpty { toggles } else { nothingFound }
+                if session.kindsPresent.isEmpty { nothingFound }
             }
             .padding(20)
         }
         .safeAreaInset(edge: .bottom) {
-            Button {
-                session.path.append(.share)
-            } label: {
-                Text("Continue")
-                    .frame(maxWidth: .infinity)
-                    .foregroundStyle(Color.paper)
+            ActionBar {
+                Button { session.path.append(.share) } label: {
+                    Text("Continue").frame(maxWidth: .infinity).foregroundStyle(Color.paper)
+                }
             }
-            .buttonStyle(.borderedProminent)
-            .buttonBorderShape(.roundedRectangle(radius: 12))
-            .controlSize(.large)
-            .tint(.ink)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 10)
-            .background(Color.paper.opacity(0.94).ignoresSafeArea())
         }
     }
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 8) {
-                if let c = session.country { Text(c.flag) }
-                Text(session.kind.title)
-                if let c = session.country { Text("·").foregroundStyle(.secondary); Text(c.name()) }
+            Group {
+                if textSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(session.kind.title)
+                        if let c = session.country { Text(c.name()) }
+                    }
+                } else {
+                    HStack(spacing: 8) {
+                        Text(session.kind.title)
+                        if let c = session.country { Text("·"); Text(c.name()) }
+                    }
+                }
             }
-            .font(.title3.weight(.semibold))
-            .foregroundStyle(Color.ink)
+            .font(.subheadline)
+            .foregroundStyle(Color.muted)
             if session.country == nil || session.kind == .unknown {
                 Text("Not recognised. Add any missing boxes.")
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.muted)
             } else if session.country?.isSupported == false {
                 Label("Check all masks", systemImage: "exclamationmark.triangle")
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.muted)
             }
         }
-    }
-
-    private var toggles: some View {
-        VStack(spacing: 0) {
-            ForEach(session.kindsPresent, id: \.self) { kind in
-                Toggle(isOn: Binding(get: { session.isOn(kind) }, set: { on in withAnimation(.snappy) { session.set(kind, on: on) } })) {
-                    Label {
-                        HStack(spacing: 6) {
-                            Text(kind.title)
-                            if session.count(kind) > 1 {
-                                Text("\(session.count(kind))").foregroundStyle(.secondary).monospacedDigit()
-                            }
-                        }
-                    } icon: {
-                        Image(systemName: kind.symbol).foregroundStyle(Color.ink.opacity(0.7))
-                    }
-                }
-                .tint(.ink)
-                .padding(.vertical, 12)
-                .padding(.horizontal, 16)
-                if kind != session.kindsPresent.last {
-                    Divider().overlay(Color.hairline).padding(.leading, 52)
-                }
-            }
-        }
-        .background(Color.card, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Color.hairline))
     }
 
     private var nothingFound: some View {
-        Text("Add boxes to hide details.")
-            .font(.callout)
-            .foregroundStyle(.secondary)
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.card, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        Label("No masks found", systemImage: "rectangle.dashed")
+            .font(.subheadline)
+            .foregroundStyle(Color.muted)
     }
 }
 
@@ -157,7 +151,7 @@ struct PageCanvas: View {
                             }
                             .frame(width: size.width, height: size.height)
                             .contentShape(shape)
-                            .onTapGesture { editing = f }
+                            .onTapGesture { if !drawing { editing = f } }
                             .contextMenu {
                                 Button("Adjust box", systemImage: "arrow.up.left.and.arrow.down.right") {
                                     editing = f
@@ -174,6 +168,8 @@ struct PageCanvas: View {
                             .accessibilityLabel(Text(f.kind.title))
                             .accessibilityValue(Text(f.isOn ? "Hidden" : "Shown"))
                             .accessibilityAddTraits(.isButton)
+                            .accessibilityHint("Adjust mask")
+                            .accessibilityIdentifier("mask-\(f.kind.rawValue)")
                         }
                         if let d = drag {
                             RoundedRectangle(cornerRadius: 4)
@@ -192,17 +188,23 @@ struct PageCanvas: View {
                             .onEnded { _ in
                                 if let d = drag, d.width > 8, d.height > 8 {
                                     let n = CGRect(x: d.minX / size.width, y: d.minY / size.height, width: d.width / size.width, height: d.height / size.height)
-                                    page.findings.append(Finding(kind: .custom, rect: n, note: "drawn"))
+                                    let finding = Finding(kind: .custom, rect: n, note: "drawn")
+                                    page.findings.append(finding)
+                                    editing = finding
                                 }
                                 drag = nil
                             },
                         including: drawing ? .all : .subviews
                     )
+                    .simultaneousGesture(SpatialTapGesture().onEnded { value in
+                        if !drawing { editing = nearestMask(to: value.location, size: size) }
+                    })
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(drawing ? Color.fjord : Color.hairline, lineWidth: drawing ? 2 : 1))
-            .shadow(color: .black.opacity(0.06), radius: 12, y: 6)
+            .documentFrame()
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("page-canvas")
+            .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(drawing ? Color.fjord : .clear, lineWidth: 2))
             .sheet(item: $editing) { finding in
                 MaskEditorView(image: page.image, finding: finding) { updated in
                     if let index = page.findings.firstIndex(where: { $0.id == updated.id }) {
@@ -210,6 +212,25 @@ struct PageCanvas: View {
                     }
                 }
             }
+    }
+
+    /// Small text boxes are often shorter than a fingertip. Extend selection to the
+    /// nearest edge without enlarging the actual redaction or stealing nearby fields.
+    private func nearestMask(to point: CGPoint, size: CGSize) -> Finding? {
+        guard size.width > 0, size.height > 0 else { return nil }
+        let candidates = page.findings.map { finding -> (Finding, CGFloat, CGFloat) in
+            let quad = finding.shape.mapped { CGPoint(x: $0.x * size.width, y: $0.y * size.height) }
+            func distance(_ a: CGPoint, _ b: CGPoint) -> CGFloat {
+                let dx = b.x - a.x, dy = b.y - a.y
+                let t = min(1, max(0, ((point.x - a.x) * dx + (point.y - a.y) * dy) / max(1e-8, dx * dx + dy * dy)))
+                return dist(point, CGPoint(x: a.x + t * dx, y: a.y + t * dy))
+            }
+            let gap = quad.contains(point) ? 0 : (0..<4).map { distance(quad.points[$0], quad.points[($0 + 1) % 4]) }.min()!
+            return (finding, gap, quad.area())
+        }.filter { $0.1 <= 22 }
+        return candidates.min {
+            abs($0.1 - $1.1) > 0.5 ? $0.1 < $1.1 : $0.2 < $1.2
+        }?.0
     }
 }
 

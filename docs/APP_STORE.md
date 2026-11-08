@@ -15,6 +15,8 @@
 
 Build 4 upload completed at 01:49 Amsterdam time on 8 November. Xcode reported `Upload succeeded` and `Uploaded package is processing`. This confirms transfer, not Ready to Test or installation availability. Its signed archive was verified as 0.1.0 (4), with a 1024 px AppIcon and no specimen images or UI test bundle. The app icon artwork was not changed.
 
+Build 5 upload completed at 11:54 Amsterdam time on 8 November. Xcode reported `Upload succeeded`, `Uploaded package is processing` and `EXPORT SUCCEEDED`. Ready to Test / installation availability has not been confirmed. Its actual archive is 0.1.0 (5), bundle com.feiyangtang.Maske; strict signature verification passed, the compiled AppIcon includes a 1024 × 1024 image, and no fixtures or test bundles are embedded. Icon artwork is unchanged. App/UI, accessibility-size and keyboard verification is recorded in [AUDIT.md](AUDIT.md).
+
 Run `scripts/ui-check.sh` on a booted Simulator for the editor/export regression before a UI release. The build 4 checks are recorded in KNOWN_ISSUES; the iOS Simulator still misses the photo and MRZ of one synthetic Chinese passport turned 90°, while the Mac passes that case.
 
 ## One-time setup
@@ -25,7 +27,7 @@ Run `scripts/ui-check.sh` on a booted Simulator for the editor/export regression
 | Bundle ID `com.feiyangtang.Maske` | Registered by the first archive (`-allowProvisioningUpdates`) |
 | App record | Created 7 November 2026, Apple ID 6832059753 |
 | TestFlight | Internal group TangSpark, automatic distribution on, Feiyang Tang added |
-| Builds uploaded | 0.1.0 (1) and (2), 7 November; (3) and (4), 8 November 2026 |
+| Builds uploaded | 0.1.0 (1) and (2), 7 November; (3), (4) and (5), 8 November 2026 |
 | Developer Program License Agreement | An update was waiting for the account holder to accept (needed before App Review; not needed for internal TestFlight) |
 | Export compliance | `ITSAppUsesNonExemptEncryption` is NO in `project.yml` |
 

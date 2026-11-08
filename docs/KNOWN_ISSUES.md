@@ -9,6 +9,8 @@ In the 8 November specimen pass, the Mac covered 111/111 sensitive fields and pr
 
 Build 4 checks: 14 unit tests; 43/43 straight synthetic documents, 121/121 sensitive fields above the 98% coverage threshold, 96/96 kept, mean precision 0.96 (worst 0.75). The Mac angle check remains 84/84 sensitive and 63/63 kept; the Simulator remains 81/84 because of that 90° Chinese passport. The UI regression verifies direct editing, zoomed dragging after scrolling, Save, Cancel and export. The new editor also has its own inactive-scene privacy cover so its source image is shielded in the app switcher.
 
+Build 5 changes the interface and session flow, without changing the recognition engine. Core checks remained 14/14 tests and 43/43 synthetic documents (121/121 sensitive fields at the existing threshold, 96/96 kept). The full light-mode app/UI suite passed 11/11; four compact dark/maximum-text journeys passed. After the final focused-field scroll correction, both affected normal-size Share journeys and the compact keyboard/share journey passed again, including a check that the input stays fully above the keyboard. Final result bundles have no runtime warnings. See AUDIT.md for evidence and unverified device behavior.
+
 ## Open
 
 ### 1. Text recognition sometimes misses lines (most important)
@@ -59,6 +61,8 @@ Vision can read upside-down text, so choosing the turn from the strings alone ca
 ### 7. Speed
 
 Each photo is read quickly four times (once each way up) to find its orientation and outline, then accurately once or more. On a loaded Mac one page took about a minute. **Not measured on an iPhone.** **Next:** time it on a device; if slow, read two orientations first and only try the others when neither reads well.
+
+Build 5 moves import decoding off the main actor and adds immediate opening/reading feedback and cancellation. Cancellation discards late results and skips further pages; it does not interrupt an already running synchronous Vision request. No real-device frame-rate or recognition-time improvement has been measured. Scanner hardware, iCloud file-provider delays, manual VoiceOver and Reduce Motion setting checks remain device work; rendered Simulator checks are recorded in AUDIT.md.
 
 ### 8. Not covered at all yet
 

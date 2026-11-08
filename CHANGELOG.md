@@ -4,6 +4,15 @@ All notable changes to Maske are listed here. Versions follow [Semantic Versioni
 
 ## [0.1.0] - 2026-11-08
 
+Build 5: a quieter native interface and safer session flow.
+
+- Replace the branded landing layout and floating preview cards with flat source choices, system typography, a cool neutral palette and one grey-blue accent. Keep the document prominent and explanation text brief.
+- Move bulk mask switches into the native Masks menu. Make small masks easier to select and open the corner editor immediately after drawing a box.
+- Keep Share to two labelled fields and one action. Tap the preview to inspect the complete copy with zoom; search countries in Documents.
+- Decode imports off the main actor, show opening/reading progress and allow cancellation. Late import or recognition results cannot replace a newer session.
+- Bind previews to the current document, masks and recipient details. Render previews in memory and write a JPEG only for an explicit Share action. Clean abandoned temporary copies on the next launch.
+- Add app-state/file-lifecycle regressions and UI journeys for recovery, mask controls, keyboard entry and the native share sheet. The recognition engine and icon artwork are unchanged.
+
 Build 4: precise photo review and readable copies.
 
 - Tighten complete photo rectangles using verified frames, connected portrait pixels and neighbouring fields. Include pale shoulders on the Dutch D1 licence using its MRZ as a local anchor.

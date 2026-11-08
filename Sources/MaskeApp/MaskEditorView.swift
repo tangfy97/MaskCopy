@@ -3,7 +3,6 @@ import SwiftUI
 /// Adjust the actual export polygon at a useful scale, with the document kept in memory.
 struct MaskEditorView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.scenePhase) private var scenePhase
     let image: CGImage
     let finding: Finding
     let save: (Finding) -> Void
@@ -48,15 +47,7 @@ struct MaskEditorView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Image(systemName: "minus.magnifyingglass")
-                        Slider(value: $zoom, in: 1...8)
-                            .accessibilityLabel("Zoom")
-                        Image(systemName: "plus.magnifyingglass")
-                        Text("\(Int(zoom * 100))%")
-                            .monospacedDigit()
-                            .frame(width: 48, alignment: .trailing)
-                    }
+                    ZoomControls(zoom: $zoom)
                     HStack {
                         Toggle("Hide", isOn: $hidden)
                             .fixedSize()
@@ -92,14 +83,7 @@ struct MaskEditorView: View {
             }
         }
         .interactiveDismissDisabled()
-        .overlay {
-            if scenePhase != .active {
-                ZStack {
-                    Color.paper.ignoresSafeArea()
-                    Mark(size: 72)
-                }
-            }
-        }
+        .privacyShield()
     }
 
     private func handle(_ index: Int, size: CGSize) -> some View {

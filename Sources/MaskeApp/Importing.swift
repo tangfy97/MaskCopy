@@ -22,12 +22,15 @@ enum Importing {
     /// The first pages of a PDF (front and back is enough), rendered as images.
     static func images(fromPDF url: URL, maxPages: Int = 2) -> [CGImage] {
         guard let doc = PDFDocument(url: url) else { return [] }
-        return (0..<min(doc.pageCount, maxPages)).compactMap { i in
+        let count = min(doc.pageCount, maxPages)
+        let images: [CGImage] = (0..<count).compactMap { i in
             guard let page = doc.page(at: i) else { return nil }
             let bounds = page.bounds(for: .mediaBox)
+            guard bounds.width.isFinite, bounds.height.isFinite, bounds.width > 0, bounds.height > 0 else { return nil }
             let scale = 2200 / max(bounds.width, bounds.height)
             return page.thumbnail(of: CGSize(width: bounds.width * scale, height: bounds.height * scale), for: .mediaBox).upright()
         }
+        return images.count == count ? images : []
     }
 
     static func images(fromFile url: URL) -> [CGImage] {
@@ -41,8 +44,9 @@ enum Importing {
 
 /// The system document camera: finds the edges, straightens the page, and can take front and back.
 struct DocumentScanner: UIViewControllerRepresentable {
-    var onFinish: ([CGImage]) -> Void
+    var onFinish: ([UIImage]) -> Void
     var onCancel: () -> Void
+    var onError: () -> Void
 
     static var isAvailable: Bool { VNDocumentCameraViewController.isSupported }
 
@@ -56,17 +60,32 @@ struct DocumentScanner: UIViewControllerRepresentable {
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
+    static func dismantleUIViewController(_ controller: VNDocumentCameraViewController, coordinator: Coordinator) {
+        coordinator.delivered = true
+    }
+
     final class Coordinator: NSObject, VNDocumentCameraViewControllerDelegate {
         let parent: DocumentScanner
+        var delivered = false
         init(_ parent: DocumentScanner) { self.parent = parent }
 
         func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFinishWith scan: VNDocumentCameraScan) {
-            let pages = (0..<min(scan.pageCount, 4)).compactMap { scan.imageOfPage(at: $0).upright() }
-            parent.onFinish(pages)
+            guard !delivered else { return }
+            delivered = true
+            let images = (0..<min(scan.pageCount, 4)).map { scan.imageOfPage(at: $0) }
+            parent.onFinish(images)
         }
 
-        func documentCameraViewControllerDidCancel(_ controller: VNDocumentCameraViewController) { parent.onCancel() }
+        func documentCameraViewControllerDidCancel(_ controller: VNDocumentCameraViewController) {
+            guard !delivered else { return }
+            delivered = true
+            parent.onCancel()
+        }
 
-        func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFailWithError error: Error) { parent.onCancel() }
+        func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFailWithError error: Error) {
+            guard !delivered else { return }
+            delivered = true
+            parent.onError()
+        }
     }
 }

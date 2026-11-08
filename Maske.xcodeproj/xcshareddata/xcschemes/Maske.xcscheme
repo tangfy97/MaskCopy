@@ -29,6 +29,20 @@
             buildForAnalyzing = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "025F27439EF3BD9818CEDA27"
+               BuildableName = "MaskeAppTests.xctest"
+               BlueprintName = "MaskeAppTests"
+               ReferencedContainer = "container:Maske.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "ED6137151BB2DF9684B9E14D"
                BuildableName = "MaskeUITests.xctest"
                BlueprintName = "MaskeUITests"
@@ -53,6 +67,17 @@
          </BuildableReference>
       </MacroExpansion>
       <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "025F27439EF3BD9818CEDA27"
+               BuildableName = "MaskeAppTests.xctest"
+               BlueprintName = "MaskeAppTests"
+               ReferencedContainer = "container:Maske.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
          <TestableReference
             skipped = "NO"
             parallelizable = "NO">

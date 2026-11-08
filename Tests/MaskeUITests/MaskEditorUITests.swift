@@ -59,7 +59,8 @@ final class MaskEditorUITests: XCTestCase {
         app.buttons["Cancel"].tap()
         XCTAssertTrue(photo.waitForExistence(timeout: 5))
         app.buttons["Continue"].tap()
-        XCTAssertTrue(app.buttons["Share copy"].waitForExistence(timeout: 10))
+        let ready = XCTNSPredicateExpectation(predicate: NSPredicate(format: "enabled == true"), object: app.buttons["Share copy"])
+        wait(for: [ready], timeout: 10)
         let share = XCTAttachment(screenshot: app.screenshot())
         share.name = "New export preview"
         share.lifetime = .keepAlways

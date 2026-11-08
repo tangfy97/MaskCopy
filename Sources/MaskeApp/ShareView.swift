@@ -1,105 +1,227 @@
 import SwiftUI
+import UIKit
 
 struct ShareView: View {
     @EnvironmentObject private var session: Session
-    @State private var file: URL?
-    @State private var preview: UIImage?
+    @Environment(\.dynamicTypeSize) private var textSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var image: CGImage?
+    @State private var rendered: PreviewKey?
+    @State private var previewFailed = false
+    @State private var retry = 0
+    @State private var preparing = false
+    @State private var exportFailed = false
+    @State private var sharing: SharedCopy?
+    @State private var previewing = false
+    @State private var shareTask: Task<Void, Never>?
     @FocusState private var focus: Field?
 
     enum Field { case recipient, purpose }
+    private struct PreviewKey: Equatable {
+        var recipient: String
+        var purpose: String
+        var document: UUID
+        var pages: [UUID]
+        var retry: Int
+    }
+    private struct SharedCopy: Identifiable {
+        let id = UUID()
+        let url: URL
+    }
 
-    private var recipientMissing: Bool { session.recipient.trimmingCharacters(in: .whitespaces).isEmpty }
+    private var key: PreviewKey {
+        PreviewKey(recipient: session.recipient.trimmingCharacters(in: .whitespacesAndNewlines),
+                   purpose: session.purpose.trimmingCharacters(in: .whitespacesAndNewlines),
+                   document: session.documentID, pages: session.pages.map(\.revision), retry: retry)
+    }
+    private var ready: Bool { image != nil && rendered == key && !key.recipient.isEmpty }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 26) {
-                Group {
-                    if let preview {
-                        Image(uiImage: preview)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                    } else {
-                        Color.card.aspectRatio(1.5, contentMode: .fit).overlay(ProgressView())
+        ScrollViewReader { scroll in
+            ScrollView {
+                VStack(spacing: 28) {
+                    if image == nil { preview }
+                    else {
+                        Button { focus = nil; previewing = true } label: { preview }
+                            .buttonStyle(.plain)
+                            .disabled(rendered != key)
+                            .accessibilityLabel("Preview copy")
+                            .accessibilityValue(rendered == key ? "Up to date" : "Updating")
                     }
+                    VStack(spacing: 0) {
+                        DetailRow(title: "Recipient") {
+                            TextField("Required", text: $session.recipient)
+                                .focused($focus, equals: .recipient)
+                                .submitLabel(.next)
+                                .onSubmit { focus = .purpose }
+                                .accessibilityIdentifier("recipient-field")
+                        }
+                        .padding(.vertical, 18)
+                        .contentShape(Rectangle())
+                        .onTapGesture { focus = .recipient }
+                        .id(Field.recipient)
+                        Divider().overlay(Color.hairline)
+                        DetailRow(title: "Purpose") {
+                            TextField("Optional", text: $session.purpose)
+                                .focused($focus, equals: .purpose)
+                                .submitLabel(.done)
+                                .onSubmit { focus = nil }
+                                .accessibilityIdentifier("purpose-field")
+                        }
+                        .padding(.vertical, 18)
+                        .contentShape(Rectangle())
+                        .onTapGesture { focus = .purpose }
+                        .id(Field.purpose)
+                    }
+                    .textInputAutocapitalization(.words)
+                    .foregroundStyle(Color.ink)
                 }
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Color.hairline))
-                .shadow(color: .black.opacity(0.06), radius: 12, y: 6)
-                .frame(maxHeight: 300)
-                .frame(maxWidth: .infinity)
-
-                VStack(alignment: .leading, spacing: 18) {
-                    field("Recipient", text: $session.recipient, prompt: "Hotel, employer…", focus: .recipient)
-                    field("Purpose", text: $session.purpose, prompt: "Optional", focus: .purpose)
-                }
-
+                .padding(20)
             }
-            .padding(20)
+            .onChange(of: focus) { _, field in
+                if let field { reveal(field, using: scroll) }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in
+                if let focus { reveal(focus, using: scroll) }
+            }
         }
         .scrollDismissesKeyboard(.interactively)
         .background(Color.paper.ignoresSafeArea())
-        .navigationTitle("Watermark")
+        .navigationTitle("Share")
         .navigationBarTitleDisplayMode(.inline)
-        .safeAreaInset(edge: .bottom) { actions }
-        .task(id: "\(session.recipient)|\(session.purpose)") {
-            try? await Task.sleep(for: .milliseconds(250))
-            guard !Task.isCancelled else { return }
-            let pages = session.pages
-            let recipient = recipientMissing ? "…" : session.recipient
-            let purpose = session.purpose
-            let result = await Task.detached(priority: .userInitiated) {
-                Exporter.export(pages, recipient: recipient, purpose: purpose)
-            }.value
-            file = result?.0
-            preview = result?.1
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) { Button("Done") { session.finish() } }
         }
-        .onAppear { if recipientMissing { focus = .recipient } }
-    }
-
-    private func field(_ title: LocalizedStringKey, text: Binding<String>, prompt: LocalizedStringKey, focus f: Field) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Color.ink)
-            TextField(prompt, text: text)
-                .focused($focus, equals: f)
-                .submitLabel(f == .recipient ? .next : .done)
-                .onSubmit { focus = f == .recipient ? .purpose : nil }
-                .textInputAutocapitalization(.words)
-                .padding(.vertical, 12)
-                .padding(.horizontal, 14)
-                .background(Color.card, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(focus == f ? Color.fjord : Color.hairline))
-        }
-    }
-
-    private var actions: some View {
-        VStack(spacing: 6) {
-            if let file, let preview, !recipientMissing {
-                ShareLink(item: file, preview: SharePreview("ID copy for \(session.recipient)", image: Image(uiImage: preview))) {
-                    Label("Share copy", systemImage: "square.and.arrow.up")
+        .safeAreaInset(edge: .bottom) {
+            if focus == nil {
+                ActionBar {
+                    Button(action: prepareCopy) {
+                        HStack(spacing: 8) {
+                            if preparing { ProgressView().tint(Color.paper) }
+                            else if !textSize.isAccessibilitySize { Image(systemName: "square.and.arrow.up") }
+                            Text("Share copy")
+                        }
                         .frame(maxWidth: .infinity)
                         .foregroundStyle(Color.paper)
+                    }
+                    .disabled(!ready || preparing)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(.ink)
-            } else {
-                Button {} label: {
-                    Text(recipientMissing ? "Add who it’s for" : "Preparing…").frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.ink)
-                .disabled(true)
             }
-            Button("Done") { session.finish() }
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .padding(.vertical, 6)
         }
-        .controlSize(.large)
-        .buttonBorderShape(.roundedRectangle(radius: 12))
-        .padding(.horizontal, 20)
-        .padding(.top, 10)
-        .background(Color.paper.opacity(0.94).ignoresSafeArea())
+        .task(id: key) { await refreshPreview(for: key) }
+        .onDisappear { shareTask?.cancel(); preparing = false }
+        .sheet(item: $sharing) { copy in
+            ActivitySheet(file: copy.url).privacyShield()
+        }
+        .sheet(isPresented: $previewing) {
+            if let image { CopyPreviewView(image: image) }
+        }
+        .alert("Couldn’t prepare copy", isPresented: $exportFailed) {
+            Button("Try again", action: prepareCopy)
+            Button("Cancel", role: .cancel) {}
+        }
+    }
+
+    private func reveal(_ field: Field, using scroll: ScrollViewProxy) {
+        withAnimation(reduceMotion ? nil : .easeOut(duration: 0.18)) {
+            scroll.scrollTo(field, anchor: .center)
+        }
+    }
+
+    @ViewBuilder private var preview: some View {
+        if let image {
+            Image(decorative: image, scale: 1)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(maxHeight: 340)
+                .frame(maxWidth: .infinity)
+                .documentFrame()
+                .overlay(alignment: .bottomTrailing) {
+                    Group {
+                        if rendered == key { Image(systemName: "arrow.up.left.and.arrow.down.right") }
+                        else { ProgressView() }
+                    }
+                    .font(.system(size: 14))
+                    .foregroundStyle(Color.fjord)
+                    .padding(10)
+                }
+        } else {
+            VStack(spacing: 12) {
+                if previewFailed {
+                    Image(systemName: "doc.badge.ellipsis")
+                    Text("Preview unavailable")
+                    Button("Try again") { retry += 1 }
+                } else { ProgressView() }
+            }
+            .frame(maxWidth: .infinity, minHeight: 180)
+            .foregroundStyle(Color.muted)
+        }
+    }
+
+    private func refreshPreview(for request: PreviewKey) async {
+        previewFailed = false
+        do { try await Task.sleep(for: .milliseconds(image == nil ? 0 : 180)) }
+        catch { return }
+        guard !Task.isCancelled, !session.pages.isEmpty else { return }
+        let pages = session.pages
+        let result = await Task.detached(priority: .userInitiated) {
+            Exporter.preview(pages, recipient: request.recipient.isEmpty ? "…" : request.recipient, purpose: request.purpose)
+        }.value
+        guard !Task.isCancelled, key == request else { return }
+        image = result
+        rendered = result == nil ? nil : request
+        previewFailed = result == nil
+    }
+
+    private func prepareCopy() {
+        guard ready, !preparing, let image else { return }
+        focus = nil
+        preparing = true
+        let request = key
+        shareTask = Task {
+            let work = Task.detached(priority: .userInitiated) { Exporter.writeCopy(image, recipient: request.recipient) }
+            let file = await withTaskCancellationHandler(operation: { await work.value }, onCancel: { work.cancel() })
+            guard !Task.isCancelled else { if let file { Exporter.discard(file) }; return }
+            preparing = false
+            guard request == key else { if let file { Exporter.discard(file) }; return }
+            if let file { sharing = SharedCopy(url: file) } else { exportFailed = true }
+        }
+    }
+}
+
+private struct ActivitySheet: UIViewControllerRepresentable {
+    let file: URL
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: [file], applicationActivities: nil)
+    }
+    func updateUIViewController(_ controller: UIActivityViewController, context: Context) {}
+}
+
+private struct CopyPreviewView: View {
+    @Environment(\.dismiss) private var dismiss
+    let image: CGImage
+    @State private var zoom: CGFloat = 1
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                GeometryReader { geometry in
+                    let width = max(1, geometry.size.width - 32) * zoom
+                    ScrollView([.horizontal, .vertical]) {
+                        Image(decorative: image, scale: 1)
+                            .resizable()
+                            .frame(width: width, height: width * CGFloat(image.height) / CGFloat(image.width))
+                            .padding(16)
+                    }
+                    .defaultScrollAnchor(.center)
+                }
+                ZoomControls(zoom: $zoom).padding(20).background(Color.card)
+            }
+            .background(Color.paper)
+            .navigationTitle("Copy")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+        }
+        .privacyShield()
     }
 }
