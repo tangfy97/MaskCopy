@@ -25,6 +25,8 @@ Build 5 upload completed at 11:54 Amsterdam time on 8 November. Xcode reported `
 
 Build 6 upload completed at 13:26 Amsterdam time on 8 November. Xcode reported `Upload succeeded`, `Uploaded package is processing` and `EXPORT SUCCEEDED`. The signed archive identifies itself as MaskCopy, version 0.1.0 (6), bundle `com.feiyangtang.Maske`; strict signature verification passed, the compiled AppIcon includes 1024 × 1024 pixels, and no fixtures or test bundles are embedded. Icon artwork is unchanged. Subsequent browser verification confirmed that build 6 is assigned to the TangSpark internal group and the existing tester is shown as having installed 0.1.0 (6) on 8 November. This confirms internal installation availability; no external beta or App Store submission was made.
 
+Build 7 upload completed at 16:46 Amsterdam time on 8 November. Xcode reported `Upload succeeded`, `Uploaded package is processing` and `EXPORT SUCCEEDED`; the browser independently showed version 0.1.0, build 7, Processing in Build Uploads. Installation availability is not yet confirmed. The actual archive is MaskCopy 0.1.0 (7), bundle `com.feiyangtang.Maske`, with strict signature verification passed, unchanged 1024 × 1024 AppIcon, and no fixtures or test bundles. Core, synthetic, gesture, PDF-save/share and compact accessibility verification is recorded in AUDIT.md. The App Store Connect name remains MaskCopy: Safe ID Copies.
+
 Run `scripts/ui-check.sh` on a booted Simulator for the editor/export regression before a UI release. The build 4 checks are recorded in KNOWN_ISSUES; the iOS Simulator still misses the photo and MRZ of one synthetic Chinese passport turned 90°, while the Mac passes that case.
 
 ## One-time setup
@@ -35,7 +37,7 @@ Run `scripts/ui-check.sh` on a booted Simulator for the editor/export regression
 | Bundle ID `com.feiyangtang.Maske` | Registered by the first archive (`-allowProvisioningUpdates`) |
 | App record | Created 7 November 2026, Apple ID 6832059753 |
 | TestFlight | Internal group TangSpark, automatic distribution on, Feiyang Tang added |
-| Builds uploaded | 0.1.0 (1) and (2), 7 November; (3), (4), (5) and (6), 8 November 2026 |
+| Builds uploaded | 0.1.0 (1) and (2), 7 November; (3), (4), (5), (6) and (7), 8 November 2026 |
 | Developer Program License Agreement | An update was waiting for the account holder to accept (needed before App Review; not needed for internal TestFlight) |
 | Export compliance | `ITSAppUsesNonExemptEncryption` is NO in `project.yml` |
 

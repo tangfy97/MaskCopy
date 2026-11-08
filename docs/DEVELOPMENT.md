@@ -76,3 +76,9 @@ The installed product is MaskCopy.app; the legacy project, target, modules and b
 DocumentViewport wraps UIScrollView with an installed UIImageView, a vector overlay and four native corner controls. UIScrollView applies zoom transforms rather than relaying out a resizable SwiftUI bitmap. Inverse handle transforms preserve a 44-point hit target while zooming. Pan deltas convert through image coordinates and remain clamped/convex. Native double-tap and pinch are covered by UI checks.
 
 Renderer paints opaque charcoal, then draws the watermark in dark ink on the document and light ink clipped to redactions. Recipient, purpose and date stay inside each page. `RenderCopy` signposts expose timing without document contents. The copy stays in memory until Share creates a metadata-free JPEG.
+
+## Direct manipulation and PDF export (revision 7)
+
+`Quad.translated(by:)` clamps translation once for the whole polygon, preserving its dimensions and perspective. Review applies it from a captured gesture-start polygon. The native editor uses a polygon-shaped hit target beneath the corner controls; dragging its body moves the polygon, while dragging outside pans the UIScrollView. Both paths mutate the same findings used for rendering and invalidate the revision-bound copy cache.
+
+Exporter accepts JPG/PDF. PDF embeds only the freshly encoded, flattened JPEG in a minimal one-page PDF object graph. It has no Info dictionary, original source image, text objects, annotations, JavaScript or mask layer. The final inspected composite remains the exact content of either format; separate pages per source side are deferred. Cancellation, protected temporary-file writes and independent attempt directories apply to both formats. The native Files picker copies the selected file to a user-chosen location; that saved destination is not app history and is not removed with temporary working files.

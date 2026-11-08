@@ -4,7 +4,6 @@ import UniformTypeIdentifiers
 
 struct HomeView: View {
     @EnvironmentObject private var session: Session
-    @Environment(\.dynamicTypeSize) private var textSize
     @State private var scanning = false
     @State private var importing = false
     @State private var photos: [PhotosPickerItem] = []
@@ -14,48 +13,31 @@ struct HomeView: View {
     var body: some View {
         GeometryReader { geometry in
             ScrollView {
-                VStack(spacing: 28) {
-                    VStack(spacing: 28) {
-                        IdentityCardArtwork()
-                            .frame(maxWidth: 310)
-                            .padding(.horizontal, 24)
-                        Text("Make an ID copy")
-                            .font(.largeTitle.weight(.semibold))
-                            .tracking(-0.8)
-                            .multilineTextAlignment(.center)
-                            .foregroundStyle(Color.ink)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(minHeight: textSize.isAccessibilitySize ? 240 : max(240, geometry.size.height - 260))
-                    VStack(spacing: 14) {
-                        Button { scanning = true } label: {
-                            Group {
-                                if textSize.isAccessibilitySize { Text("Scan") }
-                                else { Label("Scan document", systemImage: "doc.viewfinder") }
-                            }
-                            .frame(maxWidth: .infinity).foregroundStyle(Color.paper)
+                VStack(spacing: 44) {
+                    Spacer(minLength: 32)
+                    Button { scanning = true } label: {
+                        VStack(spacing: 20) {
+                            SourceGlyph(kind: .scan)
+                                .frame(width: 48, height: 48)
+                                .scanControl()
+                            Text("Scan").font(.title3.weight(.medium))
                         }
-                        .accessibilityLabel("Scan document")
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.large)
-                        .disabled(!DocumentScanner.isAvailable)
-                        Group {
-                            if textSize.isAccessibilitySize {
-                                VStack(spacing: 12) { photoSource; fileSource }
-                            } else {
-                                HStack(spacing: 12) { photoSource; fileSource }
-                            }
-                        }
-                        .buttonStyle(.bordered)
-                        .controlSize(.large)
-                        Label("Only on your iPhone", systemImage: "lock")
-                            .font(.footnote)
-                            .foregroundStyle(Color.muted)
-                            .padding(.top, 8)
                     }
+                    .accessibilityLabel("Scan document")
+                    .buttonStyle(ScanSourceStyle())
+                    .disabled(!DocumentScanner.isAvailable)
+                    ViewThatFits(in: .horizontal) {
+                        HStack(spacing: 44) { photoSource; fileSource }
+                        VStack(spacing: 16) { photoSource; fileSource }
+                    }
+                    .font(.subheadline)
+                    .buttonStyle(.plain)
+                    .foregroundStyle(Color.muted)
+                    Spacer(minLength: 32)
                 }
                 .padding(.horizontal, 24)
-                .padding(.bottom, 24)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: geometry.size.height)
             }
             .scrollBounceBehavior(.basedOnSize)
         }
@@ -65,7 +47,7 @@ struct HomeView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink(value: Session.Step.supported) {
-                    Label("Documents", systemImage: "globe.europe.africa")
+                    Label("Documents", systemImage: "info.circle")
                 }
             }
         }
@@ -109,14 +91,20 @@ struct HomeView: View {
 
     private var photoSource: some View {
         PhotosPicker(selection: $photos, maxSelectionCount: 2, matching: .images) {
-            Label("Photos", systemImage: "photo").frame(maxWidth: .infinity)
+            HStack(spacing: 8) {
+                SourceGlyph(kind: .photos).frame(width: 22, height: 22)
+                Text("Photos")
+            }.padding(.vertical, 12)
         }
         .accessibilityLabel("Choose photos")
     }
 
     private var fileSource: some View {
         Button { importing = true } label: {
-            Label("Files", systemImage: "folder").frame(maxWidth: .infinity)
+            HStack(spacing: 8) {
+                SourceGlyph(kind: .files).frame(width: 22, height: 22)
+                Text("Files")
+            }.padding(.vertical, 12)
         }
         .accessibilityLabel("Choose a file")
     }

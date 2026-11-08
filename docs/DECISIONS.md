@@ -29,3 +29,9 @@ Why MaskCopy is the way it is. Newest last. Change a decision only with the owne
 ## 8 November 2026: MaskCopy and the three-stage copy flow
 
 The owner chose MaskCopy after rejecting MaskID (an existing same-purpose iPhone app), CopyVeil (not direct enough), and build 5's flat homepage. Keep the existing app identity/bundle ID and internal developer names, while changing the installed product, public name and GitHub repository. Native source-to-editor zoom and UIScrollView manipulation preserve document context. Separate Watermark input from final Share so typing never starts bitmap rendering. Use a strong opaque mask and one adaptive dark/light watermark block on every page, informed by official KopieID visuals. General OCR, watermarks and flattened export are also offered by MaskID and are not claimed as unique. Our proposed distinction is document-specific geometry with precise review; proving better accuracy needs a matched, annotated comparison.
+
+## 8 November: direct movement and format-aware export
+
+The owner rejected the three-stage tracker and the large illustrated homepage, and found Done ambiguous. Remove the tracker entirely, use a compact source chooser with a coherent icon family, and name the final exit Close. Keep Save and Share visible beside a native JPG/PDF selector. Native Files export is separate from the activity sheet so saving does not depend on discovering a hidden system action.
+
+PDF embeds the same flattened JPEG data as image sharing in one PDF image page. The minimal Core Graphics-readable file contains no source image, text, annotations or metadata dictionary. It preserves preview/export agreement; separate PDF pages per source side are deferred. Whole-mask translations clamp as a unit rather than clipping each corner, preserving size and perspective.

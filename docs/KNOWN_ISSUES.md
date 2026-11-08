@@ -13,6 +13,8 @@ Build 5 changes the interface and session flow, without changing the recognition
 
 Build 6 replaces the interface and watermark, without changing recognition. Native zoom, constant-size corner targets, a cache guarded by document/mask/input revisions and local watermark input are implemented. Final evidence and actual performance measurements are in AUDIT.md. A loaded debug Simulator launch averaged 3.71 seconds, and Animation Hitches was unsupported: neither establishes acceptable real-device performance. No physical iPhone was attached. Keep device latency/frame-pacing work open rather than calling the app universally smooth.
 
+Revision 7 removes the rejected progress tracker, reduces Home to three source actions, adds whole-mask movement and explicit JPG/PDF save/share controls. Its stamp has stronger contrast and sits lower in the document. Fixed watermark placement can still cross content on unfamiliar layouts, and very long input must shrink. PDF is a single image page of the exact inspected composite, not a separate PDF page per source side. Real-device animation pacing remains unverified; no physical iPhone was attached during this change.
+
 ## Open
 
 ### 1. Text recognition sometimes misses lines (most important)

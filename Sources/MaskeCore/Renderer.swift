@@ -20,9 +20,9 @@ public struct Watermark: Sendable {
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_GB")
         f.dateFormat = "d MMM yyyy"
-        return ["COPY · " + f.string(from: date).uppercased(),
-                recipient.trimmingCharacters(in: .whitespacesAndNewlines),
-                purpose.trimmingCharacters(in: .whitespacesAndNewlines)].filter { !$0.isEmpty }
+        let context = [purpose.trimmingCharacters(in: .whitespacesAndNewlines), f.string(from: date)]
+            .filter { !$0.isEmpty }.joined(separator: " · ")
+        return ["COPY FOR", recipient.trimmingCharacters(in: .whitespacesAndNewlines), context]
     }
 
     public var text: String { lines.joined(separator: " · ") }
@@ -68,16 +68,16 @@ public enum Renderer {
             if let watermark {
                 ctx.saveGState()
                 ctx.clip(to: frame)
-                ctx.translateBy(x: frame.midX, y: frame.midY)
-                ctx.rotate(by: .pi / 7.5)
+                ctx.translateBy(x: frame.midX, y: frame.minY + frame.height * 0.34)
+                ctx.rotate(by: .pi / 12)
                 draw(watermark, in: ctx, size: frame.size)
                 ctx.restoreGState()
                 if !redactions.isEmpty {
                     ctx.saveGState()
                     ctx.addPath(redactions)
                     ctx.clip()
-                    ctx.translateBy(x: frame.midX, y: frame.midY)
-                    ctx.rotate(by: .pi / 7.5)
+                    ctx.translateBy(x: frame.midX, y: frame.minY + frame.height * 0.34)
+                    ctx.rotate(by: .pi / 12)
                     draw(watermark, in: ctx, size: frame.size, light: true)
                     ctx.restoreGState()
                 }
@@ -88,26 +88,31 @@ public enum Renderer {
         return Task.isCancelled ? nil : ctx.makeImage()
     }
 
-    /// Fit every character into a central block; the date and purpose stay on each page.
+    /// A compact purpose stamp: quiet label, clear recipient, smaller purpose/date.
     static func draw(_ watermark: Watermark, in ctx: CGContext, size: CGSize, light: Bool = false) {
-        let width = min(size.width * 0.77, size.height * 1.35)
-        let maxHeight = min(size.height * 0.42, size.width * 0.45)
-        let text = watermark.lines.joined(separator: "\n")
-        var fontSize = min(size.width / 20, size.height / 8)
+        let width = min(size.width * 0.66, size.height * 1.3)
+        let maxHeight = min(size.height * 0.29, size.width * 0.28)
+        var fontSize = min(size.width / 18, size.height / 7)
+        let color = light ? CGColor(gray: 1, alpha: 0.95) : CGColor(gray: 0.12, alpha: 0.85)
         var alignment = CTTextAlignment.center
         let paragraph = withUnsafePointer(to: &alignment) { pointer in
             var setting = CTParagraphStyleSetting(spec: .alignment, valueSize: MemoryLayout<CTTextAlignment>.size, value: pointer)
             return CTParagraphStyleCreate(&setting, 1)
         }
         func framesetter(_ points: CGFloat) -> CTFramesetter {
-            let attributes: [NSAttributedString.Key: Any] = [
-                .init(kCTFontAttributeName as String): CTFontCreateWithName("HelveticaNeue-Medium" as CFString, points, nil),
-                .init(kCTForegroundColorAttributeName as String): light
-                    ? CGColor(gray: 1, alpha: 0.65)
-                    : CGColor(srgbRed: 0.12, green: 0.22, blue: 0.27, alpha: 0.30),
-                .init(kCTParagraphStyleAttributeName as String): paragraph,
-            ]
-            return CTFramesetterCreateWithAttributedString(NSAttributedString(string: text, attributes: attributes))
+            let text = NSMutableAttributedString(string: "")
+            for (index, line) in watermark.lines.enumerated() {
+                let scale: CGFloat = index == 1 ? 1 : (index == 0 ? 0.36 : 0.43)
+                let attributes: [NSAttributedString.Key: Any] = [
+                    .init(kCTFontAttributeName as String): CTFontCreateWithName(
+                        index == 1 ? "HelveticaNeue-Medium" as CFString : "HelveticaNeue" as CFString, points * scale, nil),
+                    .init(kCTForegroundColorAttributeName as String): color,
+                    .init(kCTKernAttributeName as String): index == 0 ? points * 0.075 : 0,
+                    .init(kCTParagraphStyleAttributeName as String): paragraph,
+                ]
+                text.append(NSAttributedString(string: (index == 0 ? "" : "\n") + line, attributes: attributes))
+            }
+            return CTFramesetterCreateWithAttributedString(text)
         }
         var setter = framesetter(fontSize)
         var fitted = CTFramesetterSuggestFrameSizeWithConstraints(setter, CFRange(), nil,
@@ -122,6 +127,50 @@ public enum Renderer {
         let path = CGPath(rect: CGRect(x: -width / 2, y: -height / 2, width: width, height: height), transform: nil)
         ctx.textMatrix = .identity
         CTFrameDraw(CTFramesetterCreateFrame(setter, CFRange(), path, nil), ctx)
+        ctx.setStrokeColor(color)
+        ctx.setLineWidth(max(0.5, size.width / 1800))
+        let edge = height / 2 + fontSize * 0.22
+        for y in [-edge, edge] {
+            ctx.move(to: CGPoint(x: -width / 2, y: y))
+            ctx.addLine(to: CGPoint(x: width / 2, y: y))
+        }
+        ctx.strokePath()
+    }
+
+    /// A single-page PDF containing only the same flattened JPEG pixels as image export.
+    /// No text objects, annotations, source image, metadata dictionary or recoverable mask layer.
+    public static func pdfData(_ image: CGImage) -> Data? {
+        guard !Task.isCancelled, let jpeg = jpegData(image) else { return nil }
+        let width = 612
+        let height = max(1, Int((Double(image.height) / Double(image.width) * Double(width)).rounded()))
+        let commands = Data("q\n\(width) 0 0 \(height) 0 0 cm\n/Copy Do\nQ\n".utf8)
+        var data = Data("%PDF-1.4\n".utf8)
+        data.append(contentsOf: [0x25, 0xE2, 0xE3, 0xCF, 0xD3, 0x0A])
+        var offsets = [0]
+        func object(_ body: Data) {
+            offsets.append(data.count)
+            data.append(Data("\(offsets.count - 1) 0 obj\n".utf8))
+            data.append(body)
+            data.append(Data("\nendobj\n".utf8))
+        }
+        object(Data("<< /Type /Catalog /Pages 2 0 R >>".utf8))
+        object(Data("<< /Type /Pages /Kids [3 0 R] /Count 1 >>".utf8))
+        object(Data("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 \(width) \(height)] /Resources << /XObject << /Copy 4 0 R >> >> /Contents 5 0 R >>".utf8))
+        var pixels = Data("<< /Type /XObject /Subtype /Image /Width \(image.width) /Height \(image.height) /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length \(jpeg.count) >>\nstream\n".utf8)
+        pixels.append(jpeg)
+        pixels.append(Data("\nendstream".utf8))
+        object(pixels)
+        var content = Data("<< /Length \(commands.count) >>\nstream\n".utf8)
+        content.append(commands)
+        content.append(Data("endstream".utf8))
+        object(content)
+        let xref = data.count
+        data.append(Data("xref\n0 \(offsets.count)\n0000000000 65535 f \n".utf8))
+        for offset in offsets.dropFirst() {
+            data.append(Data(String(format: "%010d 00000 n \n", offset).utf8))
+        }
+        data.append(Data("trailer\n<< /Size \(offsets.count) /Root 1 0 R >>\nstartxref\n\(xref)\n%%EOF\n".utf8))
+        return Task.isCancelled ? nil : data
     }
 
     public static func jpegData(_ image: CGImage, quality: CGFloat = 0.85) -> Data? {

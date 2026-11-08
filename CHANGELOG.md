@@ -4,6 +4,14 @@ All notable changes to MaskCopy are listed here. Versions follow [Semantic Versi
 
 ## [0.1.0] - 2026-11-08
 
+Build 7: direct editing and explicit export. Uploaded 8 November at 16:46 Amsterdam time; App Store Connect confirms Processing. Installation availability is not yet confirmed.
+
+- Completely redesign Home around one scan control and two lightweight import actions. Draw a coherent source icon family in the app's theme; remove the illustration, introduction heading, large source cards and all three-stage trackers.
+- Add whole-mask dragging on Review and in the enlarged editor, preserving the polygon's shape and clamping it at page edges. Keep corner editing and outside-mask panning.
+- Redesign the watermark as a smaller, lower, higher-contrast purpose stamp with distinct type sizes and fine rules. Keep long text, every-page marking and fully opaque redactions.
+- Show JPG/PDF selection and separate Save/Share actions on the final preview. Save opens Files directly; PDF contains only flattened JPEG pixels without text layers, annotations or a metadata dictionary. Replace the ambiguous Done action with Close.
+- Add restrained press feedback, pickup/save haptics and a checkmark transition after successful saving. Respect Reduce Motion and keep recognition/encoding off the main actor.
+
 Build 6: MaskCopy, a document-focused workflow. Uploaded on 8 November at 13:26 Amsterdam time; Apple initially reported Processing; later App Store Connect verification confirmed internal installation of 0.1.0 (6). The backend title was separately saved as MaskCopy: Safe ID Copies.
 
 - Rename the app's display/product name and GitHub repository to MaskCopy. Keep the existing bundle ID and internal module names so installed copies and TestFlight continue updating the same app.

@@ -17,7 +17,6 @@ struct ShareView: View {
         ScrollViewReader { scroll in
             ScrollView {
                 VStack(alignment: .leading, spacing: 28) {
-                    FlowProgress(step: 1)
                     VStack(alignment: .leading, spacing: 0) {
                         field("Recipient", placeholder: "Who is this copy for?", text: $recipient, field: .recipient)
                         Divider()
@@ -123,13 +122,20 @@ struct ReadyCopyView: View {
     @State private var zoom: CGFloat = 1
     @State private var preparing = false
     @State private var failed = false
-    @State private var sharing: SharedCopy?
+    @State private var output: Output?
+    @State private var outputFile: URL?
     @State private var shareTask: Task<Void, Never>?
-    private struct SharedCopy: Identifiable { let id = UUID(); let url: URL }
+    @State private var format = Exporter.Format.jpg
+    @State private var saved = false
+    @State private var saving = false
+    private struct Output: Identifiable {
+        let id = UUID()
+        let url: URL
+        let save: Bool
+    }
 
     var body: some View {
         VStack(spacing: 0) {
-            FlowProgress(step: 2).padding(20)
             if let image = image ?? session.copy {
                 DocumentViewport(image: image, zoom: $zoom)
                     .accessibilityIdentifier("copy-viewport")
@@ -139,49 +145,139 @@ struct ReadyCopyView: View {
         .background(Color.paper.ignoresSafeArea())
         .navigationTitle("Your copy")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Done") { session.finish() } } }
+        .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Close") { session.finish() } } }
         .safeAreaInset(edge: .bottom) {
             ActionBar {
-                Button(action: share) {
-                    HStack(spacing: 8) {
-                        if preparing { ProgressView().tint(Color.paper) }
-                        else if !textSize.isAccessibilitySize { Image(systemName: "square.and.arrow.up") }
-                        Text("Share copy")
+                VStack(spacing: 12) {
+                    Picker("File format", selection: $format) {
+                        ForEach(Exporter.Format.allCases, id: \.self) { format in
+                            Text(format.title).tag(format)
+                        }
                     }
-                    .frame(maxWidth: .infinity).foregroundStyle(Color.paper)
+                    .pickerStyle(.segmented)
+                    .disabled(preparing)
+                    if textSize.isAccessibilitySize {
+                        VStack(spacing: 12) { saveButton; shareButton }
+                    } else {
+                        HStack(spacing: 12) { saveButton; shareButton }
+                    }
                 }
-                .disabled(image == nil || preparing)
             }
         }
         .onAppear { image = session.copy }
         .onDisappear { shareTask?.cancel(); preparing = false }
         .privacyShield()
-        .sheet(item: $sharing) { copy in ActivitySheet(file: copy.url).privacyShield() }
+        .onChange(of: format) { _, _ in saved = false }
+        .sheet(item: $output, onDismiss: discardOutput) { copy in
+            Group {
+                if copy.save {
+                    SaveCopySheet(file: copy.url, onSaved: {
+                        saved = true
+                        UINotificationFeedbackGenerator().notificationOccurred(.success)
+                    }, onFinish: { output = nil })
+                }
+                else { ActivitySheet(file: copy.url, onFinish: { output = nil }) }
+            }.privacyShield()
+        }
         .alert("Couldn’t prepare copy", isPresented: $failed) {
-            Button("Try again", action: share)
+            Button("Try again") { export(saving: saving) }
             Button("Cancel", role: .cancel) {}
         }
     }
 
-    private func share() {
+    private var saveButton: some View {
+        Button { export(saving: true) } label: {
+            HStack(spacing: 8) {
+                if preparing && saving { ProgressView().tint(Color.fjord) }
+                else {
+                    Image(systemName: saved ? "checkmark" : "square.and.arrow.down")
+                        .contentTransition(.symbolEffect(.replace))
+                }
+                Text(saved ? "Saved" : (format == .jpg ? "Save JPG" : "Save PDF"))
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.bordered)
+        .accessibilityLabel(saved ? "Saved to Files" : (format == .jpg ? "Save JPG" : "Save PDF"))
+        .accessibilityIdentifier(saved ? "copy-saved" : "copy-save")
+        .disabled(image == nil || preparing)
+    }
+
+    private var shareButton: some View {
+        Button { export(saving: false) } label: {
+            HStack(spacing: 8) {
+                if preparing && !saving { ProgressView().tint(Color.paper) }
+                else { Image(systemName: "square.and.arrow.up") }
+                Text("Share")
+            }
+            .frame(maxWidth: .infinity).foregroundStyle(Color.paper)
+        }
+        .accessibilityLabel("Share copy")
+        .disabled(image == nil || preparing)
+    }
+
+    private func discardOutput() {
+        if let outputFile { Exporter.discard(outputFile) }
+        outputFile = nil
+    }
+
+    private func export(saving: Bool) {
         guard let image, !preparing else { return }
         preparing = true
+        self.saving = saving
         let document = session.documentID
         let recipient = session.recipient
+        let format = format
         shareTask = Task {
-            let work = Task.detached(priority: .userInitiated) { Exporter.writeCopy(image, recipient: recipient) }
+            let work = Task.detached(priority: .userInitiated) {
+                Exporter.writeCopy(image, recipient: recipient, format: format)
+            }
             let file = await withTaskCancellationHandler(operation: { await work.value }, onCancel: { work.cancel() })
             guard !Task.isCancelled, document == session.documentID else { if let file { Exporter.discard(file) }; return }
             preparing = false
-            if let file { sharing = SharedCopy(url: file) } else { failed = true }
+            if let file {
+                outputFile = file
+                output = Output(url: file, save: saving)
+            } else { failed = true }
         }
+    }
+}
+
+private struct SaveCopySheet: UIViewControllerRepresentable {
+    let file: URL
+    let onSaved: () -> Void
+    let onFinish: () -> Void
+    func makeCoordinator() -> Coordinator { Coordinator(onSaved: onSaved, onFinish: onFinish) }
+    func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
+        let controller = UIDocumentPickerViewController(forExporting: [file], asCopy: true)
+        controller.delegate = context.coordinator
+        return controller
+    }
+    func updateUIViewController(_ controller: UIDocumentPickerViewController, context: Context) {}
+    final class Coordinator: NSObject, UIDocumentPickerDelegate {
+        let onSaved: () -> Void
+        let onFinish: () -> Void
+        init(onSaved: @escaping () -> Void, onFinish: @escaping () -> Void) {
+            self.onSaved = onSaved
+            self.onFinish = onFinish
+        }
+        func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+            if !urls.isEmpty { onSaved() }
+            onFinish()
+        }
+        func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) { onFinish() }
     }
 }
 
 private struct ActivitySheet: UIViewControllerRepresentable {
     let file: URL
+    let onFinish: () -> Void
     func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: [file], applicationActivities: nil)
+        let controller = UIActivityViewController(activityItems: [file], applicationActivities: nil)
+        controller.completionWithItemsHandler = { _, _, _, _ in
+            Task { @MainActor in onFinish() }
+        }
+        return controller
     }
     func updateUIViewController(_ controller: UIActivityViewController, context: Context) {}
 }

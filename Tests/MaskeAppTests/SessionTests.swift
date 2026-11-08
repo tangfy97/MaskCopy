@@ -30,14 +30,14 @@ final class SessionTests: XCTestCase {
         let finished = expectation(description: "Old read finished")
         let release = DispatchSemaphore(value: 0)
         defer { release.signal() }
-        let session = Session { image in
+        let session = Session(read: { image in
             if image.width == 2 {
                 started.fulfill()
                 release.wait()
                 finished.fulfill()
             }
             return (image, nil)
-        }
+        })
         session.start(with: [try image(width: 2)])
         await fulfillment(of: [started], timeout: 2)
         session.start(with: [try image(width: 4)])
@@ -55,7 +55,7 @@ final class SessionTests: XCTestCase {
         let gate = ImportGate()
         defer { Task { await gate.release() } }
         let source = try image()
-        let session = Session { ($0, nil) }
+        let session = Session(read: { ($0, nil) })
         session.importImages {
             started.fulfill()
             await gate.wait()
@@ -97,6 +97,15 @@ final class SessionTests: XCTestCase {
         let file = try XCTUnwrap(Exporter.writeCopy(try image(), recipient: "Test Hotel"))
         XCTAssertTrue(FileManager.default.fileExists(atPath: file.path))
         _ = Session()
+        XCTAssertFalse(FileManager.default.fileExists(atPath: file.path))
+    }
+
+    func testPDFExportUsesSelectedExtensionAndOwnsItsTemporaryFile() throws {
+        defer { Exporter.clear() }
+        let file = try XCTUnwrap(Exporter.writeCopy(try image(), recipient: "Test Hotel", format: .pdf))
+        XCTAssertEqual(file.pathExtension, "pdf")
+        XCTAssertTrue(try Data(contentsOf: file).starts(with: Data("%PDF-1.4".utf8)))
+        Exporter.discard(file)
         XCTAssertFalse(FileManager.default.fileExists(atPath: file.path))
     }
 

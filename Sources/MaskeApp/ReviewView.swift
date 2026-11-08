@@ -50,7 +50,6 @@ struct ReviewView: View {
     private var content: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                FlowProgress(step: 0)
                 header
 
                 if drawing {
@@ -133,6 +132,7 @@ struct PageCanvas: View {
     @Namespace private var editorTransition
     @State private var drag: CGRect?
     @State private var editing: Finding?
+    @State private var moving: (id: UUID, quad: Quad)?
 
     var body: some View {
         Image(decorative: page.image, scale: 1)
@@ -155,6 +155,20 @@ struct PageCanvas: View {
                             .frame(width: size.width, height: size.height)
                             .contentShape(shape)
                             .onTapGesture { if !drawing { editing = f } }
+                            .highPriorityGesture(DragGesture(minimumDistance: 6)
+                                .onChanged { value in
+                                    if moving?.id != f.id {
+                                        moving = (f.id, f.shape)
+                                        UIImpactFeedbackGenerator(style: .light).impactOccurred(intensity: 0.5)
+                                    }
+                                    guard let original = moving?.quad else { return }
+                                    let quad = original.translated(by: CGPoint(x: value.translation.width / size.width,
+                                                                             y: value.translation.height / size.height))
+                                    f.quad = quad
+                                    f.rect = quad.boundingRect
+                                    f.note = "adjusted"
+                                }
+                                .onEnded { _ in moving = nil }, including: drawing ? .none : .all)
                             .contextMenu {
                                 Button("Adjust box", systemImage: "arrow.up.left.and.arrow.down.right") {
                                     editing = f

@@ -40,71 +40,89 @@ enum FlowMotion {
     }
 }
 
-struct FlowProgress: View {
-    @Environment(\.dynamicTypeSize) private var textSize
-    let step: Int
-    private let titles = ["Hide", "Watermark", "Share"]
-    var body: some View {
-        VStack(spacing: 8) {
-            HStack(spacing: 12) {
-                ForEach(0..<3) { index in
-                    VStack(alignment: .leading, spacing: 8) {
-                        Capsule().fill(index <= step ? Color.fjord : Color.hairline).frame(height: 3)
-                        if !textSize.isAccessibilitySize {
-                            Text(titles[index]).font(.caption.weight(index == step ? .semibold : .regular))
-                                .foregroundStyle(index == step ? Color.ink : Color.muted)
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-            }
-            if textSize.isAccessibilitySize {
-                HStack {
-                    Text(titles[step]).foregroundStyle(Color.ink)
-                    Spacer()
-                    Text("\(step + 1) / 3").monospacedDigit().foregroundStyle(Color.muted)
-                }
-                .font(.caption)
-            }
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Step \(step + 1) of 3, \(titles[step])")
+struct ScanSourceStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var enabled
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundStyle(Color.ink)
+            .opacity(enabled ? (configuration.isPressed ? 0.65 : 1) : 0.4)
+            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.96 : 1)
+            .animation(reduceMotion ? nil : .smooth(duration: 0.18), value: configuration.isPressed)
     }
 }
 
-/// An abstract document, not a stored identity or a third-party illustration.
-struct IdentityCardArtwork: View {
+/// Three optically aligned source symbols, drawn from one 24-point grid.
+struct SourceGlyph: View {
+    enum Kind { case scan, photos, files }
+    let kind: Kind
     var body: some View {
         GeometryReader { geometry in
-            let w = geometry.size.width
-            ZStack(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: 18).fill(Color.hairline)
-                    .rotationEffect(.degrees(-5)).offset(x: -5, y: 5)
-                RoundedRectangle(cornerRadius: 18).fill(Color(white: 0.99))
-                    .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(Color.hairline, lineWidth: 1))
-                VStack(alignment: .leading, spacing: w * 0.09) {
-                    HStack {
-                        Text("ID").font(.system(size: w * 0.055, weight: .semibold, design: .monospaced))
-                        Spacer()
-                        Image(systemName: "checkmark.shield").font(.system(size: w * 0.07, weight: .light))
-                    }
-                    .foregroundStyle(Color(red: 0.14, green: 0.31, blue: 0.38))
-                    HStack(alignment: .top, spacing: w * 0.08) {
-                        RoundedRectangle(cornerRadius: 3).fill(Color.mask).frame(width: w * 0.23, height: w * 0.29)
-                        VStack(alignment: .leading, spacing: w * 0.045) {
-                            Capsule().fill(Color.hairline).frame(width: w * 0.35, height: w * 0.018)
-                            RoundedRectangle(cornerRadius: 2).fill(Color.mask).frame(width: w * 0.25, height: w * 0.04)
-                            Capsule().fill(Color.hairline).frame(width: w * 0.29, height: w * 0.018)
-                            RoundedRectangle(cornerRadius: 2).fill(Color.mask).frame(width: w * 0.32, height: w * 0.04)
-                        }
-                    }
-                }
-                .padding(w * 0.09)
+            SourceOutline(kind: kind)
+                .stroke(style: StrokeStyle(lineWidth: geometry.size.width / 16,
+                                           lineCap: .round, lineJoin: .round))
+            if kind == .scan {
+                Capsule()
+                    .frame(width: geometry.size.width * 0.16, height: geometry.size.height * 0.055)
+                    .position(x: geometry.size.width * 0.585, y: geometry.size.height * 0.46)
             }
         }
-        .aspectRatio(1.586, contentMode: .fit)
         .accessibilityHidden(true)
     }
+}
+
+private struct SourceOutline: Shape {
+    let kind: SourceGlyph.Kind
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        switch kind {
+        case .scan:
+            for points in [[CGPoint(x: 7, y: 3), CGPoint(x: 3, y: 3), CGPoint(x: 3, y: 7)],
+                           [CGPoint(x: 17, y: 3), CGPoint(x: 21, y: 3), CGPoint(x: 21, y: 7)],
+                           [CGPoint(x: 3, y: 17), CGPoint(x: 3, y: 21), CGPoint(x: 7, y: 21)],
+                           [CGPoint(x: 17, y: 21), CGPoint(x: 21, y: 21), CGPoint(x: 21, y: 17)]] {
+                p.addLines(points)
+            }
+            p.addRoundedRect(in: CGRect(x: 6.5, y: 7, width: 11, height: 10), cornerSize: CGSize(width: 1.5, height: 1.5))
+            p.addEllipse(in: CGRect(x: 8.5, y: 9.7, width: 2.5, height: 2.5))
+            p.move(to: CGPoint(x: 9, y: 14.5)); p.addLine(to: CGPoint(x: 15, y: 14.5))
+        case .photos:
+            p.addRoundedRect(in: CGRect(x: 3, y: 3.5, width: 18, height: 17), cornerSize: CGSize(width: 2.5, height: 2.5))
+            p.addEllipse(in: CGRect(x: 6.5, y: 7, width: 3.5, height: 3.5))
+            p.addLines([CGPoint(x: 3.5, y: 17), CGPoint(x: 10, y: 12.5), CGPoint(x: 13, y: 15),
+                        CGPoint(x: 16.5, y: 11.5), CGPoint(x: 20.5, y: 15)])
+        case .files:
+            p.move(to: CGPoint(x: 3, y: 7))
+            p.addQuadCurve(to: CGPoint(x: 5, y: 5), control: CGPoint(x: 3, y: 5))
+            p.addLine(to: CGPoint(x: 9, y: 5))
+            p.addLine(to: CGPoint(x: 11.5, y: 8))
+            p.addLine(to: CGPoint(x: 19, y: 8))
+            p.addQuadCurve(to: CGPoint(x: 21, y: 10), control: CGPoint(x: 21, y: 8))
+            p.addLine(to: CGPoint(x: 21, y: 18))
+            p.addQuadCurve(to: CGPoint(x: 19, y: 20), control: CGPoint(x: 21, y: 20))
+            p.addLine(to: CGPoint(x: 5, y: 20))
+            p.addQuadCurve(to: CGPoint(x: 3, y: 18), control: CGPoint(x: 3, y: 20))
+            p.closeSubpath()
+            p.move(to: CGPoint(x: 3, y: 10)); p.addLine(to: CGPoint(x: 10, y: 10))
+        }
+        return p.applying(CGAffineTransform(scaleX: rect.width / 24, y: rect.height / 24)
+            .concatenating(CGAffineTransform(translationX: rect.minX, y: rect.minY)))
+    }
+}
+
+private struct ScanControl: ViewModifier {
+    @ScaledMetric(relativeTo: .title) private var diameter = 112
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: 40, weight: .light))
+            .frame(width: min(diameter, 160), height: min(diameter, 160))
+            .foregroundStyle(Color.paper)
+            .background(Color.ink, in: Circle())
+    }
+}
+
+extension View {
+    func scanControl() -> some View { modifier(ScanControl()) }
 }
 
 struct ZoomControls: View {
@@ -116,11 +134,6 @@ struct ZoomControls: View {
                 .accessibilityLabel("Zoom")
                 .accessibilityValue("\(Int(zoom * 100))%")
             Image(systemName: "plus.magnifyingglass").font(.system(size: 20)).accessibilityHidden(true)
-            Text("\(Int(zoom * 100))%")
-                .font(.caption)
-                .monospacedDigit()
-                .fixedSize()
-                .accessibilityHidden(true)
         }
         .foregroundStyle(Color.fjord)
     }

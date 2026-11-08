@@ -1,5 +1,36 @@
 import XCTest
 final class MaskEditorUITests: XCTestCase {
+    func testMovingMaskDirectlyOnReview() {
+        let app = XCUIApplication()
+        let fixture = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("Fixtures/synthetic/passport-nor.png")
+        app.launchArguments = ["-MaskeFixture", fixture.path]
+        app.launch()
+        let photo = app.buttons["mask-photo"].firstMatch
+        XCTAssertTrue(photo.waitForExistence(timeout: 60))
+        photo.tap()
+        let handle = app.buttons["mask-corner-0"]
+        XCTAssertTrue(handle.waitForExistence(timeout: 5))
+        let original = handle.value as? String
+        let bodySize = app.buttons["mask-body"].frame.size
+        app.buttons["Cancel"].tap()
+        let canvas = app.otherElements["page-canvas"].firstMatch
+        let start = canvas.coordinate(withNormalizedOffset: CGVector(dx: 0.18, dy: 0.4))
+        start.press(forDuration: 0.1, thenDragTo: start.withOffset(CGVector(dx: 22, dy: 12)))
+        photo.tap()
+        XCTAssertTrue(handle.waitForExistence(timeout: 5))
+        XCTAssertNotEqual(handle.value as? String, original)
+        XCTAssertEqual(app.buttons["mask-body"].frame.width, bodySize.width, accuracy: 1)
+        XCTAssertEqual(app.buttons["mask-body"].frame.height, bodySize.height, accuracy: 1)
+        let moved = handle.value as? String
+        app.buttons["Save"].tap()
+        photo.tap()
+        XCTAssertTrue(handle.waitForExistence(timeout: 5))
+        XCTAssertEqual(handle.value as? String, moved)
+        app.buttons["Cancel"].tap()
+    }
+
     func testAdjustZoomSaveAndCancel() {
         let app = XCUIApplication()
         let fixture = URL(fileURLWithPath: #filePath)
@@ -13,6 +44,15 @@ final class MaskEditorUITests: XCTestCase {
         let handle = app.descendants(matching: .any)["mask-corner-0"].firstMatch
         XCTAssertTrue(handle.waitForExistence(timeout: 5))
         let original = handle.value as? String
+        let body = app.buttons["mask-body"]
+        XCTAssertTrue(body.exists)
+        let beforeMove = body.value as? String
+        let move = body.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        let boxSize = body.frame.size
+        move.press(forDuration: 0.1, thenDragTo: move.withOffset(CGVector(dx: 20, dy: 12)))
+        XCTAssertNotEqual(body.value as? String, beforeMove)
+        XCTAssertEqual(body.frame.width, boxSize.width, accuracy: 1)
+        XCTAssertEqual(body.frame.height, boxSize.height, accuracy: 1)
         let from = handle.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
         from.press(forDuration: 0.1, thenDragTo: from.withOffset(CGVector(dx: 18, dy: 14)))
         var changed = handle.value as? String

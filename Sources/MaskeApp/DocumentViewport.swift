@@ -31,6 +31,7 @@ struct DocumentViewport: UIViewRepresentable {
     final class Viewport: UIScrollView, UIScrollViewDelegate {
         private let picture = UIImageView()
         private let maskLayer = CAShapeLayer()
+        private let maskBody = MaskBody(frame: .zero)
         private var handles: [Corner] = []
         private var source: CGImage?
         private var quad: Quad?
@@ -52,7 +53,22 @@ struct DocumentViewport: UIViewRepresentable {
             backgroundColor = .clear
             picture.isUserInteractionEnabled = true
             picture.layer.addSublayer(maskLayer)
+            picture.addSubview(maskBody)
             addSubview(picture)
+            maskBody.accessibilityIdentifier = "mask-body"
+            maskBody.accessibilityLabel = "Move mask"
+            maskBody.accessibilityCustomActions = [("Move left", -1.0, 0.0), ("Move right", 1.0, 0.0),
+                                                   ("Move up", 0.0, -1.0), ("Move down", 0.0, 1.0)].map { name, x, y in
+                UIAccessibilityCustomAction(name: name) { [weak self] _ in
+                    guard let self, let quad = self.quad else { return false }
+                    self.moveMask(from: quad, by: CGPoint(x: x / 500, y: y / 500))
+                    return true
+                }
+            }
+            let move = UIPanGestureRecognizer(target: self, action: #selector(dragMask(_:)))
+            move.maximumNumberOfTouches = 1
+            maskBody.addGestureRecognizer(move)
+            panGestureRecognizer.require(toFail: move)
             let tap = UITapGestureRecognizer(target: self, action: #selector(doubleTap(_:)))
             tap.numberOfTapsRequired = 2
             addGestureRecognizer(tap)
@@ -123,6 +139,7 @@ struct DocumentViewport: UIViewRepresentable {
             CATransaction.setDisableActions(true)
             defer { CATransaction.commit() }
             maskLayer.isHidden = quad == nil
+            maskBody.isHidden = quad == nil
             for handle in handles { handle.isHidden = quad == nil }
             guard let quad else { return }
             let points = quad.points.map { CGPoint(x: $0.x * picture.bounds.width, y: $0.y * picture.bounds.height) }
@@ -130,6 +147,11 @@ struct DocumentViewport: UIViewRepresentable {
             path.move(to: points[0])
             points.dropFirst().forEach { path.addLine(to: $0) }
             path.close()
+            let frame = path.bounds
+            maskBody.frame = frame
+            var offset = CGAffineTransform(translationX: -frame.minX, y: -frame.minY)
+            maskBody.path = path.cgPath.copy(using: &offset)
+            maskBody.accessibilityValue = "\(Int(quad.boundingRect.midX * 100))% across, \(Int(quad.boundingRect.midY * 100))% down"
             maskLayer.frame = picture.bounds
             maskLayer.path = path.cgPath
             maskLayer.fillColor = hiddenMask ? UIColor(cgColor: Renderer.maskColor).withAlphaComponent(0.28).cgColor : UIColor.clear.cgColor
@@ -163,12 +185,35 @@ struct DocumentViewport: UIViewRepresentable {
 
         @objc private func dragCorner(_ gesture: UIPanGestureRecognizer) {
             guard let handle = gesture.view as? Corner, let quad else { return }
-            if gesture.state == .began { start = quad }
+            if gesture.state == .began {
+                start = quad
+                UIImpactFeedbackGenerator(style: .light).impactOccurred(intensity: 0.5)
+            }
             if gesture.state == .changed, let start, picture.bounds.width > 0, picture.bounds.height > 0 {
                 let delta = gesture.translation(in: picture)
                 _ = move(handle.index, from: start, x: delta.x / picture.bounds.width, y: delta.y / picture.bounds.height)
             }
             if gesture.state == .ended || gesture.state == .cancelled { start = nil }
+        }
+
+        @objc private func dragMask(_ gesture: UIPanGestureRecognizer) {
+            guard let quad else { return }
+            if gesture.state == .began {
+                start = quad
+                UIImpactFeedbackGenerator(style: .light).impactOccurred(intensity: 0.5)
+            }
+            if gesture.state == .changed, let start, picture.bounds.width > 0, picture.bounds.height > 0 {
+                let delta = gesture.translation(in: picture)
+                moveMask(from: start, by: CGPoint(x: delta.x / picture.bounds.width, y: delta.y / picture.bounds.height))
+            }
+            if gesture.state == .ended || gesture.state == .cancelled { start = nil }
+        }
+
+        private func moveMask(from quad: Quad, by delta: CGPoint) {
+            let moved = quad.translated(by: delta)
+            self.quad = moved
+            updateMask()
+            onEdit?(moved)
         }
 
         @discardableResult private func move(_ index: Int, from quad: Quad, x: CGFloat, y: CGFloat) -> Bool {
@@ -181,6 +226,19 @@ struct DocumentViewport: UIViewRepresentable {
             updateMask()
             onEdit?(candidate)
             return true
+        }
+    }
+
+    private final class MaskBody: UIControl {
+        var path: CGPath?
+        override init(frame: CGRect) {
+            super.init(frame: frame)
+            isAccessibilityElement = true
+            accessibilityTraits = .button
+        }
+        required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+        override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+            path?.contains(point) ?? false
         }
     }
 

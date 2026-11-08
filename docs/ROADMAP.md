@@ -23,4 +23,4 @@ In order. Each step should end with its check in `scripts/check.sh` (or a note o
 - Signatures (no detection yet), QR code contents (masked, not read).
 - iPad layout; Mac (Catalyst or native) using the same MaskeCore.
 - Optional on-device language model (Apple Foundation Models, iOS 26+) to classify unlabelled fields, kept optional and offline.
-- Export as PDF in addition to JPEG.
+- Separate multi-page PDF export (revision 7 exports the inspected composite image as one PDF page).

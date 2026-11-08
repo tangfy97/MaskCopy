@@ -204,6 +204,10 @@ final class Session: ObservableObject {
 
 /// Writes temporary copies for the share sheet and deletes them when the session ends.
 enum Exporter {
+    enum Format: String, CaseIterable, Sendable {
+        case jpg, pdf
+        var title: String { rawValue.uppercased() }
+    }
     static var directory: URL { FileManager.default.temporaryDirectory.appendingPathComponent("Copies", isDirectory: true) }
 
     static func preview(_ pages: [Session.Page], recipient: String, purpose: String) -> CGImage? {
@@ -212,15 +216,17 @@ enum Exporter {
         return Renderer.render(pages: pages.map { ($0.image, $0.findings) }, watermark: watermark)
     }
 
-    /// Only an explicit Share action writes a file. Each attempt owns its directory,
+    /// Only an explicit Save or Share action writes a file. Each attempt owns its directory,
     /// so cancelling an old attempt cannot remove a newer copy.
-    static func writeCopy(_ image: CGImage, recipient: String) -> URL? {
-        guard !Task.isCancelled, let data = Renderer.jpegData(image) else { return nil }
+    static func writeCopy(_ image: CGImage, recipient: String, format: Format = .jpg) -> URL? {
+        guard !Task.isCancelled else { return nil }
+        let encoded = format == .jpg ? Renderer.jpegData(image) : Renderer.pdfData(image)
+        guard let data = encoded else { return nil }
         let folder = directory.appendingPathComponent(UUID().uuidString, isDirectory: true)
         let f = DateFormatter()
         f.dateFormat = "yyyy-MM-dd"
-        let who = recipient.components(separatedBy: CharacterSet.alphanumerics.inverted).filter { !$0.isEmpty }.joined(separator: " ")
-        let url = folder.appendingPathComponent("ID copy for \(who.isEmpty ? "recipient" : who) \(f.string(from: Date())).jpg")
+        let who = String(recipient.components(separatedBy: CharacterSet.alphanumerics.inverted).filter { !$0.isEmpty }.joined(separator: " ").prefix(48))
+        let url = folder.appendingPathComponent("ID copy for \(who.isEmpty ? "recipient" : who) \(f.string(from: Date())).\(format.rawValue)")
         do {
             guard !Task.isCancelled else { return nil }
             try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)

@@ -40,6 +40,15 @@ public struct Quad: Codable, Equatable, Sendable {
         return CGRect(x: xs.min()!, y: ys.min()!, width: xs.max()! - xs.min()!, height: ys.max()! - ys.min()!)
     }
 
+    /// Move the complete mask without changing its shape or letting an edge leave the page.
+    public func translated(by delta: CGPoint) -> Quad {
+        guard delta.x.isFinite, delta.y.isFinite else { return self }
+        let bounds = boundingRect
+        let x = min(max(delta.x, -bounds.minX), max(-bounds.minX, 1 - bounds.maxX))
+        let y = min(max(delta.y, -bounds.minY), max(-bounds.minY, 1 - bounds.maxY))
+        return mapped { CGPoint(x: $0.x + x, y: $0.y + y) }
+    }
+
     /// Area in units where the page is `aspect` wide and 1 high.
     public func area(aspect: CGFloat = 1) -> CGFloat {
         let p = points.map { CGPoint(x: $0.x * aspect, y: $0.y) }
