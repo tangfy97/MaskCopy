@@ -34,7 +34,7 @@ struct Luma {
 enum InkFit {
     /// The ink of one line of text, measured in the line's own frame (u along the text, v across it, in pixels).
     struct Ink {
-        let origin: CGPoint, ux: CGPoint, vy: CGPoint
+        let toPage: Homography
         let w: CGFloat, h: CGFloat, step: CGFloat, u0: CGFloat, v0: CGFloat
         let colInk: [Int]
         let top: Int, bottom: Int, left: Int, right: Int
@@ -56,11 +56,13 @@ enum InkFit {
         func u(_ c: Int) -> CGFloat { u0 + CGFloat(c) * step }
         func v(_ r: Int) -> CGFloat { v0 + CGFloat(r) * step }
 
+        func point(_ u: CGFloat, _ v: CGFloat) -> CGPoint {
+            toPage.apply(CGPoint(x: u / w, y: v / h))
+        }
+
         func column(at point: CGPoint) -> CGFloat {
-            let delta = minus(CGPoint(x: point.x * size.width, y: point.y * size.height), origin)
-            // The OCR frame can be skewed. Project along the frame's vertical axis.
-            let along = (delta.x * vy.y - delta.y * vy.x) / (ux.x * vy.y - ux.y * vy.x)
-            return (along - u0) / step
+            guard let local = toPage.unapply(point) else { return CGFloat(left + right) / 2 }
+            return (local.x * w - u0) / step
         }
 
         /// Ink columns grouped into runs separated by gaps of at least `gap` pixels.
@@ -81,11 +83,7 @@ enum InkFit {
         func region(_ l: Int, _ r: Int) -> Quad {
             let pad = 0.12 * h
             let le = u(l) - pad, ri = u(r + 1) + pad
-            func at(_ uu: CGFloat, _ vv: CGFloat) -> CGPoint {
-                let p = plus(plus(origin, scale(ux, uu)), scale(vy, vv))
-                return CGPoint(x: p.x / size.width, y: p.y / size.height)
-            }
-            return Quad(tl: at(le, 0), tr: at(ri, 0), br: at(ri, h), bl: at(le, h))
+            return Quad(tl: point(le, 0), tr: point(ri, 0), br: point(ri, h), bl: point(le, h))
         }
 
         /// The shape around columns `l...r` and the ink rows, grown by a thin margin, normalized to the page.
@@ -93,11 +91,8 @@ enum InkFit {
             let (bt, bb) = (l == left && r == right) ? (top, bottom) : band(l, r)
             let t = v(bt), b = v(bb + 1), le = u(l), ri = u(r + 1)
             let m = max(3, margin * (b - t))
-            func at(_ uu: CGFloat, _ vv: CGFloat) -> CGPoint {
-                let p = plus(plus(origin, scale(ux, uu)), scale(vy, vv))
-                return CGPoint(x: p.x / size.width, y: p.y / size.height)
-            }
-            return Quad(tl: at(le - m, t - m), tr: at(ri + m, t - m), br: at(ri + m, b + m), bl: at(le - m, b + m))
+            return Quad(tl: point(le - m, t - m), tr: point(ri + m, t - m),
+                        br: point(ri + m, b + m), bl: point(le - m, b + m))
         }
     }
 
@@ -118,17 +113,14 @@ enum InkFit {
 
     /// The same text measured in a frame turned to its angle, and by how much; nil if it already lies flat.
     static func levelled(_ base: Ink, in luma: Luma, extend: Bool) -> (Ink, CGFloat)? {
-        let W = CGFloat(luma.width), H = CGFloat(luma.height)
-        // The centre of the frame's box (u 0...w, v 0...h).
-        let centre = plus(plus(base.origin, scale(base.ux, base.w / 2)), scale(base.vy, base.h / 2))
         func turned(_ degrees: CGFloat) -> Quad {
             let a = degrees * .pi / 180
-            let ux = CGPoint(x: base.ux.x * cos(a) - base.ux.y * sin(a), y: base.ux.x * sin(a) + base.ux.y * cos(a))
-            let vy = CGPoint(x: -ux.y, y: ux.x)
-            let hw = scale(ux, base.w / 2), hh = scale(vy, base.h / 2)
-            func n(_ p: CGPoint) -> CGPoint { CGPoint(x: p.x / W, y: p.y / H) }
-            return Quad(tl: n(minus(minus(centre, hw), hh)), tr: n(minus(plus(centre, hw), hh)),
-                        br: n(plus(plus(centre, hw), hh)), bl: n(plus(minus(centre, hw), hh)))
+            func at(_ x: CGFloat, _ y: CGFloat) -> CGPoint {
+                base.point(base.w / 2 + x * cos(a) - y * sin(a),
+                           base.h / 2 + x * sin(a) + y * cos(a))
+            }
+            return Quad(tl: at(-base.w / 2, -base.h / 2), tr: at(base.w / 2, -base.h / 2),
+                        br: at(base.w / 2, base.h / 2), bl: at(-base.w / 2, base.h / 2))
         }
         // The text's own angle in this frame: a robust line through the bottom (and top) of the ink
         // in each column, sampled along the text. Descenders and accents are outvoted.
@@ -150,7 +142,9 @@ enum InkFit {
         let bottomAngle = atan(theilSen(bottoms)) * 180 / .pi
         let degrees = (topAngle + bottomAngle) / 2
         if ProcessInfo.processInfo.environment["MASKE_DEBUG"] != nil {
-            print(String(format: "    frame: vision angle %.1f°, text leans %+.2f° in it", atan2(base.ux.y, base.ux.x) * 180 / .pi, degrees))
+            let start = base.point(0, 0), end = base.point(base.w, 0)
+            let angle = atan2((end.y - start.y) * base.size.height, (end.x - start.x) * base.size.width)
+            print(String(format: "    frame: vision angle %.1f°, text leans %+.2f° in it", angle * 180 / .pi, degrees))
         }
         // Background print and mixed glyph heights can pull just one edge off the text.
         // Keep the original frame when a turn makes the band taller or cuts off end ink.
@@ -172,16 +166,19 @@ enum InkFit {
     }
 
     static func measureFrame(_ quad: Quad, in luma: Luma, extend: Bool = true) -> Ink? {
+        guard quad.isConvex else { return nil }
         let W = CGFloat(luma.width), H = CGFloat(luma.height)
         func px(_ p: CGPoint) -> CGPoint { CGPoint(x: p.x * W, y: p.y * H) }
         let tl = px(quad.tl), tr = px(quad.tr), br = px(quad.br), bl = px(quad.bl)
-        let ux = normalize(plus(minus(tr, tl), minus(br, bl)))
-        let vy = normalize(plus(minus(bl, tl), minus(br, tr)))
         let w = (dist(tl, tr) + dist(bl, br)) / 2
         let h = (dist(tl, bl) + dist(tr, br)) / 2
         guard w >= 4, h >= 4 else { return nil }
         let step = max(0.5, h / 28)
-        func point(_ u: CGFloat, _ v: CGFloat) -> CGPoint { plus(plus(tl, scale(ux, u)), scale(vy, v)) }
+        let toPage = Homography(unitSquareTo: quad)
+        func point(_ u: CGFloat, _ v: CGFloat) -> CGPoint {
+            let p = toPage.apply(CGPoint(x: u / w, y: v / h))
+            return CGPoint(x: p.x * W, y: p.y * H)
+        }
 
         // Sample a window a little larger than the box.
         let u0 = -0.9 * h, u1 = w + 0.9 * h, v0 = -0.45 * h, v1 = 1.45 * h
@@ -192,6 +189,7 @@ enum InkFit {
             let v = v0 + CGFloat(r) * step
             for c in 0..<cols {
                 let p = point(u0 + CGFloat(c) * step, v)
+                guard p.x.isFinite, p.y.isFinite else { return nil }
                 grey[r * cols + c] = luma.at(p.x, p.y)
             }
         }
@@ -246,7 +244,7 @@ enum InkFit {
 
         var bits = [Bool](repeating: false, count: cols * rows)
         for rr in 0..<rows { for cc in 0..<cols where ink(rr, cc) { bits[rr * cols + cc] = true } }
-        return Ink(origin: tl, ux: ux, vy: vy, w: w, h: h, step: step, u0: u0, v0: v0, colInk: colInk,
+        return Ink(toPage: toPage, w: w, h: h, step: step, u0: u0, v0: v0, colInk: colInk,
                    top: top, bottom: bottom, left: left, right: right, size: CGSize(width: W, height: H),
                    bits: bits, cols: cols, rows: rows)
     }

@@ -19,7 +19,18 @@ public struct Analyzer {
             doc = upright
             observations = reread
         }
-        return (doc, analyze(doc.image, fillsFrame: doc.fillsFrame, observations: observations))
+        var frames: [Quad] = []
+        if doc.corners != Quad(CGRect(x: 0, y: 0, width: 1, height: 1)) {
+            // Resampling can lose a thin photo border. Keep frames measured before page
+            // correction, transformed through the same mapping as the corrected pixels.
+            frames = PortraitDetector.detectFrames(in: photo).compactMap { frame in
+                let corners = Rectifier.rotated(frame, quarterTurns: doc.quarterTurns).points.compactMap(doc.toSource.unapply)
+                guard corners.count == 4 else { return nil }
+                let mapped = Quad(tl: corners[0], tr: corners[1], br: corners[2], bl: corners[3])
+                return mapped.isConvex ? mapped : nil
+            }
+        }
+        return (doc, analyze(doc.image, fillsFrame: doc.fillsFrame, observations: observations, sourceFrames: frames))
     }
 
     /// Analyzes an upright image. `fillsFrame` says the image is the document edge to edge,
@@ -39,7 +50,7 @@ public struct Analyzer {
         return reversed.count >= 2 && reversed.count * 5 >= lines.count * 4
     }
 
-    private func analyze(_ image: CGImage, fillsFrame: Bool, observations: Observations) -> PageAnalysis {
+    private func analyze(_ image: CGImage, fillsFrame: Bool, observations: Observations, sourceFrames: [Quad] = []) -> PageAnalysis {
         let aspect = CGFloat(image.width) / CGFloat(max(image.height, 1))
         var (lines, faces, barcodes) = observations
         let (mrz, mrzLines) = readMRZ(in: image, lines: &lines)
@@ -93,11 +104,28 @@ public struct Analyzer {
         }
 
         // 6. Photos and barcodes.
+        let portraits = PortraitDetector(image: image, sourceFrames: sourceFrames)
+        if kind == .passport { faces.append(contentsOf: portraits.passportFaces(excluding: faces)) }
         for face in faces {
             let estimate = page.photoEstimate(around: face)
             let bounds = page.photoBounds(around: face, within: estimate)
-            if let edge = portraitEdge(near: Quad(estimate), face: face, within: bounds, in: image) {
+            let search = page.photoBounds(around: face, within: estimate.insetBy(dx: 0, dy: -face.height * 0.35).clampedToUnit())
+            if let edge = portraits.frame(near: Quad(estimate), face: face, bounds: bounds) {
                 page.findings.append(Finding(kind: .photo, quad: edge, note: "face, portrait edge"))
+            } else if var measured = portraits.borderlessBounds(face: face, within: search, text: lines.map(\.box)) {
+                if country?.code == "NL", kind == .drivingLicence, face.midX < 0.4,
+                   let row = mrzLines.first, MRZReader.normalize(row.text).hasPrefix("D1NLD"),
+                   abs(row.quad.tr.y - row.quad.tl.y) < row.box.width * 0.03 {
+                    // The D1 Dutch licence's pale left shoulder is printed over the card's
+                    // pink security pattern. Its measured ink can look like background.
+                    // Calibrated against the official specimen, relative to its MRZ start,
+                    // so this never uses the edges of an unrectified input photograph.
+                    let left = max(0, row.quad.tl.x - row.box.width * 0.025)
+                    if left < measured.minX, measured.minX - left < face.width * 0.35 {
+                        measured = CGRect(x: left, y: measured.minY, width: measured.maxX - left, height: measured.height)
+                    }
+                }
+                page.findings.append(Finding(kind: .photo, rect: measured, note: "borderless portrait bounds"))
             } else {
                 page.findings.append(Finding(kind: .photo, rect: bounds, note: "face estimate"))
             }
@@ -106,10 +134,13 @@ public struct Analyzer {
             page.addLayoutPhoto()
             for i in page.findings.indices where page.findings[i].kind == .photo {
                 let photo = page.findings[i]
-                if let edge = portraitEdge(near: photo.shape, face: nil, within: nil, in: image) {
+                if let edge = portraits.frame(near: photo.shape, face: nil, bounds: nil) {
                     page.findings[i] = Finding(kind: .photo, quad: edge, note: photo.note + ", portrait edge")
                 }
             }
+        }
+        for window in portraits.windows(country: page.country, kind: kind, existing: page.findings) {
+            page.findings.append(Finding(kind: .photo, quad: window, note: "portrait window edge"))
         }
         for (quad, _) in barcodes { page.add(.barcode, quad, padding: 0.02, note: "barcode", fit: false) }
         // The PDF417 on the back of North American licences and ID cards (AAMVA).
@@ -218,50 +249,6 @@ public struct Analyzer {
         lines.append(contentsOf: result.1)
         if Page.debug { print("  · MRZ retry: found \(result.1.count) rows") }
         return result
-    }
-
-    // MARK: Portrait edge
-
-    /// The portrait's own rectangle near an estimate: an upright frame, about as tall as passport
-    /// photos are for their width, that holds the face (if one was found) and is close to the estimate's size.
-    private func portraitEdge(near estimate: Quad, face: CGRect?, within bounds: CGRect?, in image: CGImage) -> Quad? {
-        let est = estimate.boundingRect
-        let roi = est.insetBy(dx: -est.width * 0.35, dy: -est.height * 0.25).clampedToUnit()
-        guard roi.width > 0.02, roi.height > 0.02 else { return nil }
-        let r = VNDetectRectanglesRequest()
-        r.regionOfInterest = CGRect(x: roi.minX, y: 1 - roi.maxY, width: roi.width, height: roi.height)
-        r.minimumAspectRatio = 0.55
-        r.maximumAspectRatio = 0.95
-        r.minimumSize = 0.35
-        r.quadratureTolerance = 12
-        r.minimumConfidence = 0.4
-        r.maximumObservations = 6
-        guard (try? perform(r, on: image)) != nil else { return nil }
-        let aspect = CGFloat(image.width) / CGFloat(image.height)
-        let estArea = est.area
-        let targetArea = bounds?.area ?? estArea
-        // Read each result both as relative to the region of interest and to the whole image;
-        // only the reading that lands on the portrait passes the checks below.
-        let candidates = (r.results ?? []).flatMap { o -> [Quad] in
-            let q = Rectifier.quad(o)
-            return [q.mapped { CGPoint(x: roi.minX + $0.x * roi.width, y: roi.minY + $0.y * roi.height) }, q]
-        }.filter { q in
-            let b = q.boundingRect
-            let ratio = (b.width * aspect) / b.height
-            guard (0.6...0.95).contains(ratio) else { return false }
-            let area = b.width * b.height
-            guard area > estArea * 0.45, area < estArea * 2.2 else { return false }
-            if let face, let bounds {
-                // A detected frame may sit on the boundary, but must keep the face inside all four edges.
-                let core = Quad(face.insetBy(dx: face.width * 0.08, dy: face.height * 0.08))
-                let tolerance = 2 / CGFloat(image.width)
-                return core.points.allSatisfy { q.contains($0) }
-                    && (bounds.minX == est.minX || b.minX >= bounds.minX - tolerance)
-                    && (bounds.maxX == est.maxX || b.maxX <= bounds.maxX + tolerance)
-            }
-            return b.intersectionArea(est) > 0.5 * area
-        }
-        return candidates.min { abs($0.boundingRect.area - targetArea) < abs($1.boundingRect.area - targetArea) }
     }
 
     // MARK: Classification
@@ -633,7 +620,13 @@ struct Page {
         }
         let minX = columnEdge(left, at: \.maxX, outward: -1) ?? estimate.minX
         let maxX = columnEdge(right, at: \.minX, outward: 1) ?? estimate.maxX
-        return CGRect(x: minX, y: estimate.minY, width: maxX - minX, height: estimate.height)
+        let below = textLines.map(\.box).filter {
+            $0.minY > face.maxY + face.height * 0.1 && $0.minY < estimate.maxY
+                && $0.height < face.height * 0.28 && $0.width > face.width * 0.5
+                && $0.maxX > minX && $0.minX < maxX
+        }.map(\.minY).min()
+        let bottom = below.map { $0 - face.height * 0.03 } ?? estimate.maxY
+        return CGRect(x: minX, y: estimate.minY, width: maxX - minX, height: bottom - estimate.minY)
     }
 
     /// Where the portrait sits by standard, for when no face is found (worn or glossy photos).

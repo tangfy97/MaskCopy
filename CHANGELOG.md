@@ -4,6 +4,15 @@ All notable changes to Maske are listed here. Versions follow [Semantic Versioni
 
 ## [0.1.0] - 2026-11-08
 
+Build 4: precise photo review and readable copies.
+
+- Tighten complete photo rectangles using verified frames, connected portrait pixels and neighbouring fields. Include pale shoulders on the Dutch D1 licence using its MRZ as a local anchor.
+- Cover transparent and small secondary portraits on the reviewed Dutch ID/licence and Norwegian ID/licence specimens. Retry small passport faces in an enlarged crop, including the Chinese passport's secondary portrait.
+- Adjust any existing mask with four draggable corners and 1–8× zoom. Save changes the export polygon; Cancel discards the edit.
+- Replace black masks with an opaque blue-grey fill. Put recipient, purpose and date in a wrapping footer, with one light recipient watermark per page instead of dense repeated text.
+- Preserve residual perspective while fitting individual text lines. Reject invalid correction geometry and keep source-coordinate metadata consistent if correction fails.
+- Add Norwegian ID and paired-window synthetic regressions, an optional specimen annotation manifest for `maske eval`, and geometry/opaque-rendering tests. Device validation and remaining recognition limits are recorded in KNOWN_ISSUES.
+
 Build 3: mask fixes from specimen testing.
 
 - Keep estimated portrait masks within nearby field columns when several separate text rows mark the same boundary.

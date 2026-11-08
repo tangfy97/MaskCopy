@@ -9,7 +9,7 @@ struct ReviewView: View {
             if session.analyzing {
                 VStack(spacing: 14) {
                     ProgressView()
-                    Text("Reading the document on your iPhone…")
+                    Text("Reading document…")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                 }
@@ -44,8 +44,8 @@ struct ReviewView: View {
                 }
 
                 Text(drawing
-                     ? "Drag over anything else you want to hide."
-                     : "Tap a box to show or hide what is under it. Check every field before you share.")
+                     ? "Drag to add a box."
+                     : "Tap a box to adjust.")
                     .font(.footnote)
                     .foregroundStyle(drawing ? Color.fjord : .secondary)
                     .animation(.default, value: drawing)
@@ -82,11 +82,11 @@ struct ReviewView: View {
             .font(.title3.weight(.semibold))
             .foregroundStyle(Color.ink)
             if session.country == nil || session.kind == .unknown {
-                Text("Not recognised. Maske found what it could; add boxes for the rest.")
+                Text("Not recognised. Add any missing boxes.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             } else if session.country?.isSupported == false {
-                Text("This country isn’t on Maske’s supported list yet. Check every box carefully.")
+                Label("Check all masks", systemImage: "exclamationmark.triangle")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -121,7 +121,7 @@ struct ReviewView: View {
     }
 
     private var nothingFound: some View {
-        Text("Nothing to hide was found. Use Add box to cover anything yourself.")
+        Text("Add boxes to hide details.")
             .font(.callout)
             .foregroundStyle(.secondary)
             .padding(16)
@@ -135,6 +135,7 @@ struct PageCanvas: View {
     @Binding var page: Session.Page
     let drawing: Bool
     @State private var drag: CGRect?
+    @State private var editing: Finding?
 
     var body: some View {
         Image(decorative: page.image, scale: 1)
@@ -156,8 +157,14 @@ struct PageCanvas: View {
                             }
                             .frame(width: size.width, height: size.height)
                             .contentShape(shape)
-                            .onTapGesture { withAnimation(.snappy(duration: 0.2)) { f.isOn.toggle() } }
+                            .onTapGesture { editing = f }
                             .contextMenu {
+                                Button("Adjust box", systemImage: "arrow.up.left.and.arrow.down.right") {
+                                    editing = f
+                                }
+                                Button(f.isOn ? "Show" : "Hide", systemImage: f.isOn ? "eye" : "eye.slash") {
+                                    f.isOn.toggle()
+                                }
                                 if f.kind == .custom {
                                     Button("Remove box", systemImage: "trash", role: .destructive) {
                                         page.findings.removeAll { $0.id == f.id }
@@ -196,6 +203,13 @@ struct PageCanvas: View {
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(drawing ? Color.fjord : Color.hairline, lineWidth: drawing ? 2 : 1))
             .shadow(color: .black.opacity(0.06), radius: 12, y: 6)
+            .sheet(item: $editing) { finding in
+                MaskEditorView(image: page.image, finding: finding) { updated in
+                    if let index = page.findings.firstIndex(where: { $0.id == updated.id }) {
+                        page.findings[index] = updated
+                    }
+                }
+            }
     }
 }
 

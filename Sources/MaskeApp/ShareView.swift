@@ -29,14 +29,10 @@ struct ShareView: View {
                 .frame(maxWidth: .infinity)
 
                 VStack(alignment: .leading, spacing: 18) {
-                    field("Who is this copy for?", text: $session.recipient, prompt: "Landlord, employer, hotel…", focus: .recipient)
-                    field("What is it for?", text: $session.purpose, prompt: "Optional, e.g. rental application", focus: .purpose)
+                    field("Recipient", text: $session.recipient, prompt: "Hotel, employer…", focus: .recipient)
+                    field("Purpose", text: $session.purpose, prompt: "Optional", focus: .purpose)
                 }
 
-                Text("Their name, the purpose and today’s date are written across the whole copy, so it can’t be passed on as yours elsewhere. Hidden parts are painted over, not blurred, and the photo’s location and camera details are removed.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(20)
         }
@@ -95,7 +91,7 @@ struct ShareView: View {
                 .tint(.ink)
                 .disabled(true)
             }
-            Button("Done, forget this document") { session.finish() }
+            Button("Done") { session.finish() }
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .padding(.vertical, 6)

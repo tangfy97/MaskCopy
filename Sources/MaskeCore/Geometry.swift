@@ -24,6 +24,17 @@ public struct Quad: Codable, Equatable, Sendable {
 
     public var points: [CGPoint] { [tl, tr, br, bl] }
 
+    /// A perspective transform needs four finite corners forming one convex region.
+    var isConvex: Bool {
+        guard points.allSatisfy({ $0.x.isFinite && $0.y.isFinite }) else { return false }
+        let turns = (0..<4).map { index -> CGFloat in
+            let a = minus(points[(index + 1) % 4], points[index])
+            let b = minus(points[(index + 2) % 4], points[(index + 1) % 4])
+            return a.x * b.y - a.y * b.x
+        }
+        return turns.allSatisfy { $0 > 1e-10 } || turns.allSatisfy { $0 < -1e-10 }
+    }
+
     public var boundingRect: CGRect {
         let xs = points.map(\.x), ys = points.map(\.y)
         return CGRect(x: xs.min()!, y: ys.min()!, width: xs.max()! - xs.min()!, height: ys.max()! - ys.min()!)
@@ -128,6 +139,17 @@ public struct Homography: Sendable {
     }
 
     public func apply(_ q: Quad) -> Quad { q.mapped(apply) }
+
+    /// Maps image points back into the unit square used to construct this transform.
+    func unapply(_ p: CGPoint) -> CGPoint? {
+        let aa = a - p.x * g, bb = b - p.x * h
+        let dd = d - p.y * g, ee = e - p.y * h
+        let determinant = aa * ee - bb * dd
+        guard abs(determinant) > 1e-12 else { return nil }
+        let x = p.x - c, y = p.y - f
+        let result = CGPoint(x: (x * ee - bb * y) / determinant, y: (aa * y - x * dd) / determinant)
+        return result.x.isFinite && result.y.isFinite ? result : nil
+    }
 }
 
 func lerp(_ a: CGPoint, _ b: CGPoint, _ t: CGFloat) -> CGPoint { CGPoint(x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t) }

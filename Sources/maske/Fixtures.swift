@@ -20,6 +20,7 @@ struct Expected: Codable {
     var country: String
     var hide: [Box]
     var keep: [Box]
+    var file: String? = nil
 }
 
 enum Role {
@@ -35,7 +36,7 @@ final class Doc {
     let size: CGSize
     let tint: (CGFloat, CGFloat, CGFloat)
     var items: [(String, CGPoint, CGFloat, String, Role)] = [] // text, origin (fraction), size, font, role
-    var photo: (CGRect, Role)?
+    var photos: [(CGRect, Role)] = []
     var barcode: (CGRect, String)?
 
     init(_ name: String, _ kind: DocumentKind, _ country: String, passport: Bool = false, tint: (CGFloat, CGFloat, CGFloat) = (0.93, 0.95, 0.96)) {
@@ -73,7 +74,7 @@ final class Doc {
         return self
     }
 
-    func portrait(_ r: CGRect, _ role: Role = .plain) -> Doc { photo = (r, role); return self }
+    func portrait(_ r: CGRect, _ role: Role = .plain) -> Doc { photos.append((r, role)); return self }
 }
 
 enum MRZBuilder {
@@ -160,6 +161,20 @@ enum Fixtures {
                              doc: "K1234567A", personal: "S1234567D", personalLabel: "NRIC No."))
 
         // MARK: European ID cards (TD1)
+        docs.append(Doc("id-nor-front", .idCard, "NO")
+            .t("NORGE NOREG NORWAY", 0.04, 0.04, 30)
+            .t("ID-KORT / IDENTITY CARD", 0.44, 0.04, 28)
+            .field("Etternavn / Surname", "NORDMANN", 0.43, 0.17)
+            .field("Fornavn / Given names", "KARI", 0.43, 0.29)
+            .field("Dokumentnr / Document no.", "JG1234567", 0.43, 0.57, .hide(.documentNumber))
+            .field("CAN", "123456", 0.79, 0.82, .hide(.cardAccessNumber))
+            .portrait(CGRect(x: 0.04, y: 0.22, width: 0.35, height: 0.70), .plain)
+            .portrait(CGRect(x: 0.70, y: 0.30, width: 0.13, height: 0.28), .hide(.photo)))
+        docs.append(Doc("id-nor-back", .idCard, "NO")
+            .field("Fødselsnummer / National ID number", fnr, 0.04, 0.05, .hide(.personalNumber))
+            .portrait(CGRect(x: 0.18, y: 0.30, width: 0.13, height: 0.28), .hide(.photo))
+            .mrz(MRZBuilder.td1(state: "NOR", doc: "JG1234567", dob: "850715", sex: "F", exp: "310101",
+                                nat: "NOR", surname: "NORDMANN", given: "KARI")))
         docs.append(Doc("id-nld-front", .idCard, "NL")
             .t("KONINKRIJK DER NEDERLANDEN", 0.33, 0.05, 30, .plain, font: "Helvetica-Bold")
             .t("IDENTITEITSKAART / IDENTITY CARD", 0.33, 0.11, 24)
@@ -307,6 +322,8 @@ enum Fixtures {
         let dutchLicenceMRZ = "D1NLD3" + dutchLicenceNumber + "ABC12345K789X"
         docs.append(euLicence("dl-nld", "NL", title: "RIJBEWIJS  NEDERLAND", surname: "DE VRIES", given: "ANNA", birth: "10.03.1990 AMSTERDAM",
                               authority: "Burg. Amsterdam", personal: "111222333", number: dutchLicenceNumber)
+            .portrait(CGRect(x: 0.71, y: 0.66, width: 0.09, height: 0.15), .hide(.photo))
+            .portrait(CGRect(x: 0.84, y: 0.66, width: 0.07, height: 0.15), .hide(.photo))
             .t(dutchLicenceMRZ + MRZBuilder.cd(dutchLicenceMRZ), 0.04, 0.94, 42, .hide(.machineReadableZone), font: "Menlo"))
         docs.append(euLicence("dl-nor", "NO", title: "FØRERKORT  NORGE", surname: "NORDMANN", given: "KARI", birth: "15.07.1985 OSLO",
                               authority: "Statens vegvesen", personal: fnr, number: "10 12345 67 8"))
@@ -450,7 +467,7 @@ enum Fixtures {
             }
         }
 
-        if let (r, role) = doc.photo {
+        for (r, role) in doc.photos {
             let px = CGRect(x: r.minX * W, y: r.minY * H, width: r.width * W, height: r.height * H)
             let bl = CGRect(x: px.minX, y: H - px.maxY, width: px.width, height: px.height)
             ctx.setFillColor(CGColor(srgbRed: 0.78, green: 0.79, blue: 0.8, alpha: 1))

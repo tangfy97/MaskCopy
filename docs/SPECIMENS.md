@@ -12,7 +12,7 @@ Everything downloaded goes in `Fixtures/specimens/` (git-ignored). Generated fol
 
 ## Synthetic documents
 
-41 documents with made-up people and valid check digits: passports (NOR, NLD, DEU, USA, GBR, CHN, JPN, KOR, AUS, SGP), European ID cards front and back (NLD, DEU, BEL, ITA, ESP, POL, SWE), a Norwegian residence card, Asian ID cards (CN, HK, TW, KR, SG, MY), a Japanese residence card, driving licences (NLD, NOR, FRA, GBR, NZL, USA front and back with PDF417, CAN Ontario, AUS NSW, CHN, JPN, KOR, SGP, MYS).
+43 documents with made-up people and valid check digits: passports (NOR, NLD, DEU, USA, GBR, CHN, JPN, KOR, AUS, SGP), European ID cards front and back (NOR, NLD, DEU, BEL, ITA, ESP, POL, SWE), a Norwegian residence card, Asian ID cards (CN, HK, TW, KR, SG, MY), a Japanese residence card, driving licences (NLD, NOR, FRA, GBR, NZL, USA front and back with PDF417, CAN Ontario, AUS NSW, CHN, JPN, KOR, SGP, MYS). The Norwegian ID fixtures include windows; the Dutch licence has paired small portrait frames.
 
 Each is drawn on a dark "table" with margins and rounded corners, so finding the document is part of the test. `expected.json` holds, for every field, its role (`hide` with a kind, or `keep`) and its exact ink bounds (from Core Text's glyph image bounds), in the coordinates of the whole image. The portraits are drawn silhouettes, which Vision does not see as faces.
 
@@ -57,6 +57,12 @@ The first before-and-after comparison used these local files. Use `maske review`
 | Wikimedia Commons | `NL-passport-01.jpg`, `NL-idCard-05.jpg`, `NO-passport-01.jpg`, `CN-passport-01.jpg`, `FI-drivingLicence-01.jpg`, `FR-idCard-03.jpg` (German ID despite the local file name) |
 
 For the Dutch licence's one-line MRZ, see Table 44 of the [Dutch eDL reading manual](https://www.ilent.nl/binaries/ilt/documenten/transport/taxi/boordcomputer-taxi-bct/publicaties/definitief-startpakket-cdt/DA42EN-Electronic-Driving-Licence-Reading-Manual-v2-3.pdf).
+
+## Focused photo-boundary check (8 November)
+
+`Fixtures/specimen-focus.json` annotates the Dutch licence and ID front, Norwegian ID front/back and licence front, and Chinese passport data page and licence front. It records complete photo rectangles, transparent windows, secondary portraits, selected sensitive numbers and fields to preserve. The Dutch licence's primary rectangle includes its faint left shoulder, not just the dark hair and face. Only annotations are committed; the specimen image files remain ignored.
+
+Run `maske eval Fixtures/specimens Fixtures/specimen-focus.json`. Use this alongside the 28-page visual review, not as a replacement for it. The existing 98% sampling threshold and incomplete field annotations cannot prove pixel-perfect or complete redaction. Device photographs, historical versions and overlapping secondary portraits still need review.
 
 ## Other sources to consider
 

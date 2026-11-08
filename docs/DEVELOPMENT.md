@@ -6,7 +6,7 @@
 
 1. **Straightens the document** (`Rectifier`). A quick read of the photo each way up scores the text, with a bonus for readable MRZ lines. Vision's document outline is accepted only if most of that text is inside it, so the portrait or a barcode is never taken for the document. The document is then perspective-corrected. If most text boxes in the full read point backward, turn the page 180° and read it again. What the user reviews and shares is this straightened document.
 2. **Finds what to hide** on it with the rules below.
-3. **Fits every text mask to the ink** (`InkFit`). Around each box from Vision it looks at the pixels, finds the text's own angle from the edges of its characters, and shrinks or extends the box to the first and last ink, plus a thin margin. A turn must tighten the band without losing end ink. If the band extends into adjacent rows, use the OCR box with a margin. For a value on the same line as its label, use the gap between distinct Vision character boxes when available, then fall back to estimated character widths. Masks are four-cornered shapes, so tilted text gets a tilted mask.
+3. **Fits every text mask to the ink** (`InkFit`). Projectively sample each four-cornered text box into a local patch, measure and level its ink there, then map all mask corners back through the same homography. This retains residual taper. A turn must tighten the band without losing end ink. If the band extends into adjacent rows, use the OCR box with a margin. For a value on the same line as its label, use distinct Vision character boxes when available, then fall back to estimated character widths.
 
 Debugging: `MASKE_DEBUG=1 maske analyze <image>` prints how each mask was made; `maske ocr <image>` compares text recognition in memory and from a file (see [KNOWN_ISSUES.md](KNOWN_ISSUES.md)).
 
@@ -25,7 +25,7 @@ The rules work on the straightened page. It does not rely on a template per coun
 | Unlabelled numbers | A line that is one code mixing letters and digits, or 7+ digits (not a date) | |
 | Card access number | A six-digit line on an ID card | EU Regulation 2019/1157 cards |
 | Street addresses | `12 GEORGE ST`, `NO 12 JALAN …` and the postcode line below | |
-| Photo | Each face, grown to the portrait around it. Several nearby text rows can limit the width. Use a detected frame if it contains the face and respects those limits. If no face is found, try the passport portrait zone or field 6 of a licence | ICAO 9303, ISO 18013 |
+| Photo | Verified frames containing a face; otherwise connected portrait bounds limited by neighbouring fields. Retry small passport faces in an enlarged crop. Separate feature rules cover reviewed Dutch/Norwegian windows; the Dutch D1 licence's pale shoulder is anchored to its MRZ. If no face is found, try the passport portrait zone or field 6 of a licence | ICAO 9303, ISO 18013; local specimen calibration for feature rules |
 | Barcodes | Every barcode, including the PDF417 on the back of North American cards (AAMVA) | |
 
 Weak patterns (plain digit strings with a check digit) only run for their own country, or when the country is unknown; distinctive ones run everywhere. Overlapping boxes of the same kind are merged. Every box can be undone in the app, so the engine leans towards hiding too much.
@@ -40,7 +40,7 @@ Weak patterns (plain digit strings with a check digit) only run for their own co
 
 ## Testing
 
-`maske fixtures` draws 41 synthetic documents (made-up people with valid check digits) across Europe, North America, Oceania and Asia, each on a dark table so finding its edges is part of the test, and `expected.json` with the exact ink bounds of every field that must be hidden or kept. `maske eval` reports:
+`maske fixtures` draws 43 synthetic documents (made-up people with valid check digits) across Europe, North America, Oceania and Asia, each on a dark table so finding its edges is part of the test, and `expected.json` with the exact ink bounds of every field that must be hidden or kept. Portraits can now contain multiple annotated frames, including windows. `maske eval` reports:
 
 - **Coverage:** a field counts as hidden only when at least 98% of its ink is under a mask.
 - **Kept:** a field that must stay visible may have at most 10% covered.
@@ -51,6 +51,14 @@ Every run writes masked copies and overlays (green: the field's ink, red: the ma
 `maske warp <dir> <out>` makes five photo-like copies of each image (tilted, rotated, turned 90°, upside down, steep). Run `maske angles <out> <dir>/expected.json` to project the known field boxes onto each copy and check coverage and visibility. For unlabelled specimens, `maske angles <out>` compares the copy with the original's masks to check consistency.
 
 Real specimens: `scripts/fetch_specimens.py` collects specimens from Wikimedia Commons; PRADO (the Council of the EU's register) images were collected through the browser. Both go in `Fixtures/specimens/`, which is not committed, since the images are not ours to publish. `maske review <dir> <out>` masks every image in a folder for looking through by eye. Status and open problems: [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
+
+`maske eval Fixtures/specimens Fixtures/specimen-focus.json` checks the seven annotated Dutch, Norwegian and Chinese specimens. The manifest contains field rectangles and specimen file identifiers, not pixels or copied personal data. Missing specimen images fail the check. Coverage is sampled against hand annotations; inspect the overlays and exported edges too.
+
+## Review and rendering
+
+Review and export use the same polygon and opaque blue-grey fill. Tap a mask for the four-corner editor; its translucent adjustment preview is only in memory. Save updates the polygon, Cancel leaves the original unchanged, and native scrolling and 1–8× zoom support small windows. The visible controls carry the interaction; explanatory paragraphs are intentionally omitted. Run `scripts/ui-check.sh` with a booted Simulator to exercise the actual editor and export, using a generated synthetic passport.
+
+The exported JPEG has a wrapping recipient/purpose/date footer outside the document and one light diagonal recipient mark per page. The renderer no longer adds a separate thick stroke beyond the reviewed polygon. Opacity is checked by rendering different underlying images under the same full mask and comparing the output pixels.
 
 ## Known limits
 

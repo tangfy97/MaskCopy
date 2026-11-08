@@ -1,0 +1,673 @@
+[
+  {
+    "name": "NLD-F-NLD-FO-07001-front",
+    "file": "prado/NLD-F-NLD-FO-07001-front.jpg",
+    "country": "NL",
+    "kind": "drivingLicence",
+    "hide": [
+      {
+        "kind": "photo",
+        "rect": [
+          [
+            0.025,
+            0.282
+          ],
+          [
+            0.278,
+            0.489
+          ]
+        ],
+        "text": "primary portrait"
+      },
+      {
+        "kind": "photo",
+        "rect": [
+          [
+            0.704,
+            0.56
+          ],
+          [
+            0.092,
+            0.139
+          ]
+        ],
+        "text": "transparent portrait window"
+      },
+      {
+        "kind": "photo",
+        "rect": [
+          [
+            0.824,
+            0.56
+          ],
+          [
+            0.064,
+            0.139
+          ]
+        ],
+        "text": "secondary portrait"
+      },
+      {
+        "kind": "documentNumber",
+        "rect": [
+          [
+            0.353,
+            0.515
+          ],
+          [
+            0.163,
+            0.033
+          ]
+        ],
+        "text": "licence number"
+      },
+      {
+        "kind": "machineReadableZone",
+        "rect": [
+          [
+            0.048,
+            0.833
+          ],
+          [
+            0.893,
+            0.064
+          ]
+        ],
+        "text": "licence MRZ"
+      }
+    ],
+    "keep": [
+      {
+        "kind": "keep",
+        "rect": [
+          [
+            0.353,
+            0.303
+          ],
+          [
+            0.15,
+            0.042
+          ]
+        ],
+        "text": "given names"
+      },
+      {
+        "kind": "keep",
+        "rect": [
+          [
+            0.352,
+            0.365
+          ],
+          [
+            0.151,
+            0.034
+          ]
+        ],
+        "text": "date of birth"
+      },
+      {
+        "kind": "keep",
+        "rect": [
+          [
+            0.535,
+            0.363
+          ],
+          [
+            0.121,
+            0.036
+          ]
+        ],
+        "text": "birthplace"
+      }
+    ]
+  },
+  {
+    "name": "NOR-B-NOR-BO-02002-front",
+    "file": "prado/NOR-B-NOR-BO-02002-front.jpg",
+    "country": "NO",
+    "kind": "idCard",
+    "hide": [
+      {
+        "kind": "photo",
+        "rect": [
+          [
+            0.044,
+            0.216
+          ],
+          [
+            0.364,
+            0.726
+          ]
+        ],
+        "text": "primary portrait"
+      },
+      {
+        "kind": "photo",
+        "rect": [
+          [
+            0.704,
+            0.311
+          ],
+          [
+            0.114,
+            0.247
+          ]
+        ],
+        "text": "transparent portrait window"
+      },
+      {
+        "kind": "documentNumber",
+        "rect": [
+          [
+            0.425,
+            0.568
+          ],
+          [
+            0.179,
+            0.04
+          ]
+        ],
+        "text": "document number"
+      },
+      {
+        "kind": "cardAccessNumber",
+        "rect": [
+          [
+            0.8,
+            0.848
+          ],
+          [
+            0.17,
+            0.05
+          ]
+        ],
+        "text": "card access number"
+      }
+    ],
+    "keep": [
+      {
+        "kind": "keep",
+        "rect": [
+          [
+            0.425,
+            0.158
+          ],
+          [
+            0.175,
+            0.04
+          ]
+        ],
+        "text": "surname"
+      },
+      {
+        "kind": "keep",
+        "rect": [
+          [
+            0.425,
+            0.24
+          ],
+          [
+            0.31,
+            0.04
+          ]
+        ],
+        "text": "given names"
+      },
+      {
+        "kind": "keep",
+        "rect": [
+          [
+            0.425,
+            0.449
+          ],
+          [
+            0.245,
+            0.042
+          ]
+        ],
+        "text": "date of birth"
+      }
+    ]
+  },
+  {
+    "name": "NOR-B-NOR-BO-02002-back",
+    "file": "prado/NOR-B-NOR-BO-02002-back.jpg",
+    "country": "NO",
+    "kind": "idCard",
+    "hide": [
+      {
+        "kind": "photo",
+        "rect": [
+          [
+            0.18,
+            0.315
+          ],
+          [
+            0.115,
+            0.245
+          ]
+        ],
+        "text": "transparent portrait window"
+      },
+      {
+        "kind": "photo",
+        "rect": [
+          [
+            0.583,
+            0.29
+          ],
+          [
+            0.07,
+            0.149
+          ]
+        ],
+        "text": "secondary portrait"
+      },
+      {
+        "kind": "personalNumber",
+        "rect": [
+          [
+            0.035,
+            0.071
+          ],
+          [
+            0.229,
+            0.045
+          ]
+        ],
+        "text": "personal number"
+      },
+      {
+        "kind": "machineReadableZone",
+        "rect": [
+          [
+            0.05,
+            0.682
+          ],
+          [
+            0.885,
+            0.215
+          ]
+        ],
+        "text": "TD1 machine-readable zone"
+      }
+    ],
+    "keep": []
+  },
+  {
+    "name": "NOR-F-NOR-FO-08002-front",
+    "file": "prado/NOR-F-NOR-FO-08002-front.jpg",
+    "country": "NO",
+    "kind": "drivingLicence",
+    "hide": [
+      {
+        "kind": "photo",
+        "rect": [
+          [
+            0.031,
+            0.299
+          ],
+          [
+            0.232,
+            0.426
+          ]
+        ],
+        "text": "primary portrait"
+      },
+      {
+        "kind": "photo",
+        "rect": [
+          [
+            0.777,
+            0.468
+          ],
+          [
+            0.148,
+            0.244
+          ]
+        ],
+        "text": "secondary portrait window"
+      },
+      {
+        "kind": "personalNumber",
+        "rect": [
+          [
+            0.531,
+            0.426
+          ],
+          [
+            0.181,
+            0.036
+          ]
+        ],
+        "text": "personal number"
+      },
+      {
+        "kind": "documentNumber",
+        "rect": [
+          [
+            0.323,
+            0.511
+          ],
+          [
+            0.2,
+            0.04
+          ]
+        ],
+        "text": "licence number"
+      }
+    ],
+    "keep": [
+      {
+        "kind": "keep",
+        "rect": [
+          [
+            0.32,
+            0.132
+          ],
+          [
+            0.159,
+            0.036
+          ]
+        ],
+        "text": "surname"
+      },
+      {
+        "kind": "keep",
+        "rect": [
+          [
+            0.32,
+            0.213
+          ],
+          [
+            0.07,
+            0.034
+          ]
+        ],
+        "text": "given names"
+      }
+    ]
+  },
+  {
+    "name": "NLD-B-NLD-BO-08001-front",
+    "file": "prado/NLD-B-NLD-BO-08001-front.jpg",
+    "country": "NL",
+    "kind": "idCard",
+    "hide": [
+      {
+        "kind": "photo",
+        "rect": [
+          [
+            0.037,
+            0.121
+          ],
+          [
+            0.317,
+            0.681
+          ]
+        ],
+        "text": "primary portrait"
+      },
+      {
+        "kind": "photo",
+        "rect": [
+          [
+            0.74,
+            0.495
+          ],
+          [
+            0.138,
+            0.279
+          ]
+        ],
+        "text": "transparent portrait window"
+      },
+      {
+        "kind": "documentNumber",
+        "rect": [
+          [
+            0.748,
+            0.219
+          ],
+          [
+            0.149,
+            0.04
+          ]
+        ],
+        "text": "document number"
+      },
+      {
+        "kind": "cardAccessNumber",
+        "rect": [
+          [
+            0.745,
+            0.842
+          ],
+          [
+            0.179,
+            0.055
+          ]
+        ],
+        "text": "card access number"
+      }
+    ],
+    "keep": [
+      {
+        "kind": "keep",
+        "rect": [
+          [
+            0.396,
+            0.303
+          ],
+          [
+            0.15,
+            0.039
+          ]
+        ],
+        "text": "surname"
+      },
+      {
+        "kind": "keep",
+        "rect": [
+          [
+            0.396,
+            0.39
+          ],
+          [
+            0.242,
+            0.039
+          ]
+        ],
+        "text": "given names"
+      },
+      {
+        "kind": "keep",
+        "rect": [
+          [
+            0.396,
+            0.566
+          ],
+          [
+            0.287,
+            0.04
+          ]
+        ],
+        "text": "date of birth"
+      }
+    ]
+  },
+  {
+    "name": "CHN-A-CHN-AO-05001-back",
+    "file": "prado/CHN-A-CHN-AO-05001-back.jpg",
+    "country": "CN",
+    "kind": "passport",
+    "hide": [
+      {
+        "kind": "photo",
+        "rect": [
+          [
+            0.043,
+            0.226
+          ],
+          [
+            0.239,
+            0.45
+          ]
+        ],
+        "text": "primary portrait"
+      },
+      {
+        "kind": "photo",
+        "rect": [
+          [
+            0.808,
+            0.224
+          ],
+          [
+            0.141,
+            0.26
+          ]
+        ],
+        "text": "secondary portrait"
+      },
+      {
+        "kind": "documentNumber",
+        "rect": [
+          [
+            0.672,
+            0.135
+          ],
+          [
+            0.21,
+            0.042
+          ]
+        ],
+        "text": "document number"
+      },
+      {
+        "kind": "machineReadableZone",
+        "rect": [
+          [
+            0.043,
+            0.829
+          ],
+          [
+            0.895,
+            0.105
+          ]
+        ],
+        "text": "machine-readable zone"
+      }
+    ],
+    "keep": [
+      {
+        "kind": "keep",
+        "rect": [
+          [
+            0.323,
+            0.269
+          ],
+          [
+            0.28,
+            0.035
+          ]
+        ],
+        "text": "name"
+      },
+      {
+        "kind": "keep",
+        "rect": [
+          [
+            0.64,
+            0.368
+          ],
+          [
+            0.16,
+            0.034
+          ]
+        ],
+        "text": "date of birth"
+      }
+    ]
+  },
+  {
+    "name": "CHN-F-CHN-FO-02002-front",
+    "file": "prado/CHN-F-CHN-FO-02002-front.jpg",
+    "country": "CN",
+    "kind": "drivingLicence",
+    "hide": [
+      {
+        "kind": "photo",
+        "rect": [
+          [
+            0.724,
+            0.466
+          ],
+          [
+            0.229,
+            0.479
+          ]
+        ],
+        "text": "primary portrait"
+      },
+      {
+        "kind": "documentNumber",
+        "rect": [
+          [
+            0.429,
+            0.22
+          ],
+          [
+            0.114,
+            0.05
+          ]
+        ],
+        "text": "visible specimen number"
+      },
+      {
+        "kind": "address",
+        "rect": [
+          [
+            0.18,
+            0.386
+          ],
+          [
+            0.073,
+            0.053
+          ]
+        ],
+        "text": "visible specimen address"
+      }
+    ],
+    "keep": [
+      {
+        "kind": "keep",
+        "rect": [
+          [
+            0.429,
+            0.653
+          ],
+          [
+            0.243,
+            0.057
+          ]
+        ],
+        "text": "issue date"
+      },
+      {
+        "kind": "keep",
+        "rect": [
+          [
+            0.475,
+            0.817
+          ],
+          [
+            0.239,
+            0.057
+          ]
+        ],
+        "text": "validity"
+      }
+    ]
+  }
+]

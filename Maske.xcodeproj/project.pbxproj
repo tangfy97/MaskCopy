@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0998FDEBF0626664C9352C75 /* MaskEditorUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78F729484B3006C05C146C5A /* MaskEditorUITests.swift */; };
 		0D4E3F6CC2FFDB1A02CF17A3 /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8366745B1FCCBCF5AF035B2B /* Session.swift */; };
 		25A0B45328034FDCF79BADB2 /* Checksums.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A3ED11D2139AED01F324E08 /* Checksums.swift */; };
 		2909A06690152CE4FB880F6C /* Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0143A37D5AC0D67468C0EB7E /* Renderer.swift */; };
@@ -23,30 +24,46 @@
 		8AF5AAD0F06C44730FA78466 /* Text.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BDFFEEDCAECC25954CA96B /* Text.swift */; };
 		A4C7748890227CB99CE8A98E /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D3E578DF32764805FAE2B0D /* HomeView.swift */; };
 		AE21FBACAB12F8476DAD8D73 /* MRZ.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6118F749B0DDE1EFD59DC94 /* MRZ.swift */; };
+		CFD3F7E84FD655FDE6CC4FA3 /* Portraits.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B34BA5D28224147AA0D1811 /* Portraits.swift */; };
 		D16E2BA61B55A10B6F515175 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E11C768EF1D07A0AF788F0 /* Theme.swift */; };
+		DDC34D8459428C75C8BD56C6 /* MaskEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37B542DC651FAED01390CF98 /* MaskEditorView.swift */; };
 		DFF4A451C4BDEA35DBF81ABA /* Rectifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32F3C0064D953D0A3D3A9E6A /* Rectifier.swift */; };
 		E4D62DD19AC76846FAD7B331 /* InkFit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F3481634B11340140A83E4E /* InkFit.swift */; };
 		E6A8C39B7BDB2678704A5AC5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B3BDA47AFB011977147143FC /* Assets.xcassets */; };
 		F2B5C49D74B70C712A87541E /* Geometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5979930A36A547DEF1F6ECAC /* Geometry.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		5FF695A43E38F75EFD12940B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4BDA428FE41ACD92B4B55664 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7E3BF7278C95CF76F05B86AC;
+			remoteInfo = Maske;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		0143A37D5AC0D67468C0EB7E /* Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Renderer.swift; sourceTree = "<group>"; };
 		082B5E48B442BD50BC7ABAD5 /* ReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewView.swift; sourceTree = "<group>"; };
+		0B34BA5D28224147AA0D1811 /* Portraits.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Portraits.swift; sourceTree = "<group>"; };
 		2D37A1202A7C3F4D642FD5B5 /* Maske.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Maske.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		32F3C0064D953D0A3D3A9E6A /* Rectifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rectifier.swift; sourceTree = "<group>"; };
 		3373E6F28AAFDECBC6B70F37 /* Labels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Labels.swift; sourceTree = "<group>"; };
+		37B542DC651FAED01390CF98 /* MaskEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskEditorView.swift; sourceTree = "<group>"; };
 		3A3ED11D2139AED01F324E08 /* Checksums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checksums.swift; sourceTree = "<group>"; };
 		513237328FF3285D43D0F1D2 /* Analyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Analyzer.swift; sourceTree = "<group>"; };
 		5979930A36A547DEF1F6ECAC /* Geometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Geometry.swift; sourceTree = "<group>"; };
 		5E43200AC0D7D46E718C7DF3 /* SupportedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportedView.swift; sourceTree = "<group>"; };
 		6FAF5B4C9BC182DCCC4351B3 /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
+		78F729484B3006C05C146C5A /* MaskEditorUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskEditorUITests.swift; sourceTree = "<group>"; };
 		7D3E578DF32764805FAE2B0D /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		8366745B1FCCBCF5AF035B2B /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
 		84C4DEE6B3FEB13528E375ED /* Importing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Importing.swift; sourceTree = "<group>"; };
 		8F3481634B11340140A83E4E /* InkFit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InkFit.swift; sourceTree = "<group>"; };
 		94BDFFEEDCAECC25954CA96B /* Text.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Text.swift; sourceTree = "<group>"; };
 		9ADB22430D0E902F29E13B6A /* Countries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Countries.swift; sourceTree = "<group>"; };
+		9D7CF6275B74A8E6DBAF3395 /* MaskeUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = MaskeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B3BDA47AFB011977147143FC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C2E11C768EF1D07A0AF788F0 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		D1D46FFAE03D181A5E1D9CE2 /* ShareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareView.swift; sourceTree = "<group>"; };
@@ -76,6 +93,7 @@
 				6FAF5B4C9BC182DCCC4351B3 /* Model.swift */,
 				D6118F749B0DDE1EFD59DC94 /* MRZ.swift */,
 				F19ED39A12BFE5B8F649E079 /* NumberPatterns.swift */,
+				0B34BA5D28224147AA0D1811 /* Portraits.swift */,
 				32F3C0064D953D0A3D3A9E6A /* Rectifier.swift */,
 				0143A37D5AC0D67468C0EB7E /* Renderer.swift */,
 				94BDFFEEDCAECC25954CA96B /* Text.swift */,
@@ -88,8 +106,18 @@
 			isa = PBXGroup;
 			children = (
 				2D37A1202A7C3F4D642FD5B5 /* Maske.app */,
+				9D7CF6275B74A8E6DBAF3395 /* MaskeUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		5697EA3B725AB8240F77C200 /* MaskeUITests */ = {
+			isa = PBXGroup;
+			children = (
+				78F729484B3006C05C146C5A /* MaskEditorUITests.swift */,
+			);
+			name = MaskeUITests;
+			path = Tests/MaskeUITests;
 			sourceTree = "<group>";
 		};
 		7542BE8118BD9EF019A6D11D = {
@@ -97,6 +125,7 @@
 			children = (
 				9F15940E115945EDE9B6E460 /* MaskeApp */,
 				2F62C112EA49CAC9C505425D /* MaskeCore */,
+				5697EA3B725AB8240F77C200 /* MaskeUITests */,
 				132B79634AE0E8D5C09B49D8 /* Resources */,
 				42C54DECE1E8F6F0406C6D3E /* Products */,
 			);
@@ -108,6 +137,7 @@
 				7D3E578DF32764805FAE2B0D /* HomeView.swift */,
 				84C4DEE6B3FEB13528E375ED /* Importing.swift */,
 				F5EB8B3859559C90CC3E7498 /* MaskeApp.swift */,
+				37B542DC651FAED01390CF98 /* MaskEditorView.swift */,
 				082B5E48B442BD50BC7ABAD5 /* ReviewView.swift */,
 				8366745B1FCCBCF5AF035B2B /* Session.swift */,
 				D1D46FFAE03D181A5E1D9CE2 /* ShareView.swift */,
@@ -139,6 +169,24 @@
 			productReference = 2D37A1202A7C3F4D642FD5B5 /* Maske.app */;
 			productType = "com.apple.product-type.application";
 		};
+		ED6137151BB2DF9684B9E14D /* MaskeUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EE29B872936633C0ED78A09B /* Build configuration list for PBXNativeTarget "MaskeUITests" */;
+			buildPhases = (
+				16F2A6252E637AF6ABFA7CC5 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				ED5C91BBF9F1C7ABC92BEF89 /* PBXTargetDependency */,
+			);
+			name = MaskeUITests;
+			packageProductDependencies = (
+			);
+			productName = MaskeUITests;
+			productReference = 9D7CF6275B74A8E6DBAF3395 /* MaskeUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -151,6 +199,9 @@
 					7E3BF7278C95CF76F05B86AC = {
 						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
+					};
+					ED6137151BB2DF9684B9E14D = {
+						TestTargetID = 7E3BF7278C95CF76F05B86AC;
 					};
 				};
 			};
@@ -169,6 +220,7 @@
 			projectRoot = "";
 			targets = (
 				7E3BF7278C95CF76F05B86AC /* Maske */,
+				ED6137151BB2DF9684B9E14D /* MaskeUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -185,6 +237,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		16F2A6252E637AF6ABFA7CC5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0998FDEBF0626664C9352C75 /* MaskEditorUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		882E5197A433F4C97015E86B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -198,9 +258,11 @@
 				E4D62DD19AC76846FAD7B331 /* InkFit.swift in Sources */,
 				6D99FFE7F6505551DA237AE7 /* Labels.swift in Sources */,
 				AE21FBACAB12F8476DAD8D73 /* MRZ.swift in Sources */,
+				DDC34D8459428C75C8BD56C6 /* MaskEditorView.swift in Sources */,
 				55E6245F049799AC942F8462 /* MaskeApp.swift in Sources */,
 				4343FC67876C3FDFFF69D515 /* Model.swift in Sources */,
 				3C25B56E6DF89A094B69D7F8 /* NumberPatterns.swift in Sources */,
+				CFD3F7E84FD655FDE6CC4FA3 /* Portraits.swift in Sources */,
 				DFF4A451C4BDEA35DBF81ABA /* Rectifier.swift in Sources */,
 				2909A06690152CE4FB880F6C /* Renderer.swift in Sources */,
 				60232038FA47B65248BD2459 /* ReviewView.swift in Sources */,
@@ -214,7 +276,32 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		ED5C91BBF9F1C7ABC92BEF89 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7E3BF7278C95CF76F05B86AC /* Maske */;
+			targetProxy = 5FF695A43E38F75EFD12940B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		2FB9035CFFA8BF50D71C5D1E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.feiyangtang.Maske.UITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Maske;
+			};
+			name = Release;
+		};
 		954070A984467A42659622A4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -273,6 +360,23 @@
 			};
 			name = Release;
 		};
+		B57F22B770FFAC5157B163D9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.feiyangtang.Maske.UITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Maske;
+			};
+			name = Debug;
+		};
 		C7633A2BB7A7D48698C01D71 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -307,7 +411,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -365,7 +469,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -413,6 +517,15 @@
 			buildConfigurations = (
 				D883C2495D63C9B66546BA47 /* Debug */,
 				C7633A2BB7A7D48698C01D71 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		EE29B872936633C0ED78A09B /* Build configuration list for PBXNativeTarget "MaskeUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B57F22B770FFAC5157B163D9 /* Debug */,
+				2FB9035CFFA8BF50D71C5D1E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

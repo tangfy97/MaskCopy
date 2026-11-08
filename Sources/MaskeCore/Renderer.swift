@@ -19,9 +19,9 @@ public struct Watermark: Sendable {
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_GB")
         f.dateFormat = "d MMM yyyy"
-        var parts = ["COPY FOR \(recipient.trimmingCharacters(in: .whitespaces).uppercased())"]
+        var parts = ["COPY FOR \(recipient.trimmingCharacters(in: .whitespacesAndNewlines))"]
         let p = purpose.trimmingCharacters(in: .whitespaces)
-        if !p.isEmpty { parts.append(p.uppercased()) }
+        if !p.isEmpty { parts.append(p) }
         parts.append(f.string(from: date).uppercased())
         return parts.joined(separator: "  ·  ")
     }
@@ -30,14 +30,27 @@ public struct Watermark: Sendable {
 /// Makes the copy that is shared: masks painted into the pixels (never blurred, which can be
 /// undone), a watermark across the whole document, a smaller size, and no metadata.
 public enum Renderer {
-    public static let maskColor = CGColor(srgbRed: 0.09, green: 0.09, blue: 0.09, alpha: 1)
+    public static let maskColor = CGColor(srgbRed: 0.76, green: 0.80, blue: 0.82, alpha: 1)
 
     public static func render(pages: [(CGImage, [Finding])], watermark: Watermark?, maxWidth: Int = 1600) -> CGImage? {
         guard !pages.isEmpty else { return nil }
         let width = min(maxWidth, pages.map(\.0.width).max() ?? maxWidth)
         let gap = pages.count > 1 ? width / 24 : 0
         let heights = pages.map { Int((CGFloat($0.0.height) * CGFloat(width) / CGFloat($0.0.width)).rounded()) }
-        let height = heights.reduce(0, +) + gap * (pages.count - 1)
+        let padding = max(16, CGFloat(width) * 0.025)
+        let footer = watermark.map { watermark -> CTFramesetter in
+            let font = CTFontCreateWithName("Helvetica" as CFString, max(14, CGFloat(width) / 48), nil)
+            let attributes: [NSAttributedString.Key: Any] = [
+                NSAttributedString.Key(kCTFontAttributeName as String): font,
+                NSAttributedString.Key(kCTForegroundColorAttributeName as String): CGColor(srgbRed: 0.21, green: 0.29, blue: 0.32, alpha: 1),
+            ]
+            return CTFramesetterCreateWithAttributedString(NSAttributedString(string: watermark.text, attributes: attributes))
+        }
+        let footerHeight = footer.map {
+            Int(ceil(CTFramesetterSuggestFrameSizeWithConstraints($0, CFRange(), nil,
+                CGSize(width: CGFloat(width) - padding * 2, height: .greatestFiniteMagnitude), nil).height + padding * 2))
+        } ?? 0
+        let height = heights.reduce(0, +) + gap * (pages.count - 1) + footerHeight
 
         guard let ctx = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
                                   space: CGColorSpace(name: CGColorSpace.sRGB)!,
@@ -53,61 +66,63 @@ public enum Renderer {
             let frame = CGRect(x: 0, y: height - top - h, width: width, height: h)
             ctx.draw(image, in: frame)
             ctx.setFillColor(maskColor)
-            ctx.setStrokeColor(maskColor)
-            ctx.setLineJoin(.round)
             for f in findings where f.isOn {
-                // Every shape is painted as its four corners (tilted text stays tilted), with
-                // slightly rounded corners from the stroke.
+                // Paint exactly the reviewed shape. Ink fitting already supplies its safety margin.
                 let pts = f.shape.points.map { CGPoint(x: frame.minX + $0.x * frame.width, y: frame.maxY - $0.y * frame.height) }
                 let path = CGMutablePath()
                 path.addLines(between: pts)
                 path.closeSubpath()
                 ctx.addPath(path)
-                ctx.setLineWidth(max(2, frame.width * 0.003))
-                ctx.drawPath(using: .fillStroke)
+                ctx.fillPath()
+            }
+            if let watermark {
+                ctx.saveGState()
+                ctx.clip(to: frame)
+                ctx.translateBy(x: frame.minX, y: frame.minY)
+                draw("COPY FOR " + watermark.recipient.trimmingCharacters(in: .whitespacesAndNewlines),
+                     in: ctx, size: frame.size)
+                ctx.restoreGState()
             }
             top += h + gap
         }
 
-        if let watermark { draw(watermark.text, in: ctx, size: CGSize(width: width, height: height)) }
+        if let footer {
+            ctx.setStrokeColor(CGColor(srgbRed: 0.83, green: 0.86, blue: 0.87, alpha: 1))
+            ctx.setLineWidth(1)
+            ctx.move(to: CGPoint(x: padding, y: CGFloat(footerHeight)))
+            ctx.addLine(to: CGPoint(x: CGFloat(width) - padding, y: CGFloat(footerHeight)))
+            ctx.strokePath()
+            let frame = CGPath(rect: CGRect(x: padding, y: padding, width: CGFloat(width) - padding * 2,
+                                            height: CGFloat(footerHeight) - padding * 2), transform: nil)
+            ctx.textMatrix = .identity
+            CTFrameDraw(CTFramesetterCreateFrame(footer, CFRange(), frame, nil), ctx)
+        }
         return ctx.makeImage()
     }
 
     static func draw(_ text: String, in ctx: CGContext, size: CGSize) {
-        let fontSize = max(14, size.width / 30)
-        let font = CTFontCreateWithName("Helvetica-Bold" as CFString, fontSize, nil)
-        func line(_ color: CGColor) -> CTLine {
+        func line(_ fontSize: CGFloat, text: String = text) -> CTLine {
+            let font = CTFontCreateWithName("Helvetica" as CFString, fontSize, nil)
             let attrs: [NSAttributedString.Key: Any] = [
                 NSAttributedString.Key(kCTFontAttributeName as String): font,
-                NSAttributedString.Key(kCTForegroundColorAttributeName as String): color,
-                NSAttributedString.Key(kCTKernAttributeName as String): fontSize * 0.08,
+                NSAttributedString.Key(kCTForegroundColorAttributeName as String): CGColor(srgbRed: 0.12, green: 0.23, blue: 0.28, alpha: 0.10),
+                NSAttributedString.Key(kCTKernAttributeName as String): fontSize * 0.03,
             ]
-            return CTLineCreateWithAttributedString(NSAttributedString(string: text + "      ", attributes: attrs))
+            return CTLineCreateWithAttributedString(NSAttributedString(string: text, attributes: attrs))
         }
-        let dark = line(CGColor(srgbRed: 0.1, green: 0.1, blue: 0.1, alpha: 0.32))
-        let light = line(CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 0.38))
-        let lineWidth = CTLineGetTypographicBounds(dark, nil, nil, nil)
-        guard lineWidth > 0 else { return }
+        let fontSize = max(14, size.width / 25)
+        let draft = line(fontSize)
+        let lineWidth = CTLineGetTypographicBounds(draft, nil, nil, nil)
+        guard lineWidth > 0, size.width > 0 else { return }
+        let fitted = line(max(10, fontSize * min(1, size.width * 0.8 / lineWidth)))
+        let mark = CTLineCreateTruncatedLine(fitted, Double(size.width * 0.8), .end, line(10, text: "…")) ?? fitted
 
         ctx.saveGState()
         ctx.translateBy(x: size.width / 2, y: size.height / 2)
-        ctx.rotate(by: .pi / 7)
-        let diagonal = hypot(size.width, size.height)
-        let step = fontSize * 3.4
-        var y = -diagonal / 2
-        var row = 0
-        while y < diagonal / 2 {
-            var x = -diagonal / 2 - CGFloat(row % 2) * lineWidth / 2
-            while x < diagonal / 2 {
-                ctx.textPosition = CGPoint(x: x + 1.5, y: y - 1.5)
-                CTLineDraw(light, ctx)
-                ctx.textPosition = CGPoint(x: x, y: y)
-                CTLineDraw(dark, ctx)
-                x += lineWidth
-            }
-            y += step
-            row += 1
-        }
+        ctx.rotate(by: .pi / 12)
+        ctx.textMatrix = .identity
+        ctx.textPosition = CGPoint(x: -CTLineGetTypographicBounds(mark, nil, nil, nil) / 2, y: 0)
+        CTLineDraw(mark, ctx)
         ctx.restoreGState()
     }
 

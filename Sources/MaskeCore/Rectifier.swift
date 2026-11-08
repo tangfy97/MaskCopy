@@ -38,7 +38,9 @@ public enum Rectifier {
             return DocumentImage(image: source, corners: full, fillsFrame: found != nil, quarterTurns: 0, quickLines: text.count)
         }
         let turned = rotated(corners, quarterTurns: turns)
-        let image = warp(source, to: turned, maxSide: maxSide) ?? source
+        guard let image = warp(source, to: turned, maxSide: maxSide) else {
+            return DocumentImage(image: source, corners: full, fillsFrame: false, quarterTurns: 0, quickLines: text.count)
+        }
         return DocumentImage(image: image, corners: turned, fillsFrame: found != nil, quarterTurns: turns, quickLines: text.count)
     }
 
@@ -108,12 +110,15 @@ public enum Rectifier {
         let totalText = text.map(\.1).reduce(0, +)
         func accept(_ o: VNRectangleObservation) -> Quad? {
             let q = quad(o)
+            guard q.isConvex else { return nil }
             if totalText > 20 {
                 let inside = text.filter { q.contains($0.0) }.map(\.1).reduce(0, +)
                 guard inside / totalText > 0.8 else { return nil }
             }
             let area = q.area(aspect: aspect) / aspect
-            let w = (dist(q.tl, q.tr) + dist(q.bl, q.br)) / 2 * aspect, h = (dist(q.tl, q.bl) + dist(q.tr, q.br)) / 2
+            let pixels = q.mapped { CGPoint(x: $0.x * aspect, y: $0.y) }
+            let w = (dist(pixels.tl, pixels.tr) + dist(pixels.bl, pixels.br)) / 2
+            let h = (dist(pixels.tl, pixels.bl) + dist(pixels.tr, pixels.br)) / 2
             let ratio = max(w, h) / max(min(w, h), 1e-6)
             // Cards are 1.59:1, passport pages 1.42:1, a passport spread about 1.4:1 standing up.
             guard area > 0.12, ratio < 2.1 else { return nil }
@@ -155,6 +160,7 @@ public enum Rectifier {
 
     /// The part of `source` inside `q`, as an upright rectangle.
     static func warp(_ source: CGImage, to q: Quad, maxSide: CGFloat) -> CGImage? {
+        guard q.isConvex, maxSide >= 1 else { return nil }
         let W = CGFloat(source.width), H = CGFloat(source.height)
         // Core Image measures from the bottom left, in pixels.
         func ci(_ p: CGPoint) -> CIVector { CIVector(x: p.x * W, y: (1 - p.y) * H) }

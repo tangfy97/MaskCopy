@@ -4,10 +4,10 @@ In order. Each step should end with its check in `scripts/check.sh` (or a note o
 
 ## Now: make the prototype right on real documents
 
-1. **Feedback from TestFlight build 2.** The owner is testing on an iPhone. Each wrong mask they report (country, document, which field, angle) becomes a synthetic fixture and a fix. Never ask for or store the photo itself.
-2. **Review the PRADO specimens of the 27 supported countries.** `maske review Fixtures/specimens/prado <out>` (filter to the supported ISO3 codes), look at every masked copy, list mistakes in KNOWN_ISSUES, fix them rule by rule. Expect recognition problems from the 600 px size; consider upscaling 2× before analysis for the test only.
+1. **Norway, the Netherlands and China first.** Continue from the 28-page focused specimen pass and seven annotated specimens. Verify complete photo rectangles, pale clothing, secondary portraits and transparent windows on printed specimens photographed with an iPhone. Existing masks now have zoom and four-corner adjustment. Automatic confidence and uncertain-page recovery remain open (KNOWN_ISSUES 9, 11 and 12). Never ask for or store the owner's document photo.
+2. **Extend to matching European standards.** Review comparable ID cards, licences and residence permits, then remaining supported countries. Keep version-specific failures in KNOWN_ISSUES. US/Australian layout variations are deferred at the owner's request. Expect recognition problems from the PRADO images' 600 px size.
 3. **Angle test on specimens.** `maske warp` + `maske angles` on the same set; compare with the synthetic numbers.
-4. **Text recognition missing lines** (KNOWN_ISSUES 1): reproduce on a device, then add a targeted MRZ pass (bottom third, `en-US`) when a passport-shaped page has no MRZ.
+4. **Text recognition missing lines** (KNOWN_ISSUES 1): verify the cropped passport MRZ retry already added in build 3 on a device, then address incomplete TD1 runs and other missing sensitive fields.
 5. **On-device checks:** PDF417 on US/Canadian licences, real faces and the portrait mask, speed per page (target: under 2 seconds on a recent iPhone).
 
 ## Next: make it a 1.0

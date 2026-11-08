@@ -11,7 +11,7 @@ configs:
 settings:
   base:
     MARKETING_VERSION: "0.1.0"
-    CURRENT_PROJECT_VERSION: "3"
+    CURRENT_PROJECT_VERSION: "4"
     SWIFT_VERSION: "5.0"
 targets:
   Maske:
@@ -42,3 +42,24 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         DEAD_CODE_STRIPPING: YES
+  MaskeUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: Tests/MaskeUITests
+    dependencies:
+      - target: Maske
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.feiyangtang.Maske.UITests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: Maske
+schemes:
+  Maske:
+    build:
+      targets:
+        Maske: all
+        MaskeUITests: [test]
+    test:
+      targets:
+        - MaskeUITests

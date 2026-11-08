@@ -1,6 +1,6 @@
 # Privacy Policy
 
-*Last updated: 7 November 2026*
+*Last updated: 8 November 2026*
 
 Maske is an iPhone app for sharing a copy of an identity document with parts of it hidden, made by TangSpark.
 
@@ -11,7 +11,7 @@ What Maske does on your iPhone:
 - It uses the camera only while you scan a document, and photos and files only when you choose them.
 - It reads the document with Apple's Vision framework on your iPhone to find the parts to hide: text, faces and barcodes. Nothing is sent anywhere to do this.
 - It keeps the document in memory while you review it. When you share, it writes one copy to a temporary file for the share sheet and deletes it when you are done or start again. It keeps no history.
-- The copy it makes has the hidden parts painted over, the recipient, purpose and date written across it, and no metadata such as location or camera details.
+- The copy it makes has the hidden parts painted over with an opaque fill. The recipient, purpose and date appear below the document, with a light recipient watermark across each page. The copy has no metadata such as location or camera details.
 - While a document is open, Maske covers it when you switch apps, so it doesn't show in the app switcher.
 
 Where the copy goes after you share it is up to you and the app you share it with.

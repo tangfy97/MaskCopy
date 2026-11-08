@@ -6,7 +6,8 @@ import UniformTypeIdentifiers
 
 let usage = """
 maske fixtures <dir>          make the synthetic documents and their expected answers
-maske eval <dir>              check the engine against them; writes masked copies to <dir>/out
+maske eval <dir> [expected.json]
+                              check annotated fields; writes masked copies to <dir>/out
 maske analyze <image>         print what the engine finds on one photo
 maske review <dir> <out>      straighten and mask every image in <dir>, for looking through
 maske warp <dir> <out>        photograph-like copies: tilted, turned, on a table
@@ -62,7 +63,8 @@ case "analyze":
     for l in a.lines { print("  | \(l)") }
 
 case "eval":
-    let expected = try JSONDecoder().decode([Expected].self, from: Data(contentsOf: url.appendingPathComponent("expected.json")))
+    let labels = args.dropFirst(2).first.map { URL(fileURLWithPath: $0) } ?? url.appendingPathComponent("expected.json")
+    let expected = try JSONDecoder().decode([Expected].self, from: Data(contentsOf: labels))
     let out = url.appendingPathComponent("out")
     try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
 
@@ -71,7 +73,7 @@ case "eval":
     var loosest: [(String, Double)] = []
     var problems: [String] = []
     for e in expected {
-        guard let image = Fixtures.load(url.appendingPathComponent(e.name + ".png")) else {
+        guard let image = Fixtures.load(url.appendingPathComponent(e.file ?? e.name + ".png")) else {
             problems.append("\(e.name): fixture image missing or unreadable")
             continue
         }
@@ -84,7 +86,7 @@ case "eval":
         for b in e.hide {
             toHide += 1
             let cov = coverage(Quad(b.rect), a.findings)
-            if cov >= 0.98 { hidden += 1 } else { ok = false; problems.append(String(format: "%@: not fully hidden (%.0f%%) %@ “%@”", e.name, cov * 100, b.kind, b.text)) }
+            if cov >= 0.98 { hidden += 1 } else { ok = false; problems.append(String(format: "%@: not fully hidden (%.1f%%) %@ “%@”", e.name, cov * 100, b.kind, b.text)) }
         }
         // Precision: how much of each mask lies on what it should hide (with a thin tolerance).
         for f in a.findings where f.isOn {
