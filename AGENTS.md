@@ -7,7 +7,7 @@ Everything a coding agent needs to pick up this project without the conversation
 Maske is a native iPhone app (SwiftUI, iOS 18+) for sharing a copy of a passport, ID card, residence permit or driving licence with the sensitive parts hidden. It is a privacy-first alternative to the Dutch government's KopieID, which only handles Dutch documents. The user scans or picks a photo, Maske straightens the document, suggests masks (machine-readable zone, personal and document numbers, card access number, address, barcode, photo), the user reviews them, says who the copy is for, and shares a watermarked JPEG.
 
 - Owner: Feiyang Tang (TangSpark). Repository: <https://github.com/tangfy97/Maske> (public, Apache 2.0).
-- Status: prototype 0.1.0, latest uploaded TestFlight build 3; local improvements are unreleased (see [Releasing](#releasing)).
+- Status: prototype 0.1.0, TestFlight build 4 uploaded (Apple reported Processing; install availability not yet confirmed) (see [Releasing](#releasing)).
 - The owner works in Chinese and English; replies to them in Chinese are welcome, code and docs are in English.
 
 ## Non-negotiable rules
@@ -75,7 +75,7 @@ The CLI (`swift build`, then `.build/debug/maske …`):
 | `maske warp <dir> <out>` then `maske angles <out>` | Do masks land in the same place on tilted, turned copies? Writes overlays |
 | `maske ocr <image>` | Debug: Vision text recognition on the straightened image, in memory vs via PNG |
 
-Current unreleased checks (8 Nov 2026): 14 unit tests; 43/43 synthetic documents, 121/121 sensitive fields at ≥98% coverage, 96/96 kept, mean precision 0.96 (worst 0.75). On 24 selected angle fixtures the Mac covered 84/84 fields and preserved 63/63; the Simulator still missed the photo and MRZ on the 90° Chinese passport (81/84). Seven annotated official specimens passed 28/28 sensitive regions and 15/15 preserved regions. These checks do not establish pixel-perfect masking on every photograph. See KNOWN_ISSUES.
+Build 4 checks (8 Nov 2026): 14 unit tests; 43/43 synthetic documents, 121/121 sensitive fields at ≥98% coverage, 96/96 kept, mean precision 0.96 (worst 0.75). On 24 selected angle fixtures the Mac covered 84/84 fields and preserved 63/63; the Simulator still missed the photo and MRZ on the 90° Chinese passport (81/84). Seven annotated official specimens passed 28/28 sensitive regions and 15/15 preserved regions. These checks do not establish pixel-perfect masking on every photograph. See KNOWN_ISSUES.
 
 App launch arguments for the Simulator (Debug builds only, `DebugLaunch` in `MaskeApp.swift`):
 
@@ -112,7 +112,7 @@ Details: [docs/APP_STORE.md](docs/APP_STORE.md).
 
 - Team X933P26489 (Feiyang Tang). Distribution signing is cloud-managed by Xcode (`-allowProvisioningUpdates`); local development certificate "Apple Development: Feiyang Tang (F72B32W28N)".
 - App Store Connect: app "Maske: Privacy-First ID Copy", Apple ID 6832059753, SKU `maske-ios`, bundle `com.feiyangtang.Maske`, primary language English (U.S.).
-- TestFlight: internal group **TangSpark**, automatic distribution on, the owner added. Builds: 0.1.0 (1) and (2) on 7 Nov 2026; build (3) uploaded 8 Nov 2026 (specimen, MRZ and portrait fixes). The subsequent photo/window/editor/watermark work is currently unreleased.
+- TestFlight: internal group **TangSpark**, automatic distribution on, the owner added. Builds: 0.1.0 (1) and (2) on 7 Nov 2026; build (3) uploaded 8 Nov 2026 (specimen, MRZ and portrait fixes). Build (4), with photo/window/editor/watermark changes, uploaded successfully at 01:49 Amsterdam time on 8 Nov. Apple reported Processing; Ready to Test / installation availability was not confirmed. The signed archive contains the unchanged 1024 px AppIcon.
 - Every upload needs a higher `CURRENT_PROJECT_VERSION` in `project.yml`. `ITSAppUsesNonExemptEncryption` is NO.
 - The Apple Developer Program License Agreement update was pending acceptance by the account holder (needed before App Review). Do not accept agreements on the owner's behalf.
 - The owner's site tang-spark.no is a personal studio site, not this product's website; don't add pages there unless asked.
