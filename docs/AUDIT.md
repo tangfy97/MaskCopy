@@ -40,7 +40,7 @@ Still needed: optimized real-iPhone launch/recognition latency, continuous gestu
 
 ### Naming and release
 
-The owner chose MaskCopy after rejecting MaskID and CopyVeil. GitHub is now https://github.com/tangfy97/MaskCopy . The product/display name is MaskCopy; bundle ID and internal project/modules stay stable for updates. The owner will change the App Store Connect title manually; do not claim it has changed until confirmed. Release upload status is recorded in APP_STORE.md.
+The owner chose MaskCopy after rejecting MaskID and CopyVeil. GitHub is now https://github.com/tangfy97/MaskCopy . The product/display name is MaskCopy; bundle ID and internal project/modules stay stable for updates. The App Store Connect English (U.S.) title was saved as MaskCopy: Safe ID Copies on 8 November and the page showed Saved. TestFlight also confirmed the existing internal tester had installed 0.1.0 (6). This proves installation, not device performance or acceptance of the interface. Release status is recorded in APP_STORE.md.
 
 ---
 

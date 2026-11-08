@@ -4,7 +4,7 @@ All notable changes to MaskCopy are listed here. Versions follow [Semantic Versi
 
 ## [0.1.0] - 2026-11-08
 
-Build 6: MaskCopy, a document-focused workflow. Uploaded on 8 November at 13:26 Amsterdam time; Apple reported Processing, with Ready to Test unconfirmed.
+Build 6: MaskCopy, a document-focused workflow. Uploaded on 8 November at 13:26 Amsterdam time; Apple initially reported Processing; later App Store Connect verification confirmed internal installation of 0.1.0 (6). The backend title was separately saved as MaskCopy: Safe ID Copies.
 
 - Rename the app's display/product name and GitHub repository to MaskCopy. Keep the existing bundle ID and internal module names so installed copies and TestFlight continue updating the same app.
 - Rebuild Home around a document motif, one primary scan action and secondary photo/file sources. Use directly visible mask switches and explicit Hide → Watermark → Share stages.

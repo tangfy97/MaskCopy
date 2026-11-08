@@ -4,7 +4,7 @@
 
 The owner approved MaskCopy. The GitHub repository and installed product/display name have been renamed. Keep bundle ID `com.feiyangtang.Maske`, app ID 6832059753, and the current TestFlight app record. Internal project/scheme/module names remain Maske. The product is now MaskCopy.app, while the release script's archive container remains `build/appstore/Maske.xcarchive`.
 
-Requested App Store Connect title: **MaskCopy: Safe ID Copies**. The browser tools still reported local browser use disabled after the owner enabled settings; the owner chose to perform the backend rename themselves. This metadata change is pending confirmation and is not done by uploading a differently named bundle. Do not create a new app record.
+App Store Connect title **MaskCopy: Safe ID Copies** was saved and confirmed in the English (U.S.) App Information page on 8 November 2026. The existing app record, bundle ID and SKU are unchanged. This changes the backend metadata; the app has not been released on the public App Store.
 
 ## Every build
 
@@ -23,7 +23,7 @@ Build 4 upload completed at 01:49 Amsterdam time on 8 November. Xcode reported `
 
 Build 5 upload completed at 11:54 Amsterdam time on 8 November. Xcode reported `Upload succeeded`, `Uploaded package is processing` and `EXPORT SUCCEEDED`. Ready to Test / installation availability has not been confirmed. Its actual archive is 0.1.0 (5), bundle com.feiyangtang.Maske; strict signature verification passed, the compiled AppIcon includes a 1024 × 1024 image, and no fixtures or test bundles are embedded. Icon artwork is unchanged. App/UI, accessibility-size and keyboard verification is recorded in [AUDIT.md](AUDIT.md).
 
-Build 6 upload completed at 13:26 Amsterdam time on 8 November. Xcode reported `Upload succeeded`, `Uploaded package is processing` and `EXPORT SUCCEEDED`. Ready to Test is unconfirmed. The signed archive identifies itself as MaskCopy, version 0.1.0 (6), bundle `com.feiyangtang.Maske`; strict signature verification passed, the compiled AppIcon includes 1024 × 1024 pixels, and no fixtures or test bundles are embedded. Icon artwork is unchanged. App Store Connect metadata still requires the owner’s separate rename.
+Build 6 upload completed at 13:26 Amsterdam time on 8 November. Xcode reported `Upload succeeded`, `Uploaded package is processing` and `EXPORT SUCCEEDED`. The signed archive identifies itself as MaskCopy, version 0.1.0 (6), bundle `com.feiyangtang.Maske`; strict signature verification passed, the compiled AppIcon includes 1024 × 1024 pixels, and no fixtures or test bundles are embedded. Icon artwork is unchanged. Subsequent browser verification confirmed that build 6 is assigned to the TangSpark internal group and the existing tester is shown as having installed 0.1.0 (6) on 8 November. This confirms internal installation availability; no external beta or App Store submission was made.
 
 Run `scripts/ui-check.sh` on a booted Simulator for the editor/export regression before a UI release. The build 4 checks are recorded in KNOWN_ISSUES; the iOS Simulator still misses the photo and MRZ of one synthetic Chinese passport turned 90°, while the Mac passes that case.
 
@@ -44,7 +44,7 @@ Run `scripts/ui-check.sh` on a booted Simulator for the editor/export regression
 | Field | Value |
 |---|---|
 | Platform | iOS |
-| Last confirmed name | Maske: Privacy-First ID Copy; owner will change to MaskCopy: Safe ID Copies |
+| Confirmed name | MaskCopy: Safe ID Copies |
 | Bundle ID | `com.feiyangtang.Maske` |
 | SKU | `maske-ios` |
 | Primary language | English (U.S.) |

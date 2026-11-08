@@ -4,12 +4,12 @@ Everything a coding agent needs to pick up this project without the conversation
 
 ## What this is
 
-The owner approved **MaskCopy** on 8 November 2026. The repository is now https://github.com/tangfy97/MaskCopy. The workspace directory, Xcode project/scheme/targets, Swift module names, CLI and debug arguments retain their legacy Maske names. The installed product is MaskCopy.app; `com.feiyangtang.Maske` must remain unchanged to preserve the existing TestFlight app. App Store Connect's human-readable name requires a separate metadata change; check APP_STORE before claiming it has been updated.
+The owner approved **MaskCopy** on 8 November 2026. The repository is now https://github.com/tangfy97/MaskCopy. The workspace directory, Xcode project/scheme/targets, Swift module names, CLI and debug arguments retain their legacy Maske names. The installed product is MaskCopy.app; `com.feiyangtang.Maske` must remain unchanged to preserve the existing TestFlight app. App Store Connect's English (U.S.) name was separately saved as MaskCopy: Safe ID Copies and confirmed on 8 November; see APP_STORE.
 
 MaskCopy is a native iPhone app (SwiftUI, iOS 18+) for sharing a copy of a passport, ID card, residence permit or driving licence with the sensitive parts hidden. It is a privacy-first alternative to the Dutch government's KopieID, which only handles Dutch documents. The user scans or picks a photo, MaskCopy straightens the document, suggests masks (machine-readable zone, personal and document numbers, card access number, address, barcode, photo), the user reviews them, says who the copy is for, and shares a watermarked JPEG.
 
 - Owner: Feiyang Tang (TangSpark). Repository: <https://github.com/tangfy97/MaskCopy> (public, Apache 2.0).
-- Status: prototype 0.1.0, TestFlight build 6 uploaded (Apple reported Processing; install availability not yet confirmed) (see [Releasing](#releasing)).
+- Status: prototype 0.1.0, TestFlight build 6 available internally (App Store Connect confirms the existing tester installed it) (see [Releasing](#releasing)).
 - The owner works in Chinese and English; replies to them in Chinese are welcome, code and docs are in English.
 
 ## Non-negotiable rules
@@ -115,10 +115,10 @@ Full description: [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
 Details: [docs/APP_STORE.md](docs/APP_STORE.md).
 
 - Team X933P26489 (Feiyang Tang). Distribution signing is cloud-managed by Xcode (`-allowProvisioningUpdates`); local development certificate "Apple Development: Feiyang Tang (F72B32W28N)".
-- App Store Connect: app last confirmed as "Maske: Privacy-First ID Copy" (owner will rename to "MaskCopy: Safe ID Copies"), Apple ID 6832059753, SKU `maske-ios`, bundle `com.feiyangtang.Maske`, primary language English (U.S.).
+- App Store Connect: app "MaskCopy: Safe ID Copies" (saved and confirmed on 8 Nov 2026), Apple ID 6832059753, SKU `maske-ios`, bundle `com.feiyangtang.Maske`, primary language English (U.S.).
 - TestFlight: internal group **TangSpark**, automatic distribution on, the owner added. Builds: 0.1.0 (1) and (2) on 7 Nov 2026; build (3) uploaded 8 Nov 2026 (specimen, MRZ and portrait fixes). Build (4), with photo/window/editor/watermark changes, uploaded successfully at 01:49 Amsterdam time on 8 Nov. Apple reported Processing; Ready to Test / installation availability was not confirmed. The signed archive contains the unchanged 1024 px AppIcon.
 - Build (5), the native interface/session revision, uploaded successfully at 11:54 Amsterdam time on 8 Nov. Xcode reported Upload succeeded and Processing; Ready to Test is not confirmed. The signed 0.1.0 (5) archive passed signature verification, contains the unchanged 1024 px AppIcon and contains no fixture images or test bundles. Verification is recorded in docs/AUDIT.md.
-- Build (6), the MaskCopy workflow/native editor/watermark revision, uploaded successfully at 13:26 Amsterdam time on 8 Nov. Apple reported Upload succeeded and Processing; Ready to Test remains unconfirmed. Signature, stable bundle ID, build number and 1024 px AppIcon were verified. Core checks passed 15/15; app/UI verification is in docs/AUDIT.md.
+- Build (6), the MaskCopy workflow/native editor/watermark revision, uploaded successfully at 13:26 Amsterdam time on 8 Nov. Apple initially reported Upload succeeded and Processing; subsequent browser verification confirmed assignment to TangSpark and the existing tester’s installed 0.1.0 (6). Signature, stable bundle ID, build number and 1024 px AppIcon were verified. Core checks passed 15/15; app/UI verification is in docs/AUDIT.md.
 - Every upload needs a higher `CURRENT_PROJECT_VERSION` in `project.yml`. `ITSAppUsesNonExemptEncryption` is NO.
 - The Apple Developer Program License Agreement update was pending acceptance by the account holder (needed before App Review). Do not accept agreements on the owner's behalf.
 - The owner's site tang-spark.no is a personal studio site, not this product's website; don't add pages there unless asked.
