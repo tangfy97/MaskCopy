@@ -1,5 +1,19 @@
 # Interface and usability verification
 
+## Build 10: explicit document types and translucent watermark
+
+The previous stamp’s large recipient, fine rules and opacity obscured document details. RvIG’s KopieID FAQ and official watermark illustration informed a simpler recipient/purpose/date treatment. The illustration was inspected in the browser; it is a diagram, not a verified screenshot of the exact current app. Research and decisions are recorded in docs/plans/2026-11-08-document-watermark-design.md.
+
+Documents now starts with four named types/sides, followed by country-profile navigation and a separate searchable country directory. Native lists replace flags, regional groupings and abbreviated kinds. The watermark has two equal-size/weight lines at 30 degrees with translucent red multiply blending over document pixels and a clipped light pass over opaque masks. Decorative rules and the oversized recipient are removed. No OCR, mask geometry or file-format code changed; PRIVACY was updated for the changed exported appearance.
+
+- `swift test`: 18 core checks passed, including a new regression retaining every pure-black source-print pixel while requiring visible watermark pixels on the paper between lines. Existing opaque-mask, every-page marking, page-gap and image-only PDF checks passed. The black-pixel equality is before lossy JPEG encoding; it does not establish all coloured/faint printing remains equally readable.
+- Initial normal-size Simulator checks: Documents/country search/detail, full review→watermark→copy→zoom→Close, and long-recipient keyboard/system sharing passed (3/3), no runtime warnings. Rendered Documents, country details and final watermarked copy were inspected under build/Revision10/light.
+- Initial compact dark/increased-contrast/maximum-text run: PDF save, JPG cancel and PDF sharing passed; document browsing failed because the test expected a virtualized offscreen row without scrolling. Visual evidence also found narrow icon-leading labels split words. Full-width text with icons above at accessibility sizes and removal of the redundant root section heading correct the layout. The test now scrolls through each type and the country directory; `CompactFinal.xcresult` passed the affected journey (1/1), no runtime warnings. Final compact Documents and saved-PDF screenshots were inspected.
+- `FinalLight.xcresult` passed the final normal-size document navigation and actual PDF-save/JPG-cancel/PDF-share paths (2/2), with no runtime warnings. The final document page was inspected after removing the redundant section heading.
+- Placement is fixed, not OCR-aware. Lettering still intersects some fields; multiply blending improves readability and is not collision avoidance. Faint/coloured printing, very long inputs, physical printing/recapture, manual VoiceOver and real-device frame pacing remain open. Country-profile lists do not prove every document version has been validated.
+
+Build 10 upload completed at 18:11 Amsterdam time on 8 November. Xcode reported Upload succeeded / EXPORT SUCCEEDED and Processing. The archive passed strict signature verification, has the stable bundle ID/version 0.1.0 (10), retains the selected-C 1024 px AppIcon and contains no test resources. The browser session had expired at the subsequent verification attempt; Ready to Test / installation availability is not confirmed.
+
 ## Build 9: selected C mark, no Home branding
 
 The owner selected C, requested a more prominent lock, and rejected any logo on Home. Production artwork and the in-app privacy-cover geometry now use the larger corner lock. Home has no visible brand mark or wordmark; only the Documents toolbar control and source actions remain. Functional screen titles stay compact. No recognition, masking, watermark or export code changed.

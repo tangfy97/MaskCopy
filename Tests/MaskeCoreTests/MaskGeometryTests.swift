@@ -101,6 +101,38 @@ final class MaskGeometryTests: XCTestCase {
         XCTAssertEqual(long.height, 250, "Watermark belongs inside the document, not in a removable footer")
     }
 
+    func testWatermarkPreservesBlackPrinting() throws {
+        let context = try XCTUnwrap(CGContext(data: nil, width: 400, height: 250, bitsPerComponent: 8,
+            bytesPerRow: 0, space: CGColorSpace(name: CGColorSpace.sRGB)!,
+            bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue))
+        context.setFillColor(gray: 1, alpha: 1)
+        context.fill(CGRect(x: 0, y: 0, width: 400, height: 250))
+        context.setFillColor(gray: 0, alpha: 1)
+        for y in stride(from: 25, through: 225, by: 10) {
+            context.fill(CGRect(x: 10, y: y, width: 380, height: 3))
+        }
+        let page = try XCTUnwrap(context.makeImage())
+        let plain = try XCTUnwrap(Renderer.render(pages: [(page, [])], watermark: nil))
+        let stamped = try XCTUnwrap(Renderer.render(pages: [(page, [])], watermark:
+            Watermark(recipient: "Hotel Nord", purpose: "Check-in", date: Date(timeIntervalSince1970: 0))))
+        let before = [UInt8](try XCTUnwrap(plain.dataProvider?.data) as Data)
+        let after = [UInt8](try XCTUnwrap(stamped.dataProvider?.data) as Data)
+        var changedPaper = 0, preservedInk = 0
+        for y in 0..<plain.height {
+            for x in 0..<plain.width {
+                let offset = y * plain.bytesPerRow + x * 4
+                if before[offset] == 0 && before[offset + 1] == 0 && before[offset + 2] == 0 {
+                    XCTAssertEqual(Array(after[offset...offset + 2]), [0, 0, 0])
+                    preservedInk += 1
+                } else if before[offset + 1] != after[offset + 1] {
+                    changedPaper += 1
+                }
+            }
+        }
+        XCTAssertGreaterThan(preservedInk, 10_000)
+        XCTAssertGreaterThan(changedPaper, 300, "The mark must remain visible between printed lines")
+    }
+
     func testMaskCannotPaintOutsideItsOwnPage() throws {
         let context = try XCTUnwrap(CGContext(data: nil, width: 400, height: 250, bitsPerComponent: 8,
                                              bytesPerRow: 400, space: CGColorSpaceCreateDeviceGray(),

@@ -31,6 +31,9 @@ Build 8 upload completed at 17:36 Amsterdam time on 8 November. Xcode reported `
 
 Build 9 upload completed at 17:48 Amsterdam time on 8 November. Xcode reported `Upload succeeded`, `Uploaded package is processing` and `EXPORT SUCCEEDED`. Browser verification independently confirmed version 0.1.0, build 9, Processing. Installation availability is not yet confirmed. Strict signature verification passed for MaskCopy 0.1.0 (9), bundle `com.feiyangtang.Maske`. This build intentionally replaces the old icon with the owner-selected C card/lock artwork, with a more prominent lock. The compiled Assets.car contains a 1024 × 1024 AppIcon; the embedded optimized 120 px PNG was decoded and visually verified to show the selected lock. No fixture images or test bundles are embedded. Two focused Simulator UI journeys passed without runtime warnings; see AUDIT.md.
 
+Build 10 upload completed at 18:11 Amsterdam time on 8 November. Xcode reported `Upload succeeded`, `Uploaded package is processing` and `EXPORT SUCCEEDED`. The subsequent browser session had expired, so installation availability could not be independently confirmed. Strict signature verification passed for MaskCopy 0.1.0 (10), bundle `com.feiyangtang.Maske`; the selected-C 1024 × 1024 AppIcon is unchanged and no test resources are embedded. This revision reorganizes Documents by type/country and replaces the decorated watermark with uniform translucent lettering. Core 18/18 and final normal/compact document and save/share checks passed; see AUDIT.md.
+
+
 
 Run `scripts/ui-check.sh` on a booted Simulator for the editor/export regression before a UI release. The build 4 checks are recorded in KNOWN_ISSUES; the iOS Simulator still misses the photo and MRZ of one synthetic Chinese passport turned 90°, while the Mac passes that case.
 
@@ -42,7 +45,7 @@ Run `scripts/ui-check.sh` on a booted Simulator for the editor/export regression
 | Bundle ID `com.feiyangtang.Maske` | Registered by the first archive (`-allowProvisioningUpdates`) |
 | App record | Created 7 November 2026, Apple ID 6832059753 |
 | TestFlight | Internal group TangSpark, automatic distribution on, Feiyang Tang added |
-| Builds uploaded | 0.1.0 (1) and (2), 7 November; (3), (4), (5), (6), (7), (8) and (9), 8 November 2026 |
+| Builds uploaded | 0.1.0 (1) and (2), 7 November; (3), (4), (5), (6), (7), (8), (9) and (10), 8 November 2026 |
 | Developer Program License Agreement | An update was waiting for the account holder to accept (needed before App Review; not needed for internal TestFlight) |
 | Export compliance | `ITSAppUsesNonExemptEncryption` is NO in `project.yml` |
 

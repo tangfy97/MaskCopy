@@ -41,3 +41,9 @@ PDF embeds the same flattened JPEG data as image sharing in one PDF image page. 
 Use native glass/glassProminent button styles, standard toolbar grouping and safeAreaBar rather than hand-drawn blur or extra opaque bar backgrounds. Combine related glass controls in GlassEffectContainer. Use one regular-glass editor control surface; keep document pixels, masks and watermark in the content layer. Gate new APIs at iOS 26 to preserve iOS 18 support. Custom theme colors gain explicit increased-contrast variants.
 
 Home adopts the native inline-large leading title. Content titles retain the system's large/collapsed behavior and the corner editor retains normal Cancel/Save placement. Apple's new-design-session wording calls out stronger leading typography in key moments such as alerts and onboarding; it does not say every element is left-aligned. Sources are in DESIGN.md and the revision 8 plan.
+
+## 8 November: document types first, translucent functional watermark
+
+The owner rejected the country-first abbreviated information list and the decorative stamp. Show explicit document types/sides, then their country profiles. Use full-width stacked rows for accessibility text. Keep imported formats and the review reminder short. Country profiles describe recognition rules rather than validation of every version.
+
+Use simple diagonal recipient/purpose/date lettering, informed by RvIG’s KopieID FAQ and official illustration. The illustration does not establish current app colour or opacity. Translucent red multiply blending retains black printing; a light clipped pass is visible over opaque masks. Fixed positioning remains an explicit limitation. No competitor assets/code or text-detection work is added to rendering.

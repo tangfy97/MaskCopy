@@ -275,6 +275,33 @@ extension FindingKind {
     }
 }
 
+struct DocumentTypeLabel: View {
+    @Environment(\.dynamicTypeSize) private var textSize
+    let kind: DocumentKind
+
+    private var title: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(kind.documentName).foregroundStyle(Color.ink)
+            Text(kind.documentSides).font(.subheadline).foregroundStyle(Color.muted)
+        }
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    var body: some View {
+        if textSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 12) {
+                Image(systemName: kind.documentSymbol).font(.title3).foregroundStyle(Color.fjord)
+                    .accessibilityHidden(true)
+                title
+            }
+        } else {
+            Label { title } icon: {
+                Image(systemName: kind.documentSymbol).foregroundStyle(Color.fjord)
+            }
+        }
+    }
+}
+
 extension DocumentKind {
     var title: LocalizedStringKey {
         switch self {
@@ -283,6 +310,30 @@ extension DocumentKind {
         case .residencePermit: "Residence permit"
         case .drivingLicence: "Driving licence"
         case .unknown: "Document"
+        }
+    }
+
+    var documentName: LocalizedStringKey {
+        switch self {
+        case .passport: "Passport"
+        case .idCard: "National ID card"
+        case .residencePermit: "Residence permit"
+        case .drivingLicence: "Driving licence"
+        case .unknown: "Identity document"
+        }
+    }
+
+    var documentSides: LocalizedStringKey {
+        self == .passport ? "Photo page" : "Front and back"
+    }
+
+    var documentSymbol: String {
+        switch self {
+        case .passport: "book.closed"
+        case .idCard: "person.text.rectangle"
+        case .residencePermit: "person.crop.rectangle"
+        case .drivingLicence: "steeringwheel"
+        case .unknown: "doc"
         }
     }
 

@@ -17,6 +17,8 @@ Revision 7 removes the rejected progress tracker, reduces Home to three source a
 
 Revision 8 adopts native Liquid Glass buttons, grouped effects and scroll-edge bars with iOS 18 fallbacks. Increased-contrast theme variants are provided. Screenshots and functional tests do not establish real-device frame pacing. System Reduce Transparency/Reduce Motion visual checks and the older-runtime fallback remain manual verification items; the simulator desktop control could not be reached. See AUDIT.md for the completed appearance checks.
 
+Revision 10 replaces the decorated stamp with uniform translucent lettering, using multiply blending to preserve black printing, and light lettering only over opaque masks. Position remains fixed at the document centre with a 30-degree angle. It can still intersect printed fields; this is a readability treatment, not OCR-aware collision avoidance, and faint/coloured print needs review. Very long input must shrink. Documents now lists explicit document types and country profiles; the list does not establish support for every historical version.
+
 ## Open
 
 ### 1. Text recognition sometimes misses lines (most important)

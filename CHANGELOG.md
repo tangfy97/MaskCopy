@@ -4,6 +4,12 @@ All notable changes to MaskCopy are listed here. Versions follow [Semantic Versi
 
 ## [0.1.0] - 2026-11-08
 
+Build 10: document information and readable watermarks. Uploaded 8 November at 18:11 Amsterdam time; Apple reports Processing. Installation availability is not yet confirmed.
+
+- Organize Documents by Passport, National ID card, Residence permit and Driving licence, with photo-page/front-and-back labels and searchable country profiles. Replace emoji regions and abbreviated document names with native navigation.
+- Use two uniform translucent diagonal watermark lines instead of a decorated purpose stamp. Multiply blending preserves black printing before JPEG encoding; a light clipped pass keeps the watermark visible over opaque masks. Keep recipient, purpose and date inside every flattened page.
+- Stack document icons above full-width text at accessibility sizes. Keep photos/PDF import and review reminders brief.
+
 Build 9: privacy mark and quieter navigation. Uploaded 8 November at 17:48 Amsterdam time; Apple reports Processing. Installation availability is not yet confirmed.
 
 - Adopt the owner-selected C AppIcon, with a larger corner lock and the existing paper/card/redaction identity. Match the privacy-cover mark to the selected artwork.

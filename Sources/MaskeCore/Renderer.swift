@@ -22,7 +22,7 @@ public struct Watermark: Sendable {
         f.dateFormat = "d MMM yyyy"
         let context = [purpose.trimmingCharacters(in: .whitespacesAndNewlines), f.string(from: date)]
             .filter { !$0.isEmpty }.joined(separator: " · ")
-        return ["COPY FOR", recipient.trimmingCharacters(in: .whitespacesAndNewlines), context]
+        return ["Copy for " + recipient.trimmingCharacters(in: .whitespacesAndNewlines), context]
     }
 
     public var text: String { lines.joined(separator: " · ") }
@@ -68,16 +68,16 @@ public enum Renderer {
             if let watermark {
                 ctx.saveGState()
                 ctx.clip(to: frame)
-                ctx.translateBy(x: frame.midX, y: frame.minY + frame.height * 0.34)
-                ctx.rotate(by: .pi / 12)
+                ctx.translateBy(x: frame.midX, y: frame.midY)
+                ctx.rotate(by: .pi / 6)
                 draw(watermark, in: ctx, size: frame.size)
                 ctx.restoreGState()
                 if !redactions.isEmpty {
                     ctx.saveGState()
                     ctx.addPath(redactions)
                     ctx.clip()
-                    ctx.translateBy(x: frame.midX, y: frame.minY + frame.height * 0.34)
-                    ctx.rotate(by: .pi / 12)
+                    ctx.translateBy(x: frame.midX, y: frame.midY)
+                    ctx.rotate(by: .pi / 6)
                     draw(watermark, in: ctx, size: frame.size, light: true)
                     ctx.restoreGState()
                 }
@@ -88,31 +88,26 @@ public enum Renderer {
         return Task.isCancelled ? nil : ctx.makeImage()
     }
 
-    /// A compact purpose stamp: quiet label, clear recipient, smaller purpose/date.
+    /// Uniform translucent lettering; multiply preserves dark document printing.
     static func draw(_ watermark: Watermark, in ctx: CGContext, size: CGSize, light: Bool = false) {
-        let width = min(size.width * 0.66, size.height * 1.3)
-        let maxHeight = min(size.height * 0.29, size.width * 0.28)
-        var fontSize = min(size.width / 18, size.height / 7)
-        let color = light ? CGColor(gray: 1, alpha: 0.95) : CGColor(gray: 0.12, alpha: 0.85)
+        let width = min(size.width * 0.82, size.height * 1.55)
+        let maxHeight = min(size.height * 0.20, size.width * 0.18)
+        var fontSize = min(size.width / 28, size.height / 12)
+        let color = light ? CGColor(gray: 1, alpha: 0.66)
+            : CGColor(srgbRed: 0.74, green: 0.12, blue: 0.18, alpha: 0.38)
+        ctx.setBlendMode(light ? .normal : .multiply)
         var alignment = CTTextAlignment.center
         let paragraph = withUnsafePointer(to: &alignment) { pointer in
             var setting = CTParagraphStyleSetting(spec: .alignment, valueSize: MemoryLayout<CTTextAlignment>.size, value: pointer)
             return CTParagraphStyleCreate(&setting, 1)
         }
         func framesetter(_ points: CGFloat) -> CTFramesetter {
-            let text = NSMutableAttributedString(string: "")
-            for (index, line) in watermark.lines.enumerated() {
-                let scale: CGFloat = index == 1 ? 1 : (index == 0 ? 0.36 : 0.43)
-                let attributes: [NSAttributedString.Key: Any] = [
-                    .init(kCTFontAttributeName as String): CTFontCreateWithName(
-                        index == 1 ? "HelveticaNeue-Medium" as CFString : "HelveticaNeue" as CFString, points * scale, nil),
-                    .init(kCTForegroundColorAttributeName as String): color,
-                    .init(kCTKernAttributeName as String): index == 0 ? points * 0.075 : 0,
-                    .init(kCTParagraphStyleAttributeName as String): paragraph,
-                ]
-                text.append(NSAttributedString(string: (index == 0 ? "" : "\n") + line, attributes: attributes))
-            }
-            return CTFramesetterCreateWithAttributedString(text)
+            let attributes: [NSAttributedString.Key: Any] = [
+                .init(kCTFontAttributeName as String): CTFontCreateWithName("HelveticaNeue-Medium" as CFString, points, nil),
+                .init(kCTForegroundColorAttributeName as String): color,
+                .init(kCTParagraphStyleAttributeName as String): paragraph,
+            ]
+            return CTFramesetterCreateWithAttributedString(NSAttributedString(string: watermark.lines.joined(separator: "\n"), attributes: attributes))
         }
         var setter = framesetter(fontSize)
         var fitted = CTFramesetterSuggestFrameSizeWithConstraints(setter, CFRange(), nil,
@@ -127,14 +122,6 @@ public enum Renderer {
         let path = CGPath(rect: CGRect(x: -width / 2, y: -height / 2, width: width, height: height), transform: nil)
         ctx.textMatrix = .identity
         CTFrameDraw(CTFramesetterCreateFrame(setter, CFRange(), path, nil), ctx)
-        ctx.setStrokeColor(color)
-        ctx.setLineWidth(max(0.5, size.width / 1800))
-        let edge = height / 2 + fontSize * 0.22
-        for y in [-edge, edge] {
-            ctx.move(to: CGPoint(x: -width / 2, y: y))
-            ctx.addLine(to: CGPoint(x: width / 2, y: y))
-        }
-        ctx.strokePath()
     }
 
     /// A single-page PDF containing only the same flattened JPEG pixels as image export.

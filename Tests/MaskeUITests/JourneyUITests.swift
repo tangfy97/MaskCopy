@@ -31,11 +31,35 @@ final class JourneyUITests: XCTestCase {
         app.buttons["Documents"].tap()
         XCTAssertTrue(app.navigationBars["Documents"].waitForExistence(timeout: 5))
         capture("Documents", app: app)
+        for name in ["Passport", "National ID card", "Residence permit", "Driving licence"] {
+            let label = app.staticTexts[name].firstMatch
+            for _ in 0..<8 {
+                if label.isHittable { break }
+                app.collectionViews.firstMatch.swipeUp()
+            }
+            XCTAssertTrue(label.isHittable)
+        }
+        let countries = app.buttons["document-countries"]
+        for _ in 0..<8 {
+            if countries.isHittable { break }
+            app.collectionViews.firstMatch.swipeUp()
+        }
+        countries.tap()
         let search = app.searchFields["Search countries"]
         search.tap()
         search.typeText("Norway")
         XCTAssertTrue(app.staticTexts["Norway"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.staticTexts["France"].exists)
+        app.buttons["Norway"].tap()
+        XCTAssertTrue(app.navigationBars["Norway"].waitForExistence(timeout: 5))
+        let nationalID = app.staticTexts["National ID card"].firstMatch
+        for _ in 0..<8 {
+            if nationalID.isHittable { break }
+            app.collectionViews.firstMatch.swipeUp()
+        }
+        XCTAssertTrue(nationalID.exists)
+        XCTAssertTrue(app.staticTexts["Front and back"].firstMatch.exists)
+        capture("Country documents", app: app)
     }
     func testReviewAndShare() {
         let app = documentApp()

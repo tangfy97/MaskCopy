@@ -22,6 +22,10 @@ Three source symbols share a 24-point drawing grid, round joins and consistent s
 
 Lunar's official redesign and Home screenshot informed immediate task access and clear grouping, not a copied banking dashboard: https://www.lunar.app/en/personal/new-lunar-experience . No competitor image or code is bundled. Theme.swift owns custom drawing and visual treatment.
 
+## Document information
+
+Documents starts with four native rows: Passport (photo page), National ID card, Residence permit and Driving licence (front and back). Each type opens its matching country profiles. Countries offers a searchable alphabetical list and a per-country list of full document names. Remove emoji flags, regional sections and abbreviated ID/Residence/Licence strings. Keep only a brief photos/PDF import label and review reminder. These are recognition profiles, not a claim that every historical document version has been validated.
+
 ## Editing and export
 
 Hide shows the document and direct native field switches. Drag a mask to translate the entire polygon, preserving perspective and size and stopping at page edges. Tap to open the enlarged editor: drag inside the polygon to move it, outside to pan the document, or use the 44-point corner targets for precise resizing. The edited polygons are the exported polygons.
@@ -34,7 +38,7 @@ PDF is one image-only page containing the same flattened JPEG pixels as JPG, inc
 
 ## Watermark and motion
 
-Every page has a compact 15-degree purpose stamp lower in the document: a tracked COPY FOR label, a stronger recipient line and smaller purpose/date text between two fine rules. Long input wraps and fits rather than truncating. Higher-contrast dark type covers the document; the same type becomes light over opaque masks. There is no detachable footer. Fixed placement can still overlap content on unfamiliar layouts; automatic placement is not claimed.
+Every page has a simple 30-degree, two-line watermark: “Copy for [recipient]”, followed by purpose and date. Both lines use the same medium-weight type. There is no decorative rule, oversized recipient, border or removable footer. Translucent red lettering uses multiply blending over the document, preserving pure black printing rather than painting over it. A clipped light pass makes lettering visible on opaque masks. Long text wraps and fits. The angle/position are fixed; this is not OCR-aware placement, and faint or coloured print still needs visual review.
 
 Motion explains actions: a system-owned glass-button press (a short interruptible press on older iOS), native navigation/source-linked editor transitions and a symbol replacement when saving succeeds. Pickup and save completion provide light haptic feedback. There are no looping decorations or entrance delays. Reduce Motion governs native effects; older-system fallbacks remove custom press scaling. UIScrollView owns pinch, double-tap and momentum; the image is installed once. Recognition and file encoding remain off-main and do not run on gesture or animation frames.
 
