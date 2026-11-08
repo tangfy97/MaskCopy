@@ -10,7 +10,7 @@ An iPhone app for sharing a copy of your passport, ID card or driving licence wi
 - Opaque masks are painted into the pixels (never blurred). The recipient, purpose and date are watermarked into every page. Save or share JPG/PDF from the final preview. PDF contains only the flattened image; neither format includes source metadata
 - Everything happens on the iPhone with Apple's Vision framework. No network code, accounts, analytics, third-party code or history. Temporary export files are removed when the session ends or the app next opens ([privacy policy](PRIVACY.md))
 
-**Status:** prototype 0.1.0, build 8 uploaded to App Store Connect (Apple reports Processing; build 8 installation availability is not yet confirmed). Not yet on the App Store. What still goes wrong: [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md). What comes next: [docs/ROADMAP.md](docs/ROADMAP.md).
+**Status:** prototype 0.1.0, build 9 uploaded to App Store Connect (Apple reports Processing; build 9 installation availability is not yet confirmed). Not yet on the App Store. What still goes wrong: [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md). What comes next: [docs/ROADMAP.md](docs/ROADMAP.md).
 
 **Working on MaskCopy with a coding agent?** Start with [AGENTS.md](AGENTS.md): the rules, the map of the code, how to test, and what was learned so far.
 

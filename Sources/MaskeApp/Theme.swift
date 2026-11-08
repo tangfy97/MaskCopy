@@ -310,34 +310,34 @@ extension Region {
     }
 }
 
-/// The app's mark: a card with one line blacked out.
+/// The selected card-and-lock mark, used only by the privacy cover.
 struct Mark: View {
     var size: CGFloat = 56
 
     var body: some View {
-        let s = size
-        ZStack(alignment: .topLeading) {
-            RoundedRectangle(cornerRadius: s * 0.12, style: .continuous)
-                .strokeBorder(Color.ink, lineWidth: s * 0.055)
-                .frame(width: s, height: s * 0.66)
-            Circle()
-                .strokeBorder(Color.ink, lineWidth: s * 0.05)
-                .frame(width: s * 0.22, height: s * 0.22)
-                .offset(x: s * 0.13, y: s * 0.17)
-            RoundedRectangle(cornerRadius: s * 0.025)
-                .fill(Color.ink)
-                .frame(width: s * 0.42, height: s * 0.11)
-                .offset(x: s * 0.45, y: s * 0.18)
-            RoundedRectangle(cornerRadius: s * 0.02)
-                .fill(Color.ink.opacity(0.35))
-                .frame(width: s * 0.32, height: s * 0.05)
-                .offset(x: s * 0.45, y: s * 0.38)
-            RoundedRectangle(cornerRadius: s * 0.02)
-                .fill(Color.ink.opacity(0.35))
-                .frame(width: s * 0.74, height: s * 0.05)
-                .offset(x: s * 0.13, y: s * 0.48)
+        Canvas { context, canvas in
+            let scale = canvas.width / 1000
+            context.scaleBy(x: scale, y: scale)
+            func rounded(_ rect: CGRect, _ radius: CGFloat) -> Path {
+                Path(roundedRect: rect, cornerRadius: radius)
+            }
+            context.stroke(rounded(CGRect(x: 160, y: 280, width: 660, height: 420), 60), with: .color(.ink), lineWidth: 32)
+            context.stroke(Path(ellipseIn: CGRect(x: 259, y: 364, width: 130, height: 130)), with: .color(.ink), lineWidth: 27)
+            context.fill(rounded(CGRect(x: 464, y: 370, width: 278, height: 76), 12), with: .color(.ink))
+            for rect in [CGRect(x: 464, y: 518, width: 210, height: 32), CGRect(x: 259, y: 599, width: 483, height: 32)] {
+                context.fill(rounded(rect, 10), with: .color(.ink.opacity(0.35)))
+            }
+            context.fill(rounded(CGRect(x: 570, y: 482, width: 286, height: 314), 40), with: .color(.paper))
+            var shackle = Path()
+            shackle.move(to: CGPoint(x: 645, y: 626)); shackle.addLine(to: CGPoint(x: 645, y: 570))
+            shackle.addCurve(to: CGPoint(x: 771, y: 570), control1: CGPoint(x: 645, y: 486), control2: CGPoint(x: 771, y: 486))
+            shackle.addLine(to: CGPoint(x: 771, y: 626))
+            context.stroke(shackle, with: .color(.ink), style: StrokeStyle(lineWidth: 34, lineCap: .round))
+            context.fill(rounded(CGRect(x: 596, y: 604, width: 224, height: 166), 28), with: .color(.ink))
+            context.fill(Path(ellipseIn: CGRect(x: 692, y: 649, width: 32, height: 32)), with: .color(.paper))
+            context.fill(rounded(CGRect(x: 700, y: 671, width: 16, height: 34), 6), with: .color(.paper))
         }
-        .frame(width: s, height: s * 0.66, alignment: .topLeading)
+        .frame(width: size, height: size)
         .accessibilityHidden(true)
     }
 }

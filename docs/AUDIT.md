@@ -1,6 +1,14 @@
 # Interface and usability verification
 
-## Unreleased: compact brand header and privacy-logo studies
+## Build 9: selected C mark, no Home branding
+
+The owner selected C, requested a more prominent lock, and rejected any logo on Home. Production artwork and the in-app privacy-cover geometry now use the larger corner lock. Home has no visible brand mark or wordmark; only the Documents toolbar control and source actions remain. Functional screen titles stay compact. No recognition, masking, watermark or export code changed.
+
+`SelectedC.xcresult` passed Home/Documents/search and the full review→watermark→copy→zoom→Close journey (2/2), with no runtime warnings. The final logo-free Home screenshot was inspected under build/BrandStudy/home.png. Source icon artwork was inspected at 1024 px and in the small-size/dark comparison; the lock is deliberately larger than the initial C. These focused light-mode journeys are not new evidence of maximum-text layouts, VoiceOver navigation or device frame pacing.
+
+Build 9 upload completed at 17:48 Amsterdam time on 8 November: Xcode reported Upload succeeded / EXPORT SUCCEEDED and Processing; the browser independently confirmed build 9 Processing. Strict archive signature and stable bundle identity/version were verified. The full-size compiled icon is present and the embedded 120 px optimized PNG was decoded with Xcode’s pngcrush and visually verified against the selected C lock. No fixture images or test bundles are embedded. Installation availability is not yet confirmed.
+
+## Earlier exploration: compact brand header and privacy-logo studies
 
 The owner rejected the oversized brand title and requested privacy-focused logo alternatives. Home now has a 40-point leading card mark, with an accessible MaskCopy name and no decorative glass-button background. Review, Watermark, Your copy and Documents use compact native inline titles. Theme’s mark now includes the original artwork’s lower visible line. The installed AppIcon and build number remain unchanged; three native vector-path studies are proposals in Design/Studies/2026-11-08.
 

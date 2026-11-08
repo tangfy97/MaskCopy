@@ -50,12 +50,6 @@ struct HomeView: View {
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            if #available(iOS 26, *) {
-                ToolbarItem(placement: .topBarLeading) { brand }
-                    .sharedBackgroundVisibility(.hidden)
-            } else {
-                ToolbarItem(placement: .topBarLeading) { brand }
-            }
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink(value: Session.Step.supported) {
                     Label("Documents", systemImage: "info.circle")
@@ -98,13 +92,6 @@ struct HomeView: View {
                 }.value
             }
         }
-    }
-
-    private var brand: some View {
-        Mark(size: 40)
-            .accessibilityElement(children: .ignore)
-            .accessibilityHidden(false)
-            .accessibilityLabel("MaskCopy")
     }
 
     private var photoSource: some View {

@@ -54,11 +54,11 @@ func mark(_ c: CGContext, variant: Int, in rect: CGRect, dark: Bool = false) {
         rounded(c, CGRect(x: 662, y: 401, width: 48, height: 32), 6, fill: background)
     } else if variant == 2 {
         // A larger corner lock remains legible at app-icon size.
-        rounded(c, CGRect(x: 619, y: 542, width: 242, height: 224), 40, fill: background)
-        shackle(c, x: 674, top: 534, width: 106, bottom: 634, ink: foreground, line: 29)
-        rounded(c, CGRect(x: 641, y: 615, width: 172, height: 133), 24, fill: foreground)
-        c.setFillColor(background); c.fillEllipse(in: CGRect(x: 714, y: 651, width: 27, height: 27))
-        rounded(c, CGRect(x: 721, y: 669, width: 13, height: 28), 5, fill: background)
+        rounded(c, CGRect(x: 570, y: 482, width: 286, height: 314), 40, fill: background)
+        shackle(c, x: 645, top: 507, width: 126, bottom: 626, ink: foreground, line: 34)
+        rounded(c, CGRect(x: 596, y: 604, width: 224, height: 166), 28, fill: foreground)
+        c.setFillColor(background); c.fillEllipse(in: CGRect(x: 692, y: 649, width: 32, height: 32))
+        rounded(c, CGRect(x: 700, y: 671, width: 16, height: 34), 6, fill: background)
     }
 }
 func context(_ width: Int, _ height: Int, fill: CGColor) -> CGContext {

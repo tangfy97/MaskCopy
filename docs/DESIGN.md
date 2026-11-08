@@ -1,10 +1,10 @@
 # MaskCopy interface
 
-Revision 8 aligns the existing minimal workflow with Apple's current Liquid Glass guidance, after reviewing the WWDC26 Design guide, current Materials HIG and adoption/custom-view documentation, and the WWDC25 design-system session. It keeps short labels, the paper/ink/fjord theme and direct document manipulation.
+Revision 9 keeps the native materials introduced in revision 8 and adopts the owner-selected privacy mark with no branding on Home. Revision 8 aligned the existing minimal workflow with Apple's current Liquid Glass guidance, after reviewing the WWDC26 Design guide, current Materials HIG and adoption/custom-view documentation, and the WWDC25 design-system session. It keeps short labels, the paper/ink/fjord theme and direct document manipulation.
 
 ## Native material and navigation
 
-After the owner rejected the oversized brand title, Home uses a small leading card mark without a glass-button background. The mark is decorative, with an accessible MaskCopy name. Functional screens use compact native inline titles; the corner editor keeps the standard Cancel/Save arrangement. Apple's leading-typography guidance covers key moments such as alerts/onboarding, rather than requiring every navigation title or control to align left.
+The owner rejected the oversized brand title and then the logo header. Home has no visible brand text or mark; the upper toolbar contains only the Documents control. Functional screens use compact native inline titles; the corner editor keeps the standard Cancel/Save arrangement. Apple's leading-typography guidance covers key moments such as alerts/onboarding, rather than requiring every navigation title or control to align left.
 
 On iOS 26 and newer, source and action buttons use glass/glassProminent styles. The framework owns touch highlights, vibrancy, shape and motion. Related controls use GlassEffectContainer; bottom controls use safeAreaBar for the system scroll edge. Remove the old opaque footer backing. A single regular-glass editing surface groups zoom, Hide and Reset. Document pixels, redactions, watermark and form content use their original content surfaces.
 
@@ -14,9 +14,9 @@ Sources: [WWDC26 Design](https://developer.apple.com/wwdc26/guides/design/), [Ma
 
 ## Home and icon language
 
-Home contains a 40-point leading brand mark, one central Scan control and lightweight Photos/Files actions. No large brand text, hero illustration, large cards, slogan, tutorial or introductory heading. The supported list is behind the native information control. At accessibility sizes the source actions may stack and the whole layout can scroll without shrinking the selected text size.
+Home contains one central Scan control and lightweight Photos/Files actions. No large brand text, hero illustration, large cards, slogan, tutorial or introductory heading. The supported list is behind the native information control. At accessibility sizes the source actions may stack and the whole layout can scroll without shrinking the selected text size.
 
-Three privacy-logo proposals are in `Design/Studies/2026-11-08`, rendered reproducibly by `scripts/brand-study.swift`. A replaces the portrait with a lock; B integrates a negative-space lock into the redaction; C adds a larger corner lock. They are proposals for comparison, not the installed AppIcon. Keep the existing production artwork until a direction is selected.
+The owner selected privacy-logo C and requested a more obvious lock. The AppIcon now has a larger corner lock, with its body increased from 172 to 224 normalized units and its shackle from 106 to 126. The card/redaction identity remains intact. `scripts/icon.swift` renders production artwork; `scripts/brand-study.swift` reproduces the comparison studies in `Design/Studies/2026-11-08`. Theme.swift uses the same selected geometry for the app-switcher privacy cover. No decorative logo is shown on Home.
 
 Three source symbols share a 24-point drawing grid, round joins and consistent stroke ratios. The scan symbol contains an ID card with a redacted line, keeping the product identity inside a functional control. Icons have accessible names, and the brief Scan/Photos/Files labels make the choices recognizable. Existing system icons remain for familiar editing and export actions.
 
