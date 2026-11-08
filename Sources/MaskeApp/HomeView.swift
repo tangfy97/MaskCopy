@@ -13,37 +13,42 @@ struct HomeView: View {
     var body: some View {
         GeometryReader { geometry in
             ScrollView {
-                VStack(spacing: 44) {
-                    Spacer(minLength: 32)
-                    Button { scanning = true } label: {
+                GlassControls {
+                    VStack(spacing: 40) {
+                        Spacer(minLength: 32)
                         VStack(spacing: 20) {
-                            SourceGlyph(kind: .scan)
-                                .frame(width: 48, height: 48)
-                                .scanControl()
+                            Button { scanning = true } label: {
+                                SourceGlyph(kind: .scan)
+                                    .frame(width: 48, height: 48)
+                                    .scanControl()
+                            }
+                            .accessibilityLabel("Scan document")
+                            .scanAction()
+                            .disabled(!DocumentScanner.isAvailable)
                             Text("Scan").font(.title3.weight(.medium))
+                                .foregroundStyle(Color.ink)
+                                .accessibilityHidden(true)
                         }
+                        ViewThatFits(in: .horizontal) {
+                            HStack(spacing: 16) { photoSource; fileSource }
+                            VStack(spacing: 16) { photoSource; fileSource }
+                        }
+                        .font(.subheadline)
+                        .secondaryAction()
+                        .controlSize(.large)
+                        .tint(.fjord)
+                        Spacer(minLength: 32)
                     }
-                    .accessibilityLabel("Scan document")
-                    .buttonStyle(ScanSourceStyle())
-                    .disabled(!DocumentScanner.isAvailable)
-                    ViewThatFits(in: .horizontal) {
-                        HStack(spacing: 44) { photoSource; fileSource }
-                        VStack(spacing: 16) { photoSource; fileSource }
-                    }
-                    .font(.subheadline)
-                    .buttonStyle(.plain)
-                    .foregroundStyle(Color.muted)
-                    Spacer(minLength: 32)
+                    .padding(.horizontal, 24)
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: geometry.size.height)
                 }
-                .padding(.horizontal, 24)
-                .frame(maxWidth: .infinity)
-                .frame(minHeight: geometry.size.height)
             }
             .scrollBounceBehavior(.basedOnSize)
         }
         .background(Color.paper.ignoresSafeArea())
         .navigationTitle("MaskCopy")
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inlineLarge)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink(value: Session.Step.supported) {
@@ -94,7 +99,7 @@ struct HomeView: View {
             HStack(spacing: 8) {
                 SourceGlyph(kind: .photos).frame(width: 22, height: 22)
                 Text("Photos")
-            }.padding(.vertical, 12)
+            }
         }
         .accessibilityLabel("Choose photos")
     }
@@ -104,7 +109,7 @@ struct HomeView: View {
             HStack(spacing: 8) {
                 SourceGlyph(kind: .files).frame(width: 22, height: 22)
                 Text("Files")
-            }.padding(.vertical, 12)
+            }
         }
         .accessibilityLabel("Choose a file")
     }

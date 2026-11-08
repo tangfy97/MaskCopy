@@ -35,3 +35,9 @@ The owner chose MaskCopy after rejecting MaskID (an existing same-purpose iPhone
 The owner rejected the three-stage tracker and the large illustrated homepage, and found Done ambiguous. Remove the tracker entirely, use a compact source chooser with a coherent icon family, and name the final exit Close. Keep Save and Share visible beside a native JPG/PDF selector. Native Files export is separate from the activity sheet so saving does not depend on discovering a hidden system action.
 
 PDF embeds the same flattened JPEG data as image sharing in one PDF image page. The minimal Core Graphics-readable file contains no source image, text, annotations or metadata dictionary. It preserves preview/export agreement; separate PDF pages per source side are deferred. Whole-mask translations clamp as a unit rather than clipping each corner, preserving size and perspective.
+
+## 8 November: Liquid Glass belongs to the functional layer
+
+Use native glass/glassProminent button styles, standard toolbar grouping and safeAreaBar rather than hand-drawn blur or extra opaque bar backgrounds. Combine related glass controls in GlassEffectContainer. Use one regular-glass editor control surface; keep document pixels, masks and watermark in the content layer. Gate new APIs at iOS 26 to preserve iOS 18 support. Custom theme colors gain explicit increased-contrast variants.
+
+Home adopts the native inline-large leading title. Content titles retain the system's large/collapsed behavior and the corner editor retains normal Cancel/Save placement. Apple's new-design-session wording calls out stronger leading typography in key moments such as alerts and onboarding; it does not say every element is left-aligned. Sources are in DESIGN.md and the revision 8 plan.

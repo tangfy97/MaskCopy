@@ -4,33 +4,110 @@ import UIKit
 /// A quiet palette: paper, ink and one cold blue. Everything else is the system's.
 extension Color {
     static let paper = Color(light: 0xF5F5F1, dark: 0x141B1F)
-    static let ink = Color(light: 0x1C2B30, dark: 0xEDF2F1)
-    static let hairline = Color(light: 0xD8E0DD, dark: 0x344247)
+    static let ink = Color(light: 0x1C2B30, dark: 0xEDF2F1, highContrastLight: 0x0C171A, highContrastDark: 0xFFFFFF)
+    static let hairline = Color(light: 0xD8E0DD, dark: 0x344247, highContrastLight: 0xAEB9B5, highContrastDark: 0x798B91)
     static let card = Color(light: 0xFFFFFF, dark: 0x1C292D)
-    static let fjord = Color(light: 0x234E61, dark: 0xA9CDD9)
-    static let muted = Color(light: 0x586A70, dark: 0xA6B8BB)
+    static let fjord = Color(light: 0x234E61, dark: 0xA9CDD9, highContrastLight: 0x143949, highContrastDark: 0xD3EAF1)
+    static let onAccent = Color(light: 0xFFFFFF, dark: 0x141B1F, highContrastLight: 0xFFFFFF, highContrastDark: 0x0C171A)
+    static let muted = Color(light: 0x586A70, dark: 0xA6B8BB, highContrastLight: 0x3A4A50, highContrastDark: 0xD4E1E3)
     /// Masks look the same in light and dark mode: they are what the shared copy will show.
     static let mask = Color(cgColor: Renderer.maskColor)
 
-    init(light: UInt32, dark: UInt32) {
+    init(light: UInt32, dark: UInt32, highContrastLight: UInt32? = nil, highContrastDark: UInt32? = nil) {
         self.init(uiColor: UIColor { traits in
-            let v = traits.userInterfaceStyle == .dark ? dark : light
+            let isDark = traits.userInterfaceStyle == .dark
+            let v = traits.accessibilityContrast == .high
+                ? (isDark ? highContrastDark ?? dark : highContrastLight ?? light)
+                : (isDark ? dark : light)
             return UIColor(red: CGFloat((v >> 16) & 0xFF) / 255, green: CGFloat((v >> 8) & 0xFF) / 255, blue: CGFloat(v & 0xFF) / 255, alpha: 1)
         })
     }
 }
 
+/// Functional glass stays above content. System styles own vibrancy and touch response.
+struct GlassControls<Content: View>: View {
+    @ViewBuilder var content: Content
+    var body: some View {
+        if #available(iOS 26, *) {
+            GlassEffectContainer(spacing: 16) { content }
+        } else { content }
+    }
+}
+
 struct ActionBar<Content: View>: View {
     @ViewBuilder var content: Content
-
     var body: some View {
-        content
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .tint(.fjord)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 12)
-            .background(.bar)
+        GlassControls {
+            content
+                .primaryAction()
+                .controlSize(.large)
+                .tint(.fjord)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .modifier(LegacyBarBackground())
+    }
+}
+
+private struct LegacyBarBackground: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26, *) { content }
+        else { content.background(.bar) }
+    }
+}
+
+private struct NativeActionStyle: ViewModifier {
+    var prominent: Bool
+    func body(content: Content) -> some View {
+        if #available(iOS 26, *) {
+            if prominent { content.buttonStyle(.glassProminent) }
+            else { content.buttonStyle(.glass) }
+        } else {
+            if prominent { content.buttonStyle(.borderedProminent) }
+            else { content.buttonStyle(.bordered) }
+        }
+    }
+}
+
+private struct FloatingBar<Bar: View>: ViewModifier {
+    var bar: Bar
+    func body(content: Content) -> some View {
+        if #available(iOS 26, *) {
+            content.safeAreaBar(edge: .bottom, spacing: 0) { bar }
+        } else {
+            content.safeAreaInset(edge: .bottom, spacing: 0) { bar }
+        }
+    }
+}
+
+private struct EditorSurface: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26, *) {
+            content.glassEffect(.regular, in: .rect(cornerRadius: 28))
+        } else {
+            content.background(Color.card, in: RoundedRectangle(cornerRadius: 28))
+        }
+    }
+}
+
+private struct ScanActionStyle: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26, *) {
+            content.buttonStyle(.glassProminent).buttonBorderShape(.circle).tint(.fjord)
+        } else { content.buttonStyle(ScanSourceStyle()) }
+    }
+}
+
+extension View {
+    func primaryAction() -> some View { modifier(NativeActionStyle(prominent: true)) }
+    func secondaryAction() -> some View { modifier(NativeActionStyle(prominent: false)) }
+    func scanAction() -> some View { modifier(ScanActionStyle()) }
+    func floatingBar<Bar: View>(@ViewBuilder content: () -> Bar) -> some View {
+        modifier(FloatingBar(bar: content()))
+    }
+    func editorSurface() -> some View { modifier(EditorSurface()) }
+    func contentGroup() -> some View {
+        background(Color.card, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
     }
 }
 
@@ -113,11 +190,15 @@ private struct SourceOutline: Shape {
 private struct ScanControl: ViewModifier {
     @ScaledMetric(relativeTo: .title) private var diameter = 112
     func body(content: Content) -> some View {
-        content
-            .font(.system(size: 40, weight: .light))
-            .frame(width: min(diameter, 160), height: min(diameter, 160))
-            .foregroundStyle(Color.paper)
-            .background(Color.ink, in: Circle())
+        if #available(iOS 26, *) {
+            content.frame(width: min(diameter, 160), height: min(diameter, 160))
+                .foregroundStyle(Color.onAccent)
+        } else {
+            content
+                .frame(width: min(diameter, 160), height: min(diameter, 160))
+                .foregroundStyle(Color.paper)
+                .background(Color.ink, in: Circle())
+        }
     }
 }
 

@@ -4,6 +4,13 @@ All notable changes to MaskCopy are listed here. Versions follow [Semantic Versi
 
 ## [0.1.0] - 2026-11-08
 
+Build 8: native Liquid Glass alignment. Uploaded 8 November at 17:36 Amsterdam time; Apple reports Processing. Installation availability is not yet confirmed.
+
+- Adopt native glass/glassProminent source and action buttons on iOS 26+, grouping related controls with GlassEffectContainer. Keep standard iOS 18–25 fallbacks.
+- Use a native leading title on Home and adaptive large content titles. Keep editor confirmation/cancellation in standard navigation positions.
+- Replace custom opaque footer backings with safeAreaBar and the system scroll edge. Group editor controls in one regular-glass surface and unify content-group radii.
+- Let native button styles supply label treatment and touch motion. Add increased-contrast variants for the app's text, separators and accent. Keep document pixels and opaque export masks unchanged.
+
 Build 7: direct editing and explicit export. Uploaded 8 November at 16:46 Amsterdam time; App Store Connect confirms Processing. Installation availability is not yet confirmed.
 
 - Completely redesign Home around one scan control and two lightweight import actions. Draw a coherent source icon family in the app's theme; remove the illustration, introduction heading, large source cards and all three-stage trackers.

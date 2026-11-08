@@ -3,6 +3,7 @@ import SwiftUI
 /// Adjust the actual export polygon at a useful scale, with the document kept in memory.
 struct MaskEditorView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var textSize
     let image: CGImage
     let finding: Finding
     let save: (Finding) -> Void
@@ -20,48 +21,60 @@ struct MaskEditorView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                DocumentViewport(image: image, zoom: $zoom, quad: $quad, hidden: hidden)
-                    .accessibilityIdentifier("mask-editor-canvas")
-
-                VStack(alignment: .leading, spacing: 12) {
-                    ZoomControls(zoom: $zoom)
-                    HStack {
-                        Toggle("Hide", isOn: $hidden)
-                            .fixedSize()
-                        Spacer()
-                        Button("Reset") {
-                            quad = finding.shape.mapped(Self.clamped)
-                            hidden = finding.isOn
+            DocumentViewport(image: image, zoom: $zoom, quad: $quad, hidden: hidden)
+                .accessibilityIdentifier("mask-editor-canvas")
+                .floatingBar {
+                    VStack(alignment: .leading, spacing: 12) {
+                        ZoomControls(zoom: $zoom)
+                        if textSize.isAccessibilitySize {
+                            VStack(alignment: .leading, spacing: 16) {
+                                Toggle("Hide", isOn: $hidden)
+                                resetButton
+                            }
+                        } else {
+                            HStack {
+                                Toggle("Hide", isOn: $hidden).fixedSize()
+                                Spacer()
+                                resetButton
+                            }
                         }
                     }
+                    .padding(20)
+                    .editorSurface()
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 12)
                 }
-                .padding(20)
-                .background(Color.card)
-            }
-            .background(Color.paper)
-            .navigationTitle(finding.kind == .photo ? "Adjust photo" : "Adjust box")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        var updated = finding
-                        updated.quad = quad
-                        updated.rect = quad.boundingRect
-                        updated.isOn = hidden
-                        updated.note = "adjusted"
-                        save(updated)
-                        dismiss()
+                .background(Color.paper)
+                .navigationTitle(finding.kind == .photo ? "Adjust photo" : "Adjust box")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") { dismiss() }
                     }
-                    .fontWeight(.semibold)
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Save") {
+                            var updated = finding
+                            updated.quad = quad
+                            updated.rect = quad.boundingRect
+                            updated.isOn = hidden
+                            updated.note = "adjusted"
+                            save(updated)
+                            dismiss()
+                        }
+                        .fontWeight(.semibold)
+                    }
                 }
-            }
         }
         .interactiveDismissDisabled()
         .privacyShield()
+    }
+
+    private var resetButton: some View {
+        Button("Reset") {
+            quad = finding.shape.mapped(Self.clamped)
+            hidden = finding.isOn
+        }
+        .fixedSize(horizontal: true, vertical: false)
     }
 
     private static func clamped(_ point: CGPoint) -> CGPoint {

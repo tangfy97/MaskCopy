@@ -36,7 +36,7 @@ struct ShareView: View {
                             .padding(.vertical, 20)
                     }
                     .padding(.horizontal, 20)
-                    .background(Color.card, in: RoundedRectangle(cornerRadius: 16))
+                    .contentGroup()
                 }
                 .padding(20)
             }
@@ -47,16 +47,16 @@ struct ShareView: View {
         .scrollDismissesKeyboard(.interactively)
         .background(Color.paper.ignoresSafeArea())
         .navigationTitle("Watermark")
-        .navigationBarTitleDisplayMode(.inline)
-        .safeAreaInset(edge: .bottom) {
+        .navigationBarTitleDisplayMode(.large)
+        .floatingBar {
             if focus == nil {
                 ActionBar {
                     Button(action: preview) {
                         HStack(spacing: 8) {
-                            if preparing { ProgressView().tint(Color.paper) }
+                            if preparing { ProgressView().tint(Color.onAccent) }
                             Text(textSize.isAccessibilitySize ? "Preview" : "Preview copy")
                         }
-                        .frame(maxWidth: .infinity).foregroundStyle(Color.paper)
+                        .frame(maxWidth: .infinity).foregroundStyle(Color.onAccent)
                     }
                     .accessibilityLabel("Preview copy")
                     .disabled(recipient.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || preparing)
@@ -144,9 +144,9 @@ struct ReadyCopyView: View {
         }
         .background(Color.paper.ignoresSafeArea())
         .navigationTitle("Your copy")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitleDisplayMode(.large)
         .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Close") { session.finish() } } }
-        .safeAreaInset(edge: .bottom) {
+        .floatingBar {
             ActionBar {
                 VStack(spacing: 12) {
                     Picker("File format", selection: $format) {
@@ -177,7 +177,9 @@ struct ReadyCopyView: View {
                     }, onFinish: { output = nil })
                 }
                 else { ActivitySheet(file: copy.url, onFinish: { output = nil }) }
-            }.privacyShield()
+            }
+            .presentationDetents(copy.save || textSize.isAccessibilitySize ? [.large] : [.medium, .large])
+            .privacyShield()
         }
         .alert("Couldn’t prepare copy", isPresented: $failed) {
             Button("Try again") { export(saving: saving) }
@@ -197,7 +199,7 @@ struct ReadyCopyView: View {
             }
             .frame(maxWidth: .infinity)
         }
-        .buttonStyle(.bordered)
+        .secondaryAction()
         .accessibilityLabel(saved ? "Saved to Files" : (format == .jpg ? "Save JPG" : "Save PDF"))
         .accessibilityIdentifier(saved ? "copy-saved" : "copy-save")
         .disabled(image == nil || preparing)
@@ -206,11 +208,11 @@ struct ReadyCopyView: View {
     private var shareButton: some View {
         Button { export(saving: false) } label: {
             HStack(spacing: 8) {
-                if preparing && !saving { ProgressView().tint(Color.paper) }
+                if preparing && !saving { ProgressView().tint(Color.onAccent) }
                 else { Image(systemName: "square.and.arrow.up") }
                 Text("Share")
             }
-            .frame(maxWidth: .infinity).foregroundStyle(Color.paper)
+            .frame(maxWidth: .infinity).foregroundStyle(Color.onAccent)
         }
         .accessibilityLabel("Share copy")
         .disabled(image == nil || preparing)

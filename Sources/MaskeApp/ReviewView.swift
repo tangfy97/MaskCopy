@@ -30,7 +30,7 @@ struct ReviewView: View {
         }
         .background(Color.paper.ignoresSafeArea())
         .navigationTitle("Hide details")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitleDisplayMode(.large)
         .navigationBarBackButtonHidden(session.analyzing)
         .toolbar {
             if session.analyzing {
@@ -75,15 +75,15 @@ struct ReviewView: View {
                         }
                     }
                     .padding(.horizontal, 16)
-                    .background(Color.card, in: RoundedRectangle(cornerRadius: 16))
+                    .contentGroup()
                 }
             }
             .padding(20)
         }
-        .safeAreaInset(edge: .bottom) {
+        .floatingBar {
             ActionBar {
                 Button { withAnimation(FlowMotion.navigation) { session.path.append(.share) } } label: {
-                    Text("Continue").frame(maxWidth: .infinity).foregroundStyle(Color.paper)
+                    Text("Continue").frame(maxWidth: .infinity).foregroundStyle(Color.onAccent)
                 }
             }
         }

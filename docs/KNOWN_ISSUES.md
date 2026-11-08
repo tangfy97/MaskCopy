@@ -15,6 +15,8 @@ Build 6 replaces the interface and watermark, without changing recognition. Nati
 
 Revision 7 removes the rejected progress tracker, reduces Home to three source actions, adds whole-mask movement and explicit JPG/PDF save/share controls. Its stamp has stronger contrast and sits lower in the document. Fixed watermark placement can still cross content on unfamiliar layouts, and very long input must shrink. PDF is a single image page of the exact inspected composite, not a separate PDF page per source side. Real-device animation pacing remains unverified; no physical iPhone was attached during this change.
 
+Revision 8 adopts native Liquid Glass buttons, grouped effects and scroll-edge bars with iOS 18 fallbacks. Increased-contrast theme variants are provided. Screenshots and functional tests do not establish real-device frame pacing. System Reduce Transparency/Reduce Motion visual checks and the older-runtime fallback remain manual verification items; the simulator desktop control could not be reached. See AUDIT.md for the completed appearance checks.
+
 ## Open
 
 ### 1. Text recognition sometimes misses lines (most important)
