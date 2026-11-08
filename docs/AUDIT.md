@@ -1,5 +1,69 @@
 # Interface and usability verification
 
+## 8 November: requested three-skill audit of build 10
+
+Installed and directly read the owner’s requested skills from their linked upstream sources: [UX Flow Auditor](https://github.com/charleswiltgen/axiom/tree/main/axiom-codex/skills/axiom-audit-ux-flow), [Apple UI Designer](https://github.com/heyman333/atelier-ui/tree/main/skills/apple-ui-designer), and [Performance Profiling](https://github.com/MengTo/Skills/tree/main/agent-skills/codex/performance-profiling). They live under the owner’s Codex skills directory, outside this app repository, and are available automatically next turn. All four native-performance references were consulted. Local source hashes are in build/SkillAudit/installed-sources.json. No third-party code was added to the app.
+
+Scope: review/check, following the owner’s request. Production code and build number remain at the verified build 10. One temporary synthetic PDF reproduction method was added to the existing test host, run and restored byte-for-byte; it is not a shipped regression/fix. No new TestFlight build is produced by this audit.
+
+### Journey architecture map
+
+1. MaskCopyApp → RootView owns a single in-memory Session.
+2. Home exposes scanner, PhotosPicker and Files import.
+3. No deep links, widgets, notifications, accounts or networking are implemented.
+4. Import decoding runs off-main; Review shows opening/reading progress and Cancel.
+5. Review offers native kind switches, individual masks, drawing and the corner editor.
+6. Watermark keeps draft input local, then prepares a revision-bound copy off-main.
+7. Your copy exposes JPG/PDF, native Files export, system sharing and Close.
+8. Documents offers type → country navigation plus a country directory/search.
+9. Returning Home/Close clears the session; cancelled workers cannot publish into a newer session.
+
+### Scan, completeness and health
+
+Sixty-one search patterns were run separately over production app Swift files, with test/preview/build/vendor/docs sources excluded. Matched views and surrounding callbacks were read, including Root, Home, Review, Share/Ready, Importing, Session, the editor, native viewport and current theme. Raw matches/counts are local in build/SkillAudit/scan.json. Notable counts: two NavigationStacks, one navigationDestination site, two sheet sites, one fullScreenCover, two SwiftUI DragGestures in Review, six detached-work sites and no repeating timers/display links/URLSession calls. UIKit accessibilityCustomActions were checked in addition to SwiftUI accessibilityAction searches, avoiding a false accessibility finding for existing-mask movement/corners.
+
+UX health: **ROUGH EDGES**, a qualitative skill label rather than a platform certification. There are three source-to-copy routes; multi-page limits leave PDF and scanner completeness gaps. All three asynchronous screens (Review, Watermark, Your copy) have relevant progress/error/empty-or-content handling. Five modal presentation sites have explicit native or callback exits (six modes when Save and Share are counted separately). The editor’s disabled swipe dismissal is paired with Cancel/Save. External entry-point validation is not applicable because there are no external entries. VoiceOver flow coverage has not been manually measured; the manual-add path has the concrete source gap below. Informational destinations, iPhone-only portrait scope and parent-owned camera dismissal were not reported as defects.
+
+Unique findings: zero confirmed CRITICAL, two HIGH, one existing MEDIUM. Completeness and compound observations refer to those same findings rather than inflating the issue count.
+
+### HIGH — silent page truncation (detected and reproduced)
+
+Importing.swift:23 defaults PDF import to two pages; :25 truncates pageCount without returning a warning or original page count. Importing.swift:75 similarly takes only the first four scanned pages. These are two affected sites in one file. The interface says photos/PDF and provides no page-selection or truncation feedback. Session receives only the shortened array, so its reading count cannot expose the omitted pages.
+
+An optimized iOS test created a PDF with three independently drawn pages, verified the source page count and called the actual Importing.images(fromPDF:) default. It returned two pages. PDFReproduction.xcresult passed the observation assertion (1/1), no runtime warnings. Passing here confirms the undesired truncation, not correctness. The camera limit is source-verified; physical scanner reproduction remains unavailable while the iPhone is offline.
+
+Next release priority, affecting multi-page PDF/scans: make the limit explicit and let users select pages, or reject an oversized input before reading. Do not silently raise limits without measuring independent-image memory. Acceptance: a three-page PDF or five-page scan cannot silently produce a shorter copy. This is a high-value flow fix; no implementation estimate is claimed.
+
+### HIGH — no accessible alternative for creating a manual mask (source-verified)
+
+ReviewView.swift:209 appends a custom finding only in the drawing DragGesture.onEnded path. Add box only enters drawing mode. This is one affected creation path in ReviewView.swift. Existing masks already have UIKit custom actions for body movement and all four corners (DocumentViewport.swift:60, :79); those controls are not missing.
+
+When automatic detection misses a field, creating the missing box remains gesture-dependent. This compounds the known recognition-recovery limitation. Manual VoiceOver testing has not been completed, so this is a missing semantic alternative, not a claim that all assistive-technology operation has been exercised.
+
+Next release priority, affecting manual recovery: Add box can create a default rectangle and open the existing accessible editor immediately. Free drawing may remain optional. Acceptance: a user can create, adjust, save and export a new mask using semantic actions without a drawing gesture. No extra instruction paragraph is needed.
+
+### MEDIUM — fixed watermark placement (existing, visually verified)
+
+Renderer.swift:71–80 fixes every watermark at the page centre and 30 degrees. The build 10 long-recipient capture crosses the synthetic birth-date field; multiply blending keeps pure black printing unchanged before JPEG encoding but does not choose an empty region or guarantee coloured/faint text legibility. This affects the shared renderer, not a separate JPG/PDF implementation.
+
+Backlog/next small design iteration: allow direct position adjustment with a low-cost vector preview, then render immutable export pixels off-main; content-aware placement requires carrying trustworthy text geometry. Acceptance must inspect dense fronts/backs, short/long and CJK input, final JPG/PDF and retained fields. Do not promise perfect avoidance or unremovable watermarks.
+
+### Apple UI review
+
+The current optimized Home was launched and its settled screenshot inspected (build/SkillAudit/home.png); its first immediate screenshot was only the transient launch screen and was not treated as a dead end. The existing build 10 Documents, Review, watermark and saved-copy captures, plus earlier unchanged editor captures, were used alongside their source. Home keeps the owner-approved no-wordmark/no-logo layout and three short source labels. Functional screens use native inline titles, native glass controls on the functional layer and standard lists/sheets. The editor has 44-point corner targets and native scroll/zoom. Accessibility document rows stack icons over full-width text. The review found no evidence warranting another broad cosmetic redesign. Manual VoiceOver, reduced visual-effects settings and oldest-supported-runtime checks remain open; this is not HIG/WCAG certification.
+
+### Optimized performance evidence and limits
+
+ReleaseTests.xcresult passed nine app-session tests with no runtime warnings. This includes cancelled import/read/render isolation, preview reuse/invalidation and temporary export ownership. Release configuration used ENABLE_TESTABILITY=YES for XCTest. The existing four-page rendering metric collected five samples: mean 67.25 ms, range 66.31–67.89 ms. Mean test-process peak physical memory was 92.02 MB decimal (range 89.41–93.90 MB); per-iteration changes ranged −32.768 to +16.384 kB. These measurements are not a leak test or memory bound for real sessions: the benchmark uses one unfilled 2600×1300 source image referenced four times, not four independently decoded photographs, and it does not run OCR.
+
+ReleaseLaunch.xcresult then passed the responsive-launch check (1/1), no runtime warnings. Five optimized simulator relaunches measured 3.807 s mean, range 3.687–3.991 s, using XCTApplicationLaunchMetric(waitUntilResponsive: true). This is a slow observed simulator startup result, not an acceptable device budget or a measured cold-launch guarantee. It cannot be compared causally with the earlier differently loaded debug runs. The first immediate manual screenshot showed only the launch screen; the settled Home was subsequently inspected. Startup remains a profiling priority, alongside recognition and real-device frame pacing.
+
+The physical iPhone was listed offline. A target-only Time Profiler recording was made on the optimized Mac CLI with a generated Norwegian passport. The 45-second recording limit ended the process before analysis completed; the trace records time-limit SIGKILL, not an application crash. Apple text-recognition model-bundle warnings occurred. Export contained 5,121 CPU sample rows, but raw stack addresses rather than attributed/symbolicated hot functions, so no hotspot optimization or device recognition-time claim is made. This evidence calls for a device reproduction and a validated symbolicated profile; it does not establish an app UI main-thread hang.
+
+A separate 15-second App Launch recording was attempted against the optimized Simulator app. Instruments reported a missing table input and a sampling-period mismatch; export then failed with “Trace is malformed; instrument run data is missing”. That trace is not used as a timing result or root-cause diagnosis. The five XCTest responsive-launch samples are the usable startup evidence, with the limitations above.
+
+Host load was approximately 12.5 at the initial measurement. No unrelated apps were stopped. There are no continuous app timers/animation loops or networking in the inspected code. Existing rendering/encoding/decoding run off-main, and the preview is revision-cached, but source properties are not frame-pacing or energy measurements. MetricKit/analytics were not added. The skill’s generic thresholds and examples are treated as heuristics rather than App Store guarantees or a reason to override the app’s offline/privacy rules.
+
 ## Build 10: explicit document types and translucent watermark
 
 The previous stamp’s large recipient, fine rules and opacity obscured document details. RvIG’s KopieID FAQ and official watermark illustration informed a simpler recipient/purpose/date treatment. The illustration was inspected in the browser; it is a diagram, not a verified screenshot of the exact current app. Research and decisions are recorded in docs/plans/2026-11-08-document-watermark-design.md.

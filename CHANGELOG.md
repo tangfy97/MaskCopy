@@ -2,6 +2,10 @@
 
 All notable changes to MaskCopy are listed here. Versions follow [Semantic Versioning](https://semver.org).
 
+## Unreleased
+
+- Record the requested UX Flow Auditor / Apple UI Designer / Performance Profiling audit: reproduce silent PDF page truncation, identify the manual-mask creation accessibility gap, review native layouts, and capture optimized simulator render/session evidence. Production code and build number are unchanged by the audit.
+
 ## [0.1.0] - 2026-11-08
 
 Build 10: document information and readable watermarks. Uploaded 8 November at 18:11 Amsterdam time; Apple reports Processing. Installation availability is not yet confirmed.

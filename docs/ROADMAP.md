@@ -10,6 +10,12 @@ In order. Each step should end with its check in `scripts/check.sh` (or a note o
 4. **Text recognition missing lines** (KNOWN_ISSUES 1): verify the cropped passport MRZ retry already added in build 3 on a device, then address incomplete TD1 runs and other missing sensitive fields.
 5. **On-device checks:** PDF417 on US/Canadian licences, real faces and the portrait mask, speed per page (target: under 2 seconds on a recent iPhone).
 
+## Flow follow-up from the three-skill audit
+
+- Make PDF/scanner page limits explicit or let the user select pages; silent truncation was reproduced for a three-page PDF (KNOWN_ISSUES 14).
+- Make Add box create an adjustable rectangle through a semantic action, keeping optional drawing (KNOWN_ISSUES 15).
+- Continue watermark placement/readability work and measure optimized real-device recognition/frame pacing when the iPhone is available. The simulator render microbenchmark is not a real-session budget.
+
 ## Next: make it a 1.0
 
 6. **Localization** to the house standard: English, English (UK), Simplified Chinese, Traditional Chinese (String Catalog). Consider Dutch and Norwegian for the main audience.

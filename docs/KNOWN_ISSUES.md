@@ -72,6 +72,8 @@ Each photo is read quickly four times (once each way up) to find its orientation
 
 Build 5 moves import decoding off the main actor and adds immediate opening/reading feedback and cancellation. Cancellation discards late results and skips further pages; it does not interrupt an already running synchronous Vision request. No real-device frame-rate or recognition-time improvement has been measured. Scanner hardware, iCloud file-provider delays, manual VoiceOver and Reduce Motion setting checks remain device work; rendered Simulator checks are recorded in AUDIT.md.
 
+The 8 November three-skill audit measured optimized Simulator responsive relaunch at 3.807 s mean (five samples, 3.687–3.991 s). A separate App Launch trace was malformed and is not used for diagnosis. A bounded Mac CLI Time Profiler run on a generated passport hit its 45-second limit before recognition completed, with Apple model-bundle warnings; it is not a device latency measurement. The physical iPhone was offline. Startup, recognition and device frame pacing remain profiling work; see AUDIT for complete limits.
+
 ### 8. Not covered at all yet
 
 - Signatures (draw a box).
@@ -103,6 +105,14 @@ The old affine approximation has been replaced by projective sampling of each te
 The current 98% coverage threshold samples points within field bounds. A passing field can still leave a small part uncovered. Precision excludes masks whose kind has no annotated target and masks that miss every matching target, so the mean does not capture every false positive. Most synthetic ID portraits are unannotated silhouettes and do not exercise real face detection. Only selected public specimens have been visually compared.
 
 **Next:** annotate every intended sensitive and preserved region on a held-out set of public specimens. Check first and last characters, unnecessary masks, the final exported pixels, secondary portraits, and printed specimens photographed on an iPhone. Include low light, glare, blur, partial crops, small documents within a large photo and combined perspective/rotation. Report misses and excess separately for each condition.
+
+### 14. Multi-page imports silently truncate
+
+The three-skill audit reproduced a three-page PDF yielding only two imported pages: Importing.images(fromPDF:) defaults to maxPages = 2 and drops the rest without feedback. The scanner callback similarly takes the first four pages. The PDF case is reproduced in an optimized iOS test; scanner behaviour is source-verified while the physical iPhone is offline. Make page selection/limits explicit before processing. Increasing the limit alone needs independent-image memory validation.
+
+### 15. Creating a manual mask has no semantic alternative
+
+Add box enters drawing mode; custom findings are created only by the drawing drag gesture. Existing-mask movement and corners do have native accessibility custom actions. Provide an accessible way to create a default rectangle and enter that editor; retain optional free drawing. Manual VoiceOver validation remains open. See AUDIT for source evidence and scope.
 
 ## Fixed in this round (for reference)
 
