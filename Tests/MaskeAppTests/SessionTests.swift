@@ -84,6 +84,7 @@ final class SessionTests: XCTestCase {
         defer { Exporter.clear() }
         let page = Session.Page(image: try image(), kind: .passport, country: nil, findings: [])
         let preview = try XCTUnwrap(Exporter.preview([page], recipient: "Test Hotel", purpose: "Check-in"))
+        Exporter.waitForCleanup()
         XCTAssertFalse(FileManager.default.fileExists(atPath: Exporter.directory.path))
         let first = try XCTUnwrap(Exporter.writeCopy(preview, recipient: "Test Hotel"))
         let second = try XCTUnwrap(Exporter.writeCopy(preview, recipient: "Test Hotel"))
@@ -97,6 +98,7 @@ final class SessionTests: XCTestCase {
         let file = try XCTUnwrap(Exporter.writeCopy(try image(), recipient: "Test Hotel"))
         XCTAssertTrue(FileManager.default.fileExists(atPath: file.path))
         _ = Session()
+        Exporter.waitForCleanup()
         XCTAssertFalse(FileManager.default.fileExists(atPath: file.path))
     }
 
@@ -131,6 +133,7 @@ final class SessionTests: XCTestCase {
         let edited = await session.prepareCopy(recipient: "Hotel Nord", purpose: "Reservation")
         XCTAssertTrue(edited)
         XCTAssertEqual(calls.withLock { $0 }, 3)
+        Exporter.waitForCleanup()
         XCTAssertFalse(FileManager.default.fileExists(atPath: Exporter.directory.path))
         session.finish()
     }
@@ -153,13 +156,50 @@ final class SessionTests: XCTestCase {
         XCTAssertFalse(ready)
         XCTAssertNil(session.copy)
         XCTAssertTrue(session.path.isEmpty)
+        Exporter.waitForCleanup()
         XCTAssertFalse(FileManager.default.fileExists(atPath: Exporter.directory.path))
     }
 
+    func testWatermarkPositionInvalidatesCachedCopy() async throws {
+        let calls = OSAllocatedUnfairLock(initialState: 0)
+        let session = Session(render: { pages, _ in calls.withLock { $0 += 1 }; return pages.first?.image })
+        session.pages = [Session.Page(image: try image(), kind: .passport, country: nil, findings: [])]
+        let prepared = await session.prepareCopy(recipient: "Hotel", purpose: "Check-in")
+        XCTAssertTrue(prepared)
+        session.pages[0].watermarkPosition = CGPoint(x: 0.5, y: 0.3)
+        XCTAssertNil(session.copy)
+        let refreshed = await session.prepareCopy(recipient: "Hotel", purpose: "Check-in")
+        XCTAssertTrue(refreshed)
+        XCTAssertEqual(calls.withLock { $0 }, 2)
+        session.finish()
+    }
+
+    func testQueuedCleanupCannotDeleteTheNextExport() throws {
+        let old = try XCTUnwrap(Exporter.writeCopy(try image(), recipient: "Old"))
+        Exporter.clearLater()
+        let next = try XCTUnwrap(Exporter.writeCopy(try image(), recipient: "Next"))
+        Exporter.waitForCleanup()
+        XCTAssertFalse(FileManager.default.fileExists(atPath: old.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: next.path))
+        Exporter.clear()
+    }
+
     func testFourPageRenderingPerformance() throws {
-        let page = Session.Page(image: try image(width: 2600), kind: .passport, country: nil,
-                                findings: [Finding(kind: .photo, rect: CGRect(x: 0.05, y: 0.15, width: 0.25, height: 0.65))])
-        let pages = Array(repeating: page, count: 4)
+        let pages = try (0..<4).map { index -> Session.Page in
+            let context = try XCTUnwrap(CGContext(data: nil, width: 2600, height: 1600, bitsPerComponent: 8,
+                bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue))
+            context.setFillColor(gray: 0.95 - CGFloat(index) * 0.02, alpha: 1)
+            context.fill(CGRect(x: 0, y: 0, width: 2600, height: 1600))
+            // Four independent, printed synthetic pages, not references to one blank raster.
+            context.setFillColor(gray: 0.1, alpha: 1)
+            for y in stride(from: 120, through: 1480, by: 60) {
+                for x in stride(from: 700, through: 2400, by: 25) {
+                    context.fill(CGRect(x: x, y: y, width: 12 + index, height: 25))
+                }
+            }
+            return Session.Page(image: try XCTUnwrap(context.makeImage()), kind: .passport, country: nil,
+                findings: [Finding(kind: .photo, rect: CGRect(x: 0.05, y: 0.15, width: 0.25, height: 0.65))])
+        }
         measure(metrics: [XCTClockMetric(), XCTMemoryMetric()]) {
             let result = Exporter.preview(pages, recipient: "Test hotel", purpose: "Check-in only")
             XCTAssertNotNil(result)

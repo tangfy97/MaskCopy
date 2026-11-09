@@ -2,11 +2,16 @@
 
 All notable changes to MaskCopy are listed here. Versions follow [Semantic Versioning](https://semver.org).
 
-## Unreleased
+## [0.1.0] - 2026-11-09
 
-- Record the requested UX Flow Auditor / Apple UI Designer / Performance Profiling audit: reproduce silent PDF page truncation, identify the manual-mask creation accessibility gap, review native layouts, and capture optimized simulator render/session evidence. Production code and build number are unchanged by the audit.
+Build 11: fixes from the requested three-skill audit. Uploaded 9 November at 09:08 Amsterdam time; Apple reports Processing. Installation availability is not yet confirmed.
 
-## [0.1.0] - 2026-11-08
+- Import every PDF/scan page up to four; require explicit thumbnail selection from longer inputs instead of silently truncating. Decode selected pages serially and downsample photo/file images with ImageIO.
+- Make Add box open an adjustable draft directly, with a native page menu for multi-page documents. Save commits and Cancel discards; retain semantic body/corner adjustment actions.
+- Move the watermark separately on each page with direct dragging, Reset and accessibility move actions. Fit its selection bounds to the text; render final pixels off-main after Save and prevent stale-copy export.
+- Serialize temporary export writes and background cleanup. Cancel active Vision requests on a best-effort basis and retain session-generation guards. Match the native launch background to Home.
+- Stack page-selection rows at accessibility text sizes and shorten editing titles there. Preserve the logo-free Home, selected-C icon, offline processing and opaque flattened exports.
+- Replace the shared-blank-raster performance fixture with four independently drawn pages; report measured limits in AUDIT rather than claiming device performance.
 
 Build 10: document information and readable watermarks. Uploaded 8 November at 18:11 Amsterdam time; Apple reports Processing. Installation availability is not yet confirmed.
 

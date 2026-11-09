@@ -128,6 +128,14 @@ struct ReadyCopyView: View {
     @State private var format = Exporter.Format.jpg
     @State private var saved = false
     @State private var saving = false
+    @State private var positionRequest: PositionRequest?
+    @State private var updateFailed = false
+    private struct PositionRequest: Identifiable {
+        let id = UUID()
+        let document: UUID
+        let pages: [Session.Page]
+        let watermark: Watermark
+    }
     private struct Output: Identifiable {
         let id = UUID()
         let url: URL
@@ -141,6 +149,17 @@ struct ReadyCopyView: View {
                     .accessibilityIdentifier("copy-viewport")
             }
             ZoomControls(zoom: $zoom).padding(20)
+            Button {
+                positionRequest = PositionRequest(document: session.documentID, pages: session.pages,
+                    watermark: Watermark(recipient: session.recipient, purpose: session.purpose, date: session.copyDate))
+            } label: {
+                Label(textSize.isAccessibilitySize ? "Watermark" : "Move watermark", systemImage: "arrow.up.and.down.and.arrow.left.and.arrow.right")
+            }
+            .font(.subheadline)
+            .secondaryAction()
+            .accessibilityLabel("Move watermark")
+            .disabled(preparing || session.pages.isEmpty)
+            .padding(.bottom, 12)
         }
         .background(Color.paper.ignoresSafeArea())
         .navigationTitle("Your copy")
@@ -181,6 +200,22 @@ struct ReadyCopyView: View {
             .presentationDetents(copy.save || textSize.isAccessibilitySize ? [.large] : [.medium, .large])
             .privacyShield()
         }
+        .sheet(item: $positionRequest) { request in
+            WatermarkPositionView(pages: request.pages, watermark: request.watermark) { positions in
+                guard session.documentID == request.document, session.pages.map(\.id) == request.pages.map(\.id),
+                      positions.count == session.pages.count else { return }
+                var changed = false
+                for index in session.pages.indices where session.pages[index].watermarkPosition != positions[index] {
+                    session.pages[index].watermarkPosition = positions[index]
+                    changed = true
+                }
+                if changed || !hasCurrentCopy { saved = false; refreshCopy() }
+            }
+        }
+        .alert("Couldn’t update watermark", isPresented: $updateFailed) {
+            Button("Try again", action: refreshCopy)
+            Button("Cancel", role: .cancel) {}
+        }
         .alert("Couldn’t prepare copy", isPresented: $failed) {
             Button("Try again") { export(saving: saving) }
             Button("Cancel", role: .cancel) {}
@@ -202,7 +237,7 @@ struct ReadyCopyView: View {
         .secondaryAction()
         .accessibilityLabel(saved ? "Saved to Files" : (format == .jpg ? "Save JPG" : "Save PDF"))
         .accessibilityIdentifier(saved ? "copy-saved" : "copy-save")
-        .disabled(image == nil || preparing)
+        .disabled(!hasCurrentCopy || preparing)
     }
 
     private var shareButton: some View {
@@ -215,16 +250,34 @@ struct ReadyCopyView: View {
             .frame(maxWidth: .infinity).foregroundStyle(Color.onAccent)
         }
         .accessibilityLabel("Share copy")
-        .disabled(image == nil || preparing)
+        .disabled(!hasCurrentCopy || preparing)
+    }
+
+    private var hasCurrentCopy: Bool {
+        guard let image, let current = session.copy else { return false }
+        return image === current
+    }
+
+    private func refreshCopy() {
+        shareTask?.cancel()
+        preparing = true
+        let document = session.documentID
+        shareTask = Task {
+            let ready = await session.prepareCopy(recipient: session.recipient, purpose: session.purpose)
+            guard !Task.isCancelled, document == session.documentID else { return }
+            preparing = false
+            if ready { image = session.copy }
+            else { updateFailed = true }
+        }
     }
 
     private func discardOutput() {
-        if let outputFile { Exporter.discard(outputFile) }
+        if let outputFile { Exporter.discardLater(outputFile) }
         outputFile = nil
     }
 
     private func export(saving: Bool) {
-        guard let image, !preparing else { return }
+        guard let image, hasCurrentCopy, !preparing else { return }
         preparing = true
         self.saving = saving
         let document = session.documentID
@@ -235,7 +288,7 @@ struct ReadyCopyView: View {
                 Exporter.writeCopy(image, recipient: recipient, format: format)
             }
             let file = await withTaskCancellationHandler(operation: { await work.value }, onCancel: { work.cancel() })
-            guard !Task.isCancelled, document == session.documentID else { if let file { Exporter.discard(file) }; return }
+            guard !Task.isCancelled, document == session.documentID else { if let file { Exporter.discardLater(file) }; return }
             preparing = false
             if let file {
                 outputFile = file

@@ -12,9 +12,9 @@ In order. Each step should end with its check in `scripts/check.sh` (or a note o
 
 ## Flow follow-up from the three-skill audit
 
-- Make PDF/scanner page limits explicit or let the user select pages; silent truncation was reproduced for a three-page PDF (KNOWN_ISSUES 14).
-- Make Add box create an adjustable rectangle through a semantic action, keeping optional drawing (KNOWN_ISSUES 15).
-- Continue watermark placement/readability work and measure optimized real-device recognition/frame pacing when the iPhone is available. The simulator render microbenchmark is not a real-session budget.
+- Implemented in revision 11: full imports up to four pages, explicit selection for longer PDFs/scans. Physical scanner capture still needs a device check (KNOWN_ISSUES 14).
+- Implemented in revision 11: Add box opens an adjustable draft through a semantic action. Complete manual VoiceOver/Switch Control checks (KNOWN_ISSUES 15).
+- Per-page watermark movement is implemented in revision 11; continue dense/coloured-print readability checks and measure optimized real-device recognition/frame pacing when the iPhone is available. The simulator render microbenchmark is not a real-session budget.
 
 ## Next: make it a 1.0
 

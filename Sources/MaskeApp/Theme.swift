@@ -220,7 +220,34 @@ struct ZoomControls: View {
     }
 }
 
+struct ImportPageLabel<Thumbnail: View>: View {
+    @Environment(\.dynamicTypeSize) private var textSize
+    let index: Int
+    let selected: Bool
+    @ViewBuilder var thumbnail: () -> Thumbnail
+
+    private var checkmark: some View {
+        Image(systemName: selected ? "checkmark.circle.fill" : "circle").foregroundStyle(Color.fjord)
+    }
+    private var title: some View { Text("Page \(index + 1)").foregroundStyle(Color.ink) }
+
+    var body: some View {
+        if textSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack { thumbnail(); Spacer(); checkmark }
+                title
+            }
+        } else {
+            HStack(spacing: 16) { thumbnail(); title; Spacer(); checkmark }
+        }
+    }
+}
+
 extension View {
+    func watermarkSelectionFrame() -> some View {
+        overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.fjord, lineWidth: 1))
+    }
+
     func documentFrame() -> some View {
         clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 6, style: .continuous).strokeBorder(Color.hairline, lineWidth: 0.5))

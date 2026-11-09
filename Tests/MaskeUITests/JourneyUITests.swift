@@ -1,4 +1,5 @@
 import XCTest
+import CoreGraphics
 
 final class JourneyUITests: XCTestCase {
     private var fixture: String {
@@ -111,7 +112,7 @@ final class JourneyUITests: XCTestCase {
         app.alerts.buttons["OK"].tap()
         XCTAssertTrue(app.buttons["Choose photos"].exists)
     }
-    func testVisibleMaskControlsAndDrawing() {
+    func testVisibleMaskControlsAndAdding() {
         let app = documentApp()
         let photo = app.buttons["mask-photo"].firstMatch
         let toggle = app.switches["mask-type-photo"].firstMatch
@@ -123,13 +124,132 @@ final class JourneyUITests: XCTestCase {
         XCTAssertEqual(photo.value as? String, "Hidden")
         app.scrollViews.firstMatch.swipeDown()
         app.buttons["Add box"].tap()
-        let canvas = app.otherElements["page-canvas"].firstMatch
-        canvas.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.45)).press(forDuration: 0.1,
-            thenDragTo: canvas.coordinate(withNormalizedOffset: CGVector(dx: 0.75, dy: 0.60)))
+        XCTAssertTrue(app.navigationBars["Adjust box"].waitForExistence(timeout: 5))
+        app.buttons["Cancel"].tap()
+        XCTAssertFalse(app.buttons["mask-custom"].exists)
+        app.buttons["Add box"].tap()
         XCTAssertTrue(app.navigationBars["Adjust box"].waitForExistence(timeout: 5))
         app.buttons["Save"].tap()
-        app.buttons["Done"].tap()
         XCTAssertTrue(app.buttons["mask-custom"].firstMatch.exists)
+    }
+
+    func testWatermarkPositionSaveCancelAndReset() {
+        let app = documentApp()
+        app.buttons["Continue"].tap()
+        openCopy(app)
+        app.buttons["Move watermark"].tap()
+        let position = app.descendants(matching: .any)["watermark-position"].firstMatch
+        XCTAssertTrue(position.waitForExistence(timeout: 10))
+        let original = position.value as? String
+        capture("Watermark position", app: app)
+        position.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+            .press(forDuration: 0.1, thenDragTo: position.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.85)))
+        XCTAssertNotEqual(position.value as? String, original)
+        capture("Moved watermark", app: app)
+        app.buttons["Cancel"].tap()
+        app.buttons["Move watermark"].tap()
+        XCTAssertTrue(position.waitForExistence(timeout: 10))
+        XCTAssertEqual(position.value as? String, original)
+        position.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+            .press(forDuration: 0.1, thenDragTo: position.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.85)))
+        let changed = position.value as? String
+        app.buttons["Save"].tap()
+        let fresh = XCTNSPredicateExpectation(predicate: NSPredicate(format: "enabled == true"), object: app.buttons["Share copy"])
+        wait(for: [fresh], timeout: 10)
+        capture("Positioned final copy", app: app)
+        app.buttons["Move watermark"].tap()
+        XCTAssertTrue(position.waitForExistence(timeout: 10))
+        XCTAssertEqual(position.value as? String, changed)
+        app.buttons["Reset"].tap()
+        XCTAssertEqual(position.value as? String, original)
+        app.buttons["Save"].tap()
+    }
+
+    func testLongPDFPageSelectionLimitAndCancel() throws {
+        #if targetEnvironment(simulator)
+        let url = URL(fileURLWithPath: "/tmp/maskcopy-five-page-ui-test.pdf")
+        defer { try? FileManager.default.removeItem(at: url) }
+        var bounds = CGRect(x: 0, y: 0, width: 300, height: 180)
+        let context = try XCTUnwrap(CGContext(consumer: try XCTUnwrap(CGDataConsumer(url: url as CFURL)), mediaBox: &bounds, nil))
+        for index in 0..<5 {
+            context.beginPDFPage(nil)
+            context.setFillColor(gray: CGFloat(index + 1) / 6, alpha: 1)
+            context.fill(bounds)
+            context.endPDFPage()
+        }
+        context.closePDF()
+        let app = XCUIApplication()
+        app.launchArguments = ["-MaskeImportPDF", url.path]
+        app.launch()
+        XCTAssertTrue(app.collectionViews["page-selection"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons["import-selected-pages"].isEnabled)
+        for index in 1...4 { app.buttons["import-page-\(index)"].tap() }
+        let fifth = app.buttons["import-page-5"]
+        if !fifth.isHittable { app.collectionViews.firstMatch.swipeUp() }
+        XCTAssertFalse(fifth.isEnabled)
+        capture("Explicit page limit", app: app)
+        app.buttons["import-page-4"].tap()
+        XCTAssertTrue(fifth.isEnabled)
+        fifth.tap()
+        XCTAssertEqual(fifth.value as? String, "Selected")
+        app.buttons["Cancel"].tap()
+        XCTAssertTrue(app.buttons["Choose photos"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.navigationBars["Hide details"].exists)
+        app.terminate()
+        app.launch()
+        XCTAssertTrue(app.buttons["import-page-1"].waitForExistence(timeout: 10))
+        app.buttons["import-page-1"].tap()
+        if !fifth.isHittable { app.collectionViews.firstMatch.swipeUp() }
+        fifth.tap()
+        app.buttons["import-selected-pages"].tap()
+        XCTAssertTrue(app.buttons["Continue"].waitForExistence(timeout: 60))
+        XCTAssertEqual(app.descendants(matching: .any).matching(identifier: "page-canvas").count, 2)
+        capture("Only selected pages imported", app: app)
+        #endif
+    }
+
+    func testLongCJKWatermarkLayout() {
+        let app = documentApp(recipient: "北欧酒店预订与入住登记服务中心", purpose: "仅供入住核验使用，不作其他用途")
+        app.buttons["Continue"].tap()
+        openCopy(app)
+        capture("CJK final copy", app: app)
+        app.buttons["Move watermark"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["watermark-position"].firstMatch.waitForExistence(timeout: 10))
+        capture("CJK watermark placement", app: app)
+        app.buttons["Save"].tap()
+        XCTAssertTrue(app.buttons["Share copy"].isEnabled)
+    }
+
+    func testMultiPageMaskAndWatermarkTargeting() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-MaskeFixture", fixture + "," + fixture, "-MaskeRecipient", "Hotel Nord"]
+        app.launch()
+        XCTAssertTrue(app.buttons["Continue"].waitForExistence(timeout: 90))
+        app.buttons["Add box"].tap()
+        app.buttons["Page 2"].tap()
+        XCTAssertTrue(app.navigationBars["Adjust box"].waitForExistence(timeout: 5))
+        app.buttons["Save"].tap()
+        XCTAssertEqual(app.buttons.matching(identifier: "mask-custom").count, 1)
+        app.buttons["Continue"].tap()
+        openCopy(app)
+        app.buttons["Move watermark"].tap()
+        let position = app.descendants(matching: .any)["watermark-position"].firstMatch
+        XCTAssertTrue(position.waitForExistence(timeout: 10))
+        let original = position.value as? String
+        app.segmentedControls.buttons["Page 2"].tap()
+        XCTAssertTrue(position.waitForExistence(timeout: 10))
+        position.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+            .press(forDuration: 0.1, thenDragTo: position.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.85)))
+        let second = position.value as? String
+        XCTAssertNotEqual(second, original)
+        app.segmentedControls.buttons["Page 1"].tap()
+        XCTAssertTrue(position.waitForExistence(timeout: 10))
+        XCTAssertEqual(position.value as? String, original)
+        app.segmentedControls.buttons["Page 2"].tap()
+        XCTAssertTrue(position.waitForExistence(timeout: 10))
+        XCTAssertEqual(position.value as? String, second)
+        capture("Independent page watermark", app: app)
+        app.buttons["Save"].tap()
     }
     func testKeyboardAndSharingLatestCopy() {
         let app = documentApp(recipient: "", purpose: "")

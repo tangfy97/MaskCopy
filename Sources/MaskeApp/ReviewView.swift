@@ -2,9 +2,8 @@ import SwiftUI
 
 struct ReviewView: View {
     @EnvironmentObject private var session: Session
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var textSize
-    @State private var drawing = false
+    @State private var addToPage: UUID?
 
     var body: some View {
         Group {
@@ -37,10 +36,14 @@ struct ReviewView: View {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { session.finish() } }
             } else {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.18)) { drawing.toggle() }
-                    } label: {
-                        if drawing { Text("Done").bold() } else { Label("Add box", systemImage: "plus.rectangle.on.rectangle") }
+                    if session.pages.count == 1 {
+                        Button("Add box", systemImage: "plus.rectangle.on.rectangle") { addToPage = session.pages.first?.id }
+                    } else {
+                        Menu {
+                            ForEach(Array(session.pages.enumerated()), id: \.element.id) { index, page in
+                                Button("Page \(index + 1)") { addToPage = page.id }
+                            }
+                        } label: { Label("Add box", systemImage: "plus.rectangle.on.rectangle") }
                     }
                 }
             }
@@ -52,14 +55,13 @@ struct ReviewView: View {
             VStack(alignment: .leading, spacing: 18) {
                 header
 
-                if drawing {
-                    Label("Draw a box", systemImage: "hand.draw")
-                        .font(.footnote)
-                        .foregroundStyle(Color.fjord)
-                }
-
                 ForEach($session.pages) { $page in
-                    PageCanvas(page: $page, drawing: drawing)
+                    VStack(alignment: .leading, spacing: 8) {
+                        if session.pages.count > 1, let index = session.pages.firstIndex(where: { $0.id == page.id }) {
+                            Text("Page \(index + 1)").font(.caption).foregroundStyle(Color.muted)
+                        }
+                        PageCanvas(page: $page, addToPage: $addToPage)
+                    }
                 }
 
                 if session.kindsPresent.isEmpty { nothingFound }
@@ -128,10 +130,10 @@ struct ReviewView: View {
 /// One page with its boxes: solid where hidden, dashed where shown.
 struct PageCanvas: View {
     @Binding var page: Session.Page
-    let drawing: Bool
+    @Binding var addToPage: UUID?
     @Namespace private var editorTransition
-    @State private var drag: CGRect?
     @State private var editing: Finding?
+    @State private var creating = false
     @State private var moving: (id: UUID, quad: Quad)?
 
     var body: some View {
@@ -154,7 +156,7 @@ struct PageCanvas: View {
                             }
                             .frame(width: size.width, height: size.height)
                             .contentShape(shape)
-                            .onTapGesture { if !drawing { editing = f } }
+                            .onTapGesture { editing = f }
                             .highPriorityGesture(DragGesture(minimumDistance: 6)
                                 .onChanged { value in
                                     if moving?.id != f.id {
@@ -168,7 +170,7 @@ struct PageCanvas: View {
                                     f.rect = quad.boundingRect
                                     f.note = "adjusted"
                                 }
-                                .onEnded { _ in moving = nil }, including: drawing ? .none : .all)
+                                .onEnded { _ in moving = nil })
                             .contextMenu {
                                 Button("Adjust box", systemImage: "arrow.up.left.and.arrow.down.right") {
                                     editing = f
@@ -188,33 +190,10 @@ struct PageCanvas: View {
                             .accessibilityHint("Adjust mask")
                             .accessibilityIdentifier("mask-\(f.kind.rawValue)")
                         }
-                        if let d = drag {
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.mask.opacity(0.7))
-                                .frame(width: d.width, height: d.height)
-                                .offset(x: d.minX, y: d.minY)
-                        }
                     }
                     .contentShape(Rectangle())
-                    .gesture(
-                        DragGesture(minimumDistance: 6)
-                            .onChanged { v in
-                                drag = CGRect(x: min(v.startLocation.x, v.location.x), y: min(v.startLocation.y, v.location.y),
-                                              width: abs(v.location.x - v.startLocation.x), height: abs(v.location.y - v.startLocation.y))
-                            }
-                            .onEnded { _ in
-                                if let d = drag, d.width > 8, d.height > 8 {
-                                    let n = CGRect(x: d.minX / size.width, y: d.minY / size.height, width: d.width / size.width, height: d.height / size.height)
-                                    let finding = Finding(kind: .custom, rect: n, note: "drawn")
-                                    page.findings.append(finding)
-                                    editing = finding
-                                }
-                                drag = nil
-                            },
-                        including: drawing ? .all : .subviews
-                    )
                     .simultaneousGesture(SpatialTapGesture().onEnded { value in
-                        if !drawing { editing = nearestMask(to: value.location, size: size) }
+                        editing = nearestMask(to: value.location, size: size)
                     })
                 }
             }
@@ -222,12 +201,17 @@ struct PageCanvas: View {
             .matchedTransitionSource(id: page.id, in: editorTransition)
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("page-canvas")
-            .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(drawing ? Color.fjord : .clear, lineWidth: 2))
-            .sheet(item: $editing) { finding in
+            .onChange(of: addToPage) { _, id in
+                if id == page.id {
+                    creating = true
+                    editing = Finding(kind: .custom, rect: CGRect(x: 0.30, y: 0.38, width: 0.40, height: 0.18), note: "manual")
+                }
+            }
+            .sheet(item: $editing, onDismiss: { creating = false; addToPage = nil }) { finding in
                 MaskEditorView(image: page.image, finding: finding) { updated in
                     if let index = page.findings.firstIndex(where: { $0.id == updated.id }) {
                         page.findings[index] = updated
-                    }
+                    } else if creating { page.findings.append(updated) }
                 }
                 .navigationTransition(.zoom(sourceID: page.id, in: editorTransition))
             }

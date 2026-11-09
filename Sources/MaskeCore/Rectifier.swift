@@ -189,6 +189,7 @@ public enum Rectifier {
 /// Runs Vision requests; on the simulator, which has no Neural Engine, on the CPU.
 enum VisionRunner {
     static func perform(_ request: VNRequest, on image: CGImage) throws {
+        try Task.checkCancellation()
         #if targetEnvironment(simulator)
         if let devices = try? request.supportedComputeStageDevices {
             for (stage, list) in devices {
@@ -198,6 +199,11 @@ enum VisionRunner {
             }
         }
         #endif
+        let cancellation = AnalysisWork.cancellation
+        try cancellation?.register(request)
+        defer { cancellation?.unregister(request) }
+        try Task.checkCancellation()
         try VNImageRequestHandler(cgImage: image, options: [:]).perform([request])
+        try Task.checkCancellation()
     }
 }

@@ -21,6 +21,8 @@ Revision 10 replaces the decorated stamp with uniform translucent lettering, usi
 
 ## Open
 
+Revision 11 fixes silent import truncation and gesture-only mask creation, adds manual per-page watermark positioning and requests active Vision cancellation. All final Simulator results and performance limits are in AUDIT. Real-device testing was explicitly deferred by the owner on 9 November; startup/recognition/frame pacing and physical scanner checks remain open.
+
 ### 1. Text recognition sometimes misses lines (most important)
 
 **What happens:** On the same straightened image, `VNRecognizeTextRequest` (accurate) returns 17 lines in a standalone script but only 13 inside the `maske` process, in particular missing both MRZ lines of the synthetic Norwegian, Dutch and Singaporean passports. When the MRZ is missing, the MRZ mask, the country and the passport photo position (which is measured from the MRZ) are all lost.
@@ -72,11 +74,11 @@ Each photo is read quickly four times (once each way up) to find its orientation
 
 Build 5 moves import decoding off the main actor and adds immediate opening/reading feedback and cancellation. Cancellation discards late results and skips further pages; it does not interrupt an already running synchronous Vision request. No real-device frame-rate or recognition-time improvement has been measured. Scanner hardware, iCloud file-provider delays, manual VoiceOver and Reduce Motion setting checks remain device work; rendered Simulator checks are recorded in AUDIT.md.
 
-The 8 November three-skill audit measured optimized Simulator responsive relaunch at 3.807 s mean (five samples, 3.687–3.991 s). A separate App Launch trace was malformed and is not used for diagnosis. A bounded Mac CLI Time Profiler run on a generated passport hit its 45-second limit before recognition completed, with Apple model-bundle warnings; it is not a device latency measurement. The physical iPhone was offline. Startup, recognition and device frame pacing remain profiling work; see AUDIT for complete limits.
+The 8 November three-skill audit measured optimized Simulator responsive relaunch at 3.807 s mean (five samples, 3.687–3.991 s). A separate App Launch trace was malformed and is not used for diagnosis. A bounded Mac CLI Time Profiler run on a generated passport hit its 45-second limit before recognition completed, with Apple model-bundle warnings; it is not a device latency measurement. The physical iPhone was offline. Revision 11 moves session cleanup off-main onto the same serialized queue as export writes, downsamples imports through ImageIO and cancels active Vision requests on a best-effort basis. It also adds a native launch background matching Home. Startup, recognition and device frame pacing remain profiling work; see AUDIT for measurements and complete limits.
 
 ### 8. Not covered at all yet
 
-- Signatures (draw a box).
+- Signatures (use Add box).
 - Machine-readable data in QR codes is masked as a barcode but not read.
 - Documents from countries outside the supported list get the general rules and a warning in the app.
 
@@ -106,13 +108,15 @@ The current 98% coverage threshold samples points within field bounds. A passing
 
 **Next:** annotate every intended sensitive and preserved region on a held-out set of public specimens. Check first and last characters, unnecessary masks, the final exported pixels, secondary portraits, and printed specimens photographed on an iPhone. Include low light, glare, blur, partial crops, small documents within a large photo and combined perspective/rotation. Report misses and excess separately for each condition.
 
-### 14. Multi-page imports silently truncate
+### 14. Multi-page import truncation (fixed in revision 11; scanner hardware check open)
 
-The three-skill audit reproduced a three-page PDF yielding only two imported pages: Importing.images(fromPDF:) defaults to maxPages = 2 and drops the rest without feedback. The scanner callback similarly takes the first four pages. The PDF case is reproduced in an optimized iOS test; scanner behaviour is source-verified while the physical iPhone is offline. Make page selection/limits explicit before processing. Increasing the limit alone needs independent-image memory validation.
+The build 10 audit reproduced a three-page PDF yielding only two imported pages: Importing.images(fromPDF:) defaulted to maxPages = 2 and dropped the rest without feedback. The scanner callback similarly took the first four pages. The PDF case is reproduced in an optimized iOS test; scanner behaviour is source-verified while the physical iPhone is offline. The acceptance requirement was explicit page selection/limits before processing, with independent-image memory validation.
 
-### 15. Creating a manual mask has no semantic alternative
+Revision 11 imports all pages up to four; longer PDFs and scanner results open an explicit thumbnail chooser with a four-page limit. Selection is required, Cancel imports nothing, and selected pages retain source order. Source access and thumbnails are serialized; unredacted source images are not written to temporary files. Regression and rendered results are in AUDIT. Physical scanner capture remains unverified.
 
-Add box enters drawing mode; custom findings are created only by the drawing drag gesture. Existing-mask movement and corners do have native accessibility custom actions. Provide an accessible way to create a default rectangle and enter that editor; retain optional free drawing. Manual VoiceOver validation remains open. See AUDIT for source evidence and scope.
+### 15. Semantic manual-mask creation (fixed in revision 11; manual assistive testing open)
+
+In build 10, Add box entered drawing mode; custom findings were created only by the drawing drag gesture. Existing-mask movement and corners already had native accessibility custom actions. Revision 11 replaces drawing mode with a centred draft opened directly in the existing editor, with a native page menu for multi-page documents. Save commits; Cancel discards. Existing semantic corner/body move actions remain. Manual VoiceOver validation remains open. See AUDIT for source evidence and scope.
 
 ## Fixed in this round (for reference)
 

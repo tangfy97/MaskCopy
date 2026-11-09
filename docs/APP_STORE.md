@@ -69,3 +69,8 @@ Before submitting for review: screenshots, description, support and privacy URLs
 ## Notes for App Review (draft)
 
 MaskCopy reads identity documents only on the device, with Apple's Vision framework, to suggest which parts to hide. It has no networking code and keeps nothing after sharing. To test without a document, use any of the synthetic images made by `maske fixtures` (made-up people) from the Photos picker.
+
+
+## Build 11 release
+
+Build 11 upload completed at 09:08 Amsterdam time on 9 November 2026. Xcode reported Upload succeeded / EXPORT SUCCEEDED and Uploaded package is processing. Ready to Test, tester assignment and installation availability have not been independently confirmed. The archive and exported IPA passed strict signature verification as MaskCopy 0.1.0 (11), with the stable bundle ID, selected-C 1024 px icon, compiled native launch storyboard and no test resources. Core 21/21, optimized app 14/14 and final normal/compact interaction checks passed; performance limits and the owner-deferred physical-device checks are recorded in AUDIT.

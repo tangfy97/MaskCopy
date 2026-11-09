@@ -47,3 +47,9 @@ Home adopts the native inline-large leading title. Content titles retain the sys
 The owner rejected the country-first abbreviated information list and the decorative stamp. Show explicit document types/sides, then their country profiles. Use full-width stacked rows for accessibility text. Keep imported formats and the review reminder short. Country profiles describe recognition rules rather than validation of every version.
 
 Use simple diagonal recipient/purpose/date lettering, informed by RvIG’s KopieID FAQ and official illustration. The illustration does not establish current app colour or opacity. Translucent red multiply blending retains black printing; a light clipped pass is visible over opaque masks. Fixed positioning remains an explicit limitation. No competitor assets/code or text-detection work is added to rendering.
+
+## 8 November: explicit imports and direct recovery
+
+Resolve the three-skill audit without adding explanatory screens: import all pages up to four, and require explicit page selection for longer PDFs/scans. Keep a four-page processing bound instead of silently dropping pages or removing the memory limit. Hold source access only while it is needed; create no unredacted temporary files.
+
+Replace gesture-only mask creation with a centred editor draft and native page targeting. Use the existing accessible editor rather than adding another editing mode. Per-page watermark positioning uses shared glyph sprites during dragging and a revision-bound background render after Save; stale previews stay unshareable. Automatic text avoidance remains a separate recognition problem. Serialize export writes and asynchronous cleanup, and request active Vision cancellation without relying on it to prevent late results.

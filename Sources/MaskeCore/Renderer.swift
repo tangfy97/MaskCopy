@@ -28,12 +28,26 @@ public struct Watermark: Sendable {
     public var text: String { lines.joined(separator: " · ") }
 }
 
+public struct WatermarkLayers {
+    public let dark: CGImage
+    public let light: CGImage
+    /// Rotated stamp bounds at its centred position, normalized with a top-left origin.
+    public let bounds: CGRect
+
+    public func clamped(_ position: CGPoint) -> CGPoint {
+        let x = position.x.isFinite ? position.x : 0.5
+        let y = position.y.isFinite ? position.y : 0.5
+        let dx = min(0.495, bounds.width / 2), dy = min(0.495, bounds.height / 2)
+        return CGPoint(x: min(1 - dx, max(dx, x)), y: min(1 - dy, max(dy, y)))
+    }
+}
+
 /// Flattened, opaque redactions and an in-document watermark. No recoverable layers or metadata.
 public enum Renderer {
     public static let maskColor = CGColor(srgbRed: 0.19, green: 0.21, blue: 0.23, alpha: 1)
     private static let signposter = OSSignposter(subsystem: "com.feiyangtang.Maske", category: "PointsOfInterest")
 
-    public static func render(pages: [(CGImage, [Finding])], watermark: Watermark?, maxWidth: Int = 1600) -> CGImage? {
+    public static func render(pages: [(CGImage, [Finding])], watermark: Watermark?, maxWidth: Int = 1600, positions: [CGPoint] = []) -> CGImage? {
         let interval = signposter.beginInterval("RenderCopy")
         defer { signposter.endInterval("RenderCopy", interval) }
         guard !pages.isEmpty, maxWidth > 0, !Task.isCancelled else { return nil }
@@ -66,19 +80,21 @@ public enum Renderer {
                 ctx.fillPath()
             }
             if let watermark {
+                let layout = layout(watermark, size: frame.size)
+                let position = clamped(positions.indices.contains(i) ? positions[i] : CGPoint(x: 0.5, y: 0.5), bounds: layout.bounds)
                 ctx.saveGState()
                 ctx.clip(to: frame)
-                ctx.translateBy(x: frame.midX, y: frame.midY)
+                ctx.translateBy(x: frame.minX + position.x * frame.width, y: frame.maxY - position.y * frame.height)
                 ctx.rotate(by: .pi / 6)
-                draw(watermark, in: ctx, size: frame.size)
+                draw(watermark, layout: layout, in: ctx)
                 ctx.restoreGState()
                 if !redactions.isEmpty {
                     ctx.saveGState()
                     ctx.addPath(redactions)
                     ctx.clip()
-                    ctx.translateBy(x: frame.midX, y: frame.midY)
+                    ctx.translateBy(x: frame.minX + position.x * frame.width, y: frame.maxY - position.y * frame.height)
                     ctx.rotate(by: .pi / 6)
-                    draw(watermark, in: ctx, size: frame.size, light: true)
+                    draw(watermark, layout: layout, in: ctx, light: true)
                     ctx.restoreGState()
                 }
             }
@@ -88,40 +104,84 @@ public enum Renderer {
         return Task.isCancelled ? nil : ctx.makeImage()
     }
 
-    /// Uniform translucent lettering; multiply preserves dark document printing.
-    static func draw(_ watermark: Watermark, in ctx: CGContext, size: CGSize, light: Bool = false) {
-        let width = min(size.width * 0.82, size.height * 1.55)
-        let maxHeight = min(size.height * 0.20, size.width * 0.18)
-        var fontSize = min(size.width / 28, size.height / 12)
-        let color = light ? CGColor(gray: 1, alpha: 0.66)
-            : CGColor(srgbRed: 0.74, green: 0.12, blue: 0.18, alpha: 0.38)
-        ctx.setBlendMode(light ? .normal : .multiply)
+    private struct StampLayout {
+        let width: CGFloat
+        let height: CGFloat
+        let fontSize: CGFloat
+        let setter: CTFramesetter
+        let bounds: CGRect
+    }
+
+    private static func setter(_ watermark: Watermark, fontSize: CGFloat, light: Bool = false) -> CTFramesetter {
         var alignment = CTTextAlignment.center
         let paragraph = withUnsafePointer(to: &alignment) { pointer in
             var setting = CTParagraphStyleSetting(spec: .alignment, valueSize: MemoryLayout<CTTextAlignment>.size, value: pointer)
             return CTParagraphStyleCreate(&setting, 1)
         }
-        func framesetter(_ points: CGFloat) -> CTFramesetter {
-            let attributes: [NSAttributedString.Key: Any] = [
-                .init(kCTFontAttributeName as String): CTFontCreateWithName("HelveticaNeue-Medium" as CFString, points, nil),
-                .init(kCTForegroundColorAttributeName as String): color,
-                .init(kCTParagraphStyleAttributeName as String): paragraph,
-            ]
-            return CTFramesetterCreateWithAttributedString(NSAttributedString(string: watermark.lines.joined(separator: "\n"), attributes: attributes))
-        }
-        var setter = framesetter(fontSize)
-        var fitted = CTFramesetterSuggestFrameSizeWithConstraints(setter, CFRange(), nil,
-            CGSize(width: width, height: .greatestFiniteMagnitude), nil)
-        while fitted.height > maxHeight && fontSize > 2 {
-            fontSize *= 0.9
-            setter = framesetter(fontSize)
-            fitted = CTFramesetterSuggestFrameSizeWithConstraints(setter, CFRange(), nil,
+        let color = light ? CGColor(gray: 1, alpha: 0.66)
+            : CGColor(srgbRed: 0.74, green: 0.12, blue: 0.18, alpha: 0.38)
+        let attributes: [NSAttributedString.Key: Any] = [
+            .init(kCTFontAttributeName as String): CTFontCreateWithName("HelveticaNeue-Medium" as CFString, fontSize, nil),
+            .init(kCTForegroundColorAttributeName as String): color,
+            .init(kCTParagraphStyleAttributeName as String): paragraph,
+        ]
+        return CTFramesetterCreateWithAttributedString(NSAttributedString(string: watermark.lines.joined(separator: "\n"), attributes: attributes))
+    }
+
+    private static func layout(_ watermark: Watermark, size: CGSize) -> StampLayout {
+        let width = min(size.width * 0.82, size.height * 1.55)
+        let maxHeight = min(size.height * 0.20, size.width * 0.18)
+        var fontSize = min(size.width / 28, size.height / 12)
+        var framesetter = setter(watermark, fontSize: fontSize)
+        func fitted(_ value: CTFramesetter) -> CGSize {
+            CTFramesetterSuggestFrameSizeWithConstraints(value, CFRange(), nil,
                 CGSize(width: width, height: .greatestFiniteMagnitude), nil)
         }
-        let height = ceil(fitted.height) + 2
-        let path = CGPath(rect: CGRect(x: -width / 2, y: -height / 2, width: width, height: height), transform: nil)
+        var fit = fitted(framesetter)
+        while fit.height > maxHeight && fontSize > 2 {
+            fontSize *= 0.9
+            framesetter = setter(watermark, fontSize: fontSize)
+            fit = fitted(framesetter)
+        }
+        let height = ceil(fit.height) + 2
+        let drawingWidth = min(width, ceil(fit.width) + 2)
+        let w = (drawingWidth * cos(.pi / 6) + height * sin(.pi / 6)) / size.width
+        let h = (drawingWidth * sin(.pi / 6) + height * cos(.pi / 6)) / size.height
+        return StampLayout(width: drawingWidth, height: height, fontSize: fontSize, setter: framesetter,
+            bounds: CGRect(x: 0.5 - w / 2, y: 0.5 - h / 2, width: w, height: h))
+    }
+
+    private static func clamped(_ position: CGPoint, bounds: CGRect) -> CGPoint {
+        let dx = min(0.495, bounds.width / 2), dy = min(0.495, bounds.height / 2)
+        return CGPoint(x: min(1 - dx, max(dx, position.x.isFinite ? position.x : 0.5)),
+                       y: min(1 - dy, max(dy, position.y.isFinite ? position.y : 0.5)))
+    }
+
+    private static func draw(_ watermark: Watermark, layout: StampLayout, in ctx: CGContext,
+                             light: Bool = false, blending: Bool = true) {
+        ctx.setBlendMode(blending && !light ? .multiply : .normal)
+        let path = CGPath(rect: CGRect(x: -layout.width / 2, y: -layout.height / 2,
+                                     width: layout.width, height: layout.height), transform: nil)
         ctx.textMatrix = .identity
-        CTFrameDraw(CTFramesetterCreateFrame(setter, CFRange(), path, nil), ctx)
+        let framesetter = light ? setter(watermark, fontSize: layout.fontSize, light: true) : layout.setter
+        CTFrameDraw(CTFramesetterCreateFrame(framesetter, CFRange(), path, nil), ctx)
+    }
+
+    /// Shared glyph rasters for transform-only placement editing; export still renders exact pixels.
+    public static func watermarkLayers(_ watermark: Watermark, size: CGSize) -> WatermarkLayers? {
+        guard size.width > 0, size.height > 0, size.width.isFinite, size.height.isFinite, !Task.isCancelled else { return nil }
+        let layout = layout(watermark, size: size)
+        func image(light: Bool) -> CGImage? {
+            guard let context = CGContext(data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: 8,
+                bytesPerRow: 0, space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+            context.translateBy(x: size.width / 2, y: size.height / 2)
+            context.rotate(by: .pi / 6)
+            draw(watermark, layout: layout, in: context, light: light, blending: false)
+            return context.makeImage()
+        }
+        guard let dark = image(light: false), let light = image(light: true), !Task.isCancelled else { return nil }
+        return WatermarkLayers(dark: dark, light: light, bounds: layout.bounds)
     }
 
     /// A single-page PDF containing only the same flattened JPEG pixels as image export.

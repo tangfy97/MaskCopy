@@ -1,6 +1,6 @@
 # MaskCopy interface
 
-Revision 9 keeps the native materials introduced in revision 8 and adopts the owner-selected privacy mark with no branding on Home. Revision 8 aligned the existing minimal workflow with Apple's current Liquid Glass guidance, after reviewing the WWDC26 Design guide, current Materials HIG and adoption/custom-view documentation, and the WWDC25 design-system session. It keeps short labels, the paper/ink/fjord theme and direct document manipulation.
+Revision 11 adds explicit import selection, semantic mask creation and per-page watermark positioning. Revision 9 keeps the native materials introduced in revision 8 and adopts the owner-selected privacy mark with no branding on Home. Revision 8 aligned the existing minimal workflow with Apple's current Liquid Glass guidance, after reviewing the WWDC26 Design guide, current Materials HIG and adoption/custom-view documentation, and the WWDC25 design-system session. It keeps short labels, the paper/ink/fjord theme and direct document manipulation.
 
 ## Native material and navigation
 
@@ -28,7 +28,9 @@ Documents starts with four native rows: Passport (photo page), National ID card,
 
 ## Editing and export
 
-Hide shows the document and direct native field switches. Drag a mask to translate the entire polygon, preserving perspective and size and stopping at page edges. Tap to open the enlarged editor: drag inside the polygon to move it, outside to pan the document, or use the 44-point corner targets for precise resizing. The edited polygons are the exported polygons.
+Hide shows the document and direct native field switches. Drag a mask to translate the entire polygon, preserving perspective and size and stopping at page edges. Tap to open the enlarged editor: drag inside the polygon to move it, outside to pan the document, or use the 44-point corner targets for precise resizing. The edited polygons are the exported polygons. Add box immediately opens a centred draft in this editor; Save commits and Cancel discards it. For multiple pages, Add box first offers a native page menu. Creating a mask does not require drawing a gesture.
+
+PDFs and scans of up to four pages import in full. Longer inputs open a native thumbnail list with explicit selection (up to four), Cancel and Import. Selected pages keep their source order; omitted pages are an explicit choice.
 
 Watermark contains recipient, purpose and date. Input stays local; no bitmap work runs while typing. Preview renders off-main before navigation and caches matching document/mask/input revisions. Returning to edit keeps the draft. There is no stage/progress tracker.
 
@@ -38,7 +40,7 @@ PDF is one image-only page containing the same flattened JPEG pixels as JPG, inc
 
 ## Watermark and motion
 
-Every page has a simple 30-degree, two-line watermark: “Copy for [recipient]”, followed by purpose and date. Both lines use the same medium-weight type. There is no decorative rule, oversized recipient, border or removable footer. Translucent red lettering uses multiply blending over the document, preserving pure black printing rather than painting over it. A clipped light pass makes lettering visible on opaque masks. Long text wraps and fits. The angle/position are fixed; this is not OCR-aware placement, and faint or coloured print still needs visual review.
+Every page has a simple 30-degree, two-line watermark: “Copy for [recipient]”, followed by purpose and date. Both lines use the same medium-weight type. There is no decorative rule, oversized recipient, border or removable footer. Translucent red lettering uses multiply blending over the document, preserving pure black printing rather than painting over it. A clipped light pass makes lettering visible on opaque masks. Long text wraps and fits. The angle stays fixed. Move watermark opens a native sheet with per-page selection, direct dragging, Reset and Cancel/Save. Lettering stays inside the page. Named accessibility move actions provide one-percent nudges. Dragging only transforms cached glyph rasters; Save invalidates the copy and re-renders off-main, with export disabled until the current pixels are ready. Placement is not OCR-aware, and faint or coloured print still needs visual review.
 
 Motion explains actions: a system-owned glass-button press (a short interruptible press on older iOS), native navigation/source-linked editor transitions and a symbol replacement when saving succeeds. Pickup and save completion provide light haptic feedback. There are no looping decorations or entrance delays. Reduce Motion governs native effects; older-system fallbacks remove custom press scaling. UIScrollView owns pinch, double-tap and momentum; the image is installed once. Recognition and file encoding remain off-main and do not run on gesture or animation frames.
 

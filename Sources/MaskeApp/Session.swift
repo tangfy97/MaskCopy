@@ -11,6 +11,7 @@ final class Session: ObservableObject {
         let kind: DocumentKind
         let country: Country?
         var findings: [Finding] { didSet { revision = UUID() } }
+        var watermarkPosition = CGPoint(x: 0.5, y: 0.5) { didSet { revision = UUID() } }
         private(set) var revision = UUID()
     }
 
@@ -45,9 +46,9 @@ final class Session: ObservableObject {
 
     init(render: (@Sendable ([Page], Watermark) -> CGImage?)? = nil,
          read: (@Sendable (CGImage) -> (CGImage, PageAnalysis?))? = nil) {
-        Exporter.clear()
+        Exporter.clearLater()
         self.render = render ?? { pages, watermark in
-            Renderer.render(pages: pages.map { ($0.image, $0.findings) }, watermark: watermark)
+            Renderer.render(pages: pages.map { ($0.image, $0.findings) }, watermark: watermark, positions: pages.map(\.watermarkPosition))
         }
         self.read = read ?? { image in
             do {
@@ -78,7 +79,7 @@ final class Session: ObservableObject {
 
     func start(with images: [CGImage]) {
         clear()
-        guard !images.isEmpty else { failImport(); return }
+        guard !images.isEmpty, images.count <= Importing.maximumPages else { failImport(); return }
         withAnimation(FlowMotion.navigation) { path = [.review] }
         beginReading(images, ticket: generation)
     }
@@ -91,7 +92,7 @@ final class Session: ObservableObject {
         importTask = Task {
             let images = await load()
             guard !Task.isCancelled, generation == ticket else { return }
-            guard !images.isEmpty else { failImport(); return }
+            guard !images.isEmpty, images.count <= Importing.maximumPages else { failImport(); return }
             beginReading(images, ticket: ticket)
         }
     }
@@ -101,17 +102,24 @@ final class Session: ObservableObject {
         previewImage = images.first
         totalPages = images.count
         let read = self.read
+        let cancellation = AnalysisCancellation()
         let work = Task.detached(priority: .userInitiated) {
-            var results: [(CGImage, PageAnalysis?)] = []
-            for image in images {
-                guard !Task.isCancelled else { return results }
-                results.append(read(image))
-                let count = results.count
-                await MainActor.run {
-                    if self.generation == ticket { self.completedPages = count }
+            await withTaskCancellationHandler(operation: {
+                await AnalysisWork.$cancellation.withValue(cancellation) {
+                    var results: [(CGImage, PageAnalysis?)] = []
+                    for image in images {
+                        guard !Task.isCancelled else { return results }
+                        let result = read(image)
+                        guard !Task.isCancelled else { return results }
+                        results.append(result)
+                        let count = results.count
+                        await MainActor.run {
+                            if self.generation == ticket { self.completedPages = count }
+                        }
+                    }
+                    return results
                 }
-            }
-            return results
+            }, onCancel: { cancellation.cancel() })
         }
         analysisTask = work
         Task {
@@ -193,7 +201,7 @@ final class Session: ObservableObject {
         pages = []
         recipient = ""
         purpose = ""
-        Exporter.clear()
+        Exporter.clearLater()
     }
 
     func finish() {
@@ -204,6 +212,7 @@ final class Session: ObservableObject {
 
 /// Writes temporary copies for the share sheet and deletes them when the session ends.
 enum Exporter {
+    private static let io = DispatchQueue(label: "com.feiyangtang.Maske.export-io", qos: .utility)
     enum Format: String, CaseIterable, Sendable {
         case jpg, pdf
         var title: String { rawValue.uppercased() }
@@ -213,7 +222,7 @@ enum Exporter {
     static func preview(_ pages: [Session.Page], recipient: String, purpose: String) -> CGImage? {
         guard !Task.isCancelled else { return nil }
         let watermark = Watermark(recipient: recipient, purpose: purpose)
-        return Renderer.render(pages: pages.map { ($0.image, $0.findings) }, watermark: watermark)
+        return Renderer.render(pages: pages.map { ($0.image, $0.findings) }, watermark: watermark, positions: pages.map(\.watermarkPosition))
     }
 
     /// Only an explicit Save or Share action writes a file. Each attempt owns its directory,
@@ -227,23 +236,38 @@ enum Exporter {
         f.dateFormat = "yyyy-MM-dd"
         let who = String(recipient.components(separatedBy: CharacterSet.alphanumerics.inverted).filter { !$0.isEmpty }.joined(separator: " ").prefix(48))
         let url = folder.appendingPathComponent("ID copy for \(who.isEmpty ? "recipient" : who) \(f.string(from: Date())).\(format.rawValue)")
-        do {
-            guard !Task.isCancelled else { return nil }
-            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-            try data.write(to: url, options: [.atomic, .completeFileProtection])
-        } catch {
-            discard(url)
-            return nil
+        guard !Task.isCancelled else { return nil }
+        let written = io.sync { () -> Bool in
+            do {
+                try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+                try data.write(to: url, options: [.atomic, .completeFileProtection])
+                return true
+            } catch {
+                try? FileManager.default.removeItem(at: folder)
+                return false
+            }
         }
+        guard written else { return nil }
         guard !Task.isCancelled else { discard(url); return nil }
         return url
     }
 
     static func discard(_ file: URL) {
-        try? FileManager.default.removeItem(at: file.deletingLastPathComponent())
+        io.sync { try? FileManager.default.removeItem(at: file.deletingLastPathComponent()) }
+    }
+
+    static func discardLater(_ file: URL) {
+        io.async { try? FileManager.default.removeItem(at: file.deletingLastPathComponent()) }
     }
 
     static func clear() {
-        try? FileManager.default.removeItem(at: directory)
+        io.sync { try? FileManager.default.removeItem(at: directory) }
     }
+
+    static func clearLater() {
+        io.async { try? FileManager.default.removeItem(at: directory) }
+    }
+
+    /// A test/verification barrier, never used by application UI.
+    static func waitForCleanup() { io.sync {} }
 }

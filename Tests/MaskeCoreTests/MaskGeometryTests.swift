@@ -101,6 +101,39 @@ final class MaskGeometryTests: XCTestCase {
         XCTAssertEqual(long.height, 250, "Watermark belongs inside the document, not in a removable footer")
     }
 
+    func testWatermarkPositionIsPerPageAndClampedInsideTheDocument() throws {
+        let mark = Watermark(recipient: "Hotel Nord", purpose: "Check-in only", date: Date(timeIntervalSince1970: 0))
+        for size in [CGSize(width: 400, height: 250), CGSize(width: 250, height: 400)] {
+            let layers = try XCTUnwrap(Renderer.watermarkLayers(mark, size: size))
+            for requested in [CGPoint(x: -10, y: -10), CGPoint(x: 10, y: 10), CGPoint(x: CGFloat.nan, y: CGFloat.infinity)] {
+                let point = layers.clamped(requested)
+                XCTAssertGreaterThanOrEqual(point.x - layers.bounds.width / 2, -1e-8)
+                XCTAssertLessThanOrEqual(point.x + layers.bounds.width / 2, 1 + 1e-8)
+                XCTAssertGreaterThanOrEqual(point.y - layers.bounds.height / 2, -1e-8)
+                XCTAssertLessThanOrEqual(point.y + layers.bounds.height / 2, 1 + 1e-8)
+            }
+        }
+        let context = try XCTUnwrap(CGContext(data: nil, width: 400, height: 250, bitsPerComponent: 8,
+            bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue))
+        context.setFillColor(gray: 1, alpha: 1)
+        context.fill(CGRect(x: 0, y: 0, width: 400, height: 250))
+        let page = try XCTUnwrap(context.makeImage())
+        let before = try XCTUnwrap(Luma(try XCTUnwrap(Renderer.render(pages: [(page, []), (page, [])], watermark: mark))))
+        let after = try XCTUnwrap(Luma(try XCTUnwrap(Renderer.render(pages: [(page, []), (page, [])], watermark: mark,
+            positions: [CGPoint(x: 0.5, y: 0.9), CGPoint(x: 0.5, y: 0.5)]))))
+        var changed = 0
+        for y in 0..<250 {
+            for x in 0..<400 {
+                if before.at(CGFloat(x), CGFloat(y)) != after.at(CGFloat(x), CGFloat(y)) { changed += 1 }
+                XCTAssertEqual(before.at(CGFloat(x), CGFloat(y + 266)), after.at(CGFloat(x), CGFloat(y + 266)))
+            }
+        }
+        XCTAssertGreaterThan(changed, 300)
+        for y in 250..<266 {
+            for x in 0..<400 { XCTAssertEqual(after.at(CGFloat(x), CGFloat(y)), 255) }
+        }
+    }
+
     func testWatermarkPreservesBlackPrinting() throws {
         let context = try XCTUnwrap(CGContext(data: nil, width: 400, height: 250, bitsPerComponent: 8,
             bytesPerRow: 0, space: CGColorSpace(name: CGColorSpace.sRGB)!,
