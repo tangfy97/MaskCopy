@@ -108,6 +108,14 @@ The current 98% coverage threshold samples points within field bounds. A passing
 
 **Next:** annotate every intended sensitive and preserved region on a held-out set of public specimens. Check first and last characters, unnecessary masks, the final exported pixels, secondary portraits, and printed specimens photographed on an iPhone. Include low light, glare, blur, partial crops, small documents within a large photo and combined perspective/rotation. Report misses and excess separately for each condition.
 
+### 16. Bilingual Chinese licence address (fixed in build 12)
+
+The physical specimen check found an unmasked address when Vision read the separate Chinese label “住址” above a merged translation/value line “Adtre北京”. Build 12 recovers that value using the explicit CJK label and constrained geometry, without masking the English translation or nearby issuer/date fields. Two physical trials cover 100% of the annotated address and preserve issue/validity fields. Core and full synthetic checks pass; see AUDIT.
+
+### 17. Owner-accepted portrait extents below the annotation threshold
+
+On 9 November the owner accepted the existing portrait bounds and requested no further expansion. Four measured official-specimen portrait regions remain below the original 98% rectangle-sampling threshold: Norwegian licence primary/secondary (97.9167% / 95.8333%) and Chinese passport/licence primary (89.7569% each). Tests retain raw coverage and the original threshold as explicit expected failures for these exact regions, and fail any further loss below the accepted baselines. No portrait code or annotation was changed. This acceptance does not prove complete redaction on other photographs or versions.
+
 ### 14. Multi-page import truncation (fixed in revision 11; scanner hardware check open)
 
 The build 10 audit reproduced a three-page PDF yielding only two imported pages: Importing.images(fromPDF:) defaulted to maxPages = 2 and dropped the rest without feedback. The scanner callback similarly took the first four pages. The PDF case is reproduced in an optimized iOS test; scanner behaviour is source-verified while the physical iPhone is offline. The acceptance requirement was explicit page selection/limits before processing, with independent-image memory validation.

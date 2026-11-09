@@ -14,7 +14,7 @@ In order. Each step should end with its check in `scripts/check.sh` (or a note o
 
 - Implemented in revision 11: full imports up to four pages, explicit selection for longer PDFs/scans. Physical scanner capture still needs a device check (KNOWN_ISSUES 14).
 - Implemented in revision 11: Add box opens an adjustable draft through a semantic action. Complete manual VoiceOver/Switch Control checks (KNOWN_ISSUES 15).
-- Per-page watermark movement is implemented in revision 11; continue dense/coloured-print readability checks and measure optimized real-device recognition/frame pacing when the iPhone is available. The simulator render microbenchmark is not a real-session budget.
+- Per-page watermark movement and physical multi-page/manual-add journeys are verified. The first iPhone launch/render/recognition measurements are recorded in AUDIT. Extend dense/coloured-print readability, photographed specimens and continuous gesture/frame-pacing checks; a partial trace or render microbenchmark is not a whole-session budget.
 
 ## Next: make it a 1.0
 

@@ -74,3 +74,10 @@ MaskCopy reads identity documents only on the device, with Apple's Vision framew
 ## Build 11 release
 
 Build 11 upload completed at 09:08 Amsterdam time on 9 November 2026. Xcode reported Upload succeeded / EXPORT SUCCEEDED and Uploaded package is processing. Ready to Test, tester assignment and installation availability have not been independently confirmed. The archive and exported IPA passed strict signature verification as MaskCopy 0.1.0 (11), with the stable bundle ID, selected-C 1024 px icon, compiled native launch storyboard and no test resources. Core 21/21, optimized app 14/14 and final normal/compact interaction checks passed; performance limits and the owner-deferred physical-device checks are recorded in AUDIT.
+
+
+## Build 12 release
+
+Build 12 upload completed at 11:09 Amsterdam time on 9 November 2026. Xcode reported Upload succeeded / EXPORT SUCCEEDED and Uploaded package is processing. TestFlight Ready to Test and installation availability are not independently confirmed. Strict archive/IPA signatures, stable bundle identity, 0.1.0 (12), unchanged 1024 px selected-C icon, native LaunchScreen and absence of test/specimen resources were verified. The clean development-signed Release build 12 was installed on the connected iPhone after testing; that is separate from TestFlight installation confirmation.
+
+This update fixes the separately observed Chinese licence address miss. Portrait geometry is unchanged at the owner’s explicit request. Core 23/23 and 43/43 synthetic documents passed. The final 17-test physical suite has 15 passes, 2 expected portrait-threshold failures and no unexpected failures/skips; the three watermark/multi-page/manual-add journeys passed. See AUDIT for raw coverage and accepted exceptions.

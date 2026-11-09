@@ -53,3 +53,7 @@ Use simple diagonal recipient/purpose/date lettering, informed by RvIG’s Kopie
 Resolve the three-skill audit without adding explanatory screens: import all pages up to four, and require explicit page selection for longer PDFs/scans. Keep a four-page processing bound instead of silently dropping pages or removing the memory limit. Hold source access only while it is needed; create no unredacted temporary files.
 
 Replace gesture-only mask creation with a centred editor draft and native page targeting. Use the existing accessible editor rather than adding another editing mode. Per-page watermark positioning uses shared glyph sprites during dragging and a revision-bound background render after Save; stale previews stay unshareable. Automatic text avoidance remains a separate recognition problem. Serialize export writes and asynchronous cleanup, and request active Vision cancellation without relying on it to prevent late results.
+
+## 9 November: preserve accepted portrait boundaries
+
+After device validation, the owner accepted the current portrait coverage and requested no expansion. Preserve those mask shapes. Keep the original annotation threshold visible as expected failures for the four measured regions, alongside baseline floors that reject further loss. Repair the separately discovered Chinese licence address miss with a constrained bilingual label/value association; do not change portrait detection, unrelated OCR or global thresholds.

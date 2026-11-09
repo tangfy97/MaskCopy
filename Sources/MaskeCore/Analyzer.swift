@@ -464,6 +464,26 @@ struct Page {
             }
         }
         let labelBox = line.box(for: label)
+        // A bilingual label can be split vertically while OCR merges its smaller English
+        // translation with the CJK value ("住址" above "Adtre北京"). Keep only the value.
+        if kind == .address, String(line.text[label]).containsCJK {
+            for candidate in lines.sorted(by: { abs($0.box.midY - labelBox.midY) < abs($1.box.midY - labelBox.midY) }) {
+                let box = candidate.box
+                guard abs(box.minX - labelBox.minX) < max(0.015, labelBox.width * 0.35),
+                      box.midY >= labelBox.midY, box.midY < labelBox.maxY + labelBox.height * 0.75,
+                      box.height < labelBox.height * 2,
+                      box.maxX > labelBox.maxX + labelBox.height * 0.2 / aspect,
+                      let first = candidate.text.firstIndex(where: { String($0).containsCJK }) else { continue }
+                let prefix = candidate.text[..<first]
+                guard prefix.filter(\.isLetter).count >= 2,
+                      prefix.allSatisfy({ $0.isASCII && ($0.isLetter || $0.isWhitespace || $0.isPunctuation) }),
+                      looksLikeValue(String(candidate.text[first...]), kind) else { continue }
+                let range = first..<candidate.text.endIndex
+                addPart(kind, of: candidate, range, note: note + " (bilingual)")
+                addContinuation(below: candidate.box(for: range), among: lines, note: note)
+                return
+            }
+        }
         // To the right on the same line.
         if let right = lines.filter({ abs($0.box.midY - labelBox.midY) < labelBox.height * 0.6 && $0.box.minX >= labelBox.maxX - 0.005 && $0.box.minX - labelBox.maxX < 0.3 && looksLikeValue($0.text, kind) })
             .min(by: { $0.box.minX < $1.box.minX }) {

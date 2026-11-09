@@ -11,7 +11,7 @@ An iPhone app for sharing a copy of your passport, ID card or driving licence wi
 - Import all pages of PDFs/scans up to four pages; choose explicitly from longer documents.
 - Everything happens on the iPhone with Apple's Vision framework. No network code, accounts, analytics, third-party code or history. Temporary export files are removed when the session ends or the app next opens ([privacy policy](PRIVACY.md))
 
-**Status:** prototype 0.1.0, build 11 uploaded to App Store Connect (Apple reports Processing; build 11 installation availability is not yet confirmed). Not yet on the App Store. What still goes wrong: [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md). What comes next: [docs/ROADMAP.md](docs/ROADMAP.md).
+**Status:** prototype 0.1.0, build 12 uploaded to App Store Connect (Apple reports Processing; TestFlight build 12 installation availability is not yet confirmed). Not yet on the App Store. What still goes wrong: [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md). What comes next: [docs/ROADMAP.md](docs/ROADMAP.md).
 
 **Working on MaskCopy with a coding agent?** Start with [AGENTS.md](AGENTS.md): the rules, the map of the code, how to test, and what was learned so far.
 

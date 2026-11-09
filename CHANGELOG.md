@@ -2,12 +2,16 @@
 
 All notable changes to MaskCopy are listed here. Versions follow [Semantic Versioning](https://semver.org).
 
-## Unreleased
+## [0.1.0] - 2026-11-09
+
+Build 12: bilingual address recovery. Uploaded 9 November at 11:09 Amsterdam time; Apple reports Processing. TestFlight installation availability is not yet confirmed.
+
+- Recover Chinese address values when OCR merges the English translation with CJK text below a separate Chinese label. Preserve the translation, issuer stamp and adjacent dates.
+- Keep existing portrait geometry at the owner's request. Record the four accepted specimen threshold exceptions with regression floors; retain the original global threshold and annotations.
+- Complete the physical watermark/multi-page/manual-add journeys and record official-specimen results, expected failures and remaining measurement limits.
 
 - Add repeatable physical-device recognition checks with test-only generated/official specimen resources, relative DEBUG fixture paths for UI tests and first-device registration support.
-- Record the first iPhone launch/render/recognition/editor measurements and the partial hitch trace; keep locked-phone watermark/specimen checks explicitly open. Production Release behavior remains unchanged.
-
-## [0.1.0] - 2026-11-09
+- Record iPhone launch/render/recognition/editor measurements and the partial hitch trace, with raw specimen coverage and explicitly accepted portrait exceptions.
 
 Build 11: fixes from the requested three-skill audit. Uploaded 9 November at 09:08 Amsterdam time; Apple reports Processing. Installation availability is not yet confirmed.
 

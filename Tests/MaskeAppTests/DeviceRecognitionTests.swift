@@ -30,6 +30,22 @@ final class DeviceRecognitionTests: XCTestCase {
         #endif
     }
 
+    func testChineseLicenceAddress() throws {
+        #if targetEnvironment(simulator)
+        throw XCTSkip("Specimen OCR check requires physical iPhone hardware")
+        #else
+        try run(manifest: "specimen-focus", names: ["CHN-F-CHN-FO-02002-front"], iterations: 2)
+        #endif
+    }
+
+    // The owner accepted these existing portrait extents on 9 November. Keep the
+    // original 98% check visible as an expected failure, and reject any further loss.
+    private let acceptedPortraitCoverage: [String: [Int: Double]] = [
+        "NOR-F-NOR-FO-08002-front": [0: 47.0 / 48, 1: 46.0 / 48],
+        "CHN-A-CHN-AO-05001-back": [0: 517.0 / 576],
+        "CHN-F-CHN-FO-02002-front": [0: 517.0 / 576],
+    ]
+
     private func run(manifest: String, names: [String]?, iterations: Int) throws {
         let bundle = Bundle(for: Self.self)
         guard let labels = bundle.url(forResource: manifest, withExtension: "json") else {
@@ -57,11 +73,24 @@ final class DeviceRecognitionTests: XCTestCase {
                     let kept = label.keep.map { coverage($0.rect, findings: findings) }
                     timings.append(["fixture": name, "iteration": iteration, "seconds": seconds,
                         "sensitiveCoverage": hidden, "keptCoverage": kept,
-                        "kind": analysis.kind.rawValue, "country": analysis.country?.code ?? "unknown"])
+                        "kind": analysis.kind.rawValue, "country": analysis.country?.code ?? "unknown",
+                        "recognizedLines": analysis.lines,
+                        "findings": analysis.findings.map { ["kind": $0.kind.rawValue, "note": $0.note,
+                            "quad": $0.shape.points.map { [$0.x, $0.y] }] }])
                     XCTAssertEqual(analysis.kind.rawValue, label.kind, name)
                     XCTAssertEqual(analysis.country?.code, label.country, name)
                     for (index, coverage) in hidden.enumerated() {
-                        XCTAssertGreaterThanOrEqual(coverage, 0.98, "\(name) \(label.hide[index].kind)")
+                        if manifest == "specimen-focus", label.hide[index].kind == "photo",
+                           let minimum = acceptedPortraitCoverage[name]?[index] {
+                            XCTAssertGreaterThanOrEqual(coverage, minimum - 1e-9, "\(name): accepted portrait must not regress")
+                            if coverage < 0.98 {
+                                XCTExpectFailure("Owner accepted the existing portrait extent; original threshold retained") {
+                                    XCTAssertGreaterThanOrEqual(coverage, 0.98, "\(name) photo")
+                                }
+                            }
+                        } else {
+                            XCTAssertGreaterThanOrEqual(coverage, 0.98, "\(name) \(label.hide[index].kind)")
+                        }
                     }
                     for coverage in kept { XCTAssertLessThanOrEqual(coverage, 0.10, name) }
                     if iteration == 0, let copy = Renderer.render(pages: [(document.image, analysis.findings)],

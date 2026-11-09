@@ -3,6 +3,39 @@ import XCTest
 @testable import MaskeCore
 
 final class MaskGeometryTests: XCTestCase {
+    func testBilingualCJKAddressKeepsTranslationAndNearbyFieldsVisible() throws {
+        func line(_ text: String, _ rect: CGRect) -> TextLine {
+            TextLine(text: text, quad: Quad(rect), candidate: nil)
+        }
+        let label = line("住址", CGRect(x: 0.035, y: 0.359, width: 0.067, height: 0.045))
+        let value = line("Adtre北京", CGRect(x: 0.034, y: 0.376, width: 0.215, height: 0.075))
+        let stamp = line("北京市公", CGRect(x: 0.043, y: 0.550, width: 0.213, height: 0.071))
+        let issue = line("初次领证日期", CGRect(x: 0.27, y: 0.652, width: 0.181, height: 0.051))
+        var page = Page(lines: [label, value, stamp, issue], aspect: 1.42)
+        page.country = "CN"
+        page.kind = .drivingLicence
+        page.findLabelledValues()
+        let mask = try XCTUnwrap(page.findings.first { $0.kind == .address })
+        XCTAssertTrue(mask.contains(CGPoint(x: 0.225, y: 0.41)))
+        XCTAssertFalse(mask.contains(CGPoint(x: 0.07, y: 0.41)), "Keep the English label")
+        XCTAssertFalse(page.findings.contains { $0.contains(CGPoint(x: 0.1, y: 0.58)) }, "Keep the issuer stamp")
+        XCTAssertFalse(page.findings.contains { $0.contains(CGPoint(x: 0.35, y: 0.68)) }, "Keep the next field")
+    }
+
+    func testBilingualAddressDoesNotDropLeadingDigitsOrUseDistantRows() {
+        let label = TextLine(text: "住址", quad: Quad(CGRect(x: 0.035, y: 0.359, width: 0.067, height: 0.045)), candidate: nil)
+        for text in ["Addr8号北京", "北京"] {
+            let value = TextLine(text: text, quad: Quad(CGRect(x: 0.034, y: 0.376, width: 0.215, height: 0.075)), candidate: nil)
+            var page = Page(lines: [label, value], aspect: 1.42)
+            page.findLabelledValues()
+            XCTAssertTrue(page.findings.isEmpty, "Do not redact just the suffix when a leading number is unresolved")
+        }
+        let distant = TextLine(text: "Name张三", quad: Quad(CGRect(x: 0.034, y: 0.56, width: 0.215, height: 0.075)), candidate: nil)
+        var page = Page(lines: [label, distant], aspect: 1.42)
+        page.findLabelledValues()
+        XCTAssertTrue(page.findings.isEmpty)
+    }
+
     func testPortraitSearchStopsBeforeAFieldBelowThePhoto() {
         let face = CGRect(x: 0.08, y: 0.37, width: 0.17, height: 0.28)
         let categories = TextLine(text: "9. A BE DE S T", quad: Quad(CGRect(x: 0.03, y: 0.78, width: 0.25, height: 0.04)), candidate: nil)
