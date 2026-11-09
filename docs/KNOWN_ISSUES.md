@@ -146,3 +146,7 @@ If correction returns nil, `straighten` now returns the source image with full-f
 - Masks were upright rectangles; on tilted text they were too big and off. They are now four-cornered shapes following the text.
 - Masks were padded boxes from Vision. They are now fitted to the actual ink (with the text's own angle) plus a thin margin.
 - The portrait or a barcode could be taken for the document's outline. An outline now has to contain most of the photo's text.
+
+## 20. Norwegian passport (2020) secondary portrait not masked
+
+On the official specimen (Commons "Norwegian Passport Specimen.jpg") `maske review` covers the main photo, passport number, CAN and MRZ but leaves the small secondary portrait right of "CAN" visible. In the Simulator (no faces) the estimated portrait zone also runs down into the MRZ, covering extra. **Next:** add the passport's secondary-portrait position to the Norwegian calibration, as for the ID card, and add a synthetic fixture.

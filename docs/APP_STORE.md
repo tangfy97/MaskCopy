@@ -129,7 +129,7 @@ Same as English (U.S.); the copy already uses British spelling ("licence"). Add 
 
 ### Screenshots
 
-6.9-inch iPhone, 1320 × 2868, opaque PNG, in [appstore/screenshots/en](appstore/screenshots/en). Upload in order 1–5. App Store Connect scales them for smaller iPhones. They show synthetic documents only (made-up people from `maske fixtures`).
+"iPhone with Dynamic Island (medium display)", 1206 × 2622, opaque PNG (1320 × 2868 was rejected), in [appstore/screenshots/en](appstore/screenshots/en). Upload in order 1–5. Screens 1 and 2 show official public specimens from Wikimedia Commons, not real people's documents: [Norwegian ID card 2021](https://commons.wikimedia.org/wiki/File:New_Norwegian_ID_Card_(2021)_(Front).png) (public domain, Government of Norway) and the data page of the [Dutch passport 2014](https://commons.wikimedia.org/wiki/File:Dutch_passport_specimen_issued_9_March_2014.jpg) (CC0, RvIG). The [Norwegian passport 2020](https://commons.wikimedia.org/wiki/File:Norwegian_Passport_Specimen.jpg) (public domain) is also usable, but its secondary portrait is not masked (KNOWN_ISSUES) and the Simulator's face-less portrait estimate overlaps the MRZ. Keep the images in `Fixtures/specimens/store/` (git-ignored).
 
 | File | Headline |
 |---|---|
