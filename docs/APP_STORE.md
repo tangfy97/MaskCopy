@@ -149,11 +149,11 @@ Same as English (U.S.); the copy already uses British spelling ("licence"). Add 
 
 > MaskCopy makes a copy of an identity document (passport, ID card, residence permit or driving licence) with sensitive parts covered, for sharing with a landlord, employer or hotel. All recognition runs on the device with Apple's Vision framework. The app has no networking code, no account, no analytics and no in-app purchases, and it keeps nothing after the user finishes.
 >
-> To try it without a real document, use the attached synthetic sample images (made-up people): save one to Photos and choose Photos on the first screen, or show it on another screen and tap Scan. MaskCopy straightens the document and covers the passport number, personal number, photo and machine-readable zone. Tap a box to adjust it, then Continue, enter a recipient (for example "Hotel Nord"), tap Preview copy, and Save or Share as JPG or PDF.
+> To try it without a real document, use the attached image, the official specimen of the Dutch passport published by the Dutch government (not a real person): save it to Photos and choose Photos on the first screen, or show it on another screen and tap Scan. MaskCopy straightens the document and covers the document number, both photos and the machine-readable zone. Tap a box to adjust it, then Continue, enter a recipient (for example "Hotel Nord"), tap Preview copy, and Save or Share as JPG or PDF.
 >
 > The camera is used only while scanning (VisionKit document camera). Photos are chosen with the system picker, so no photo library permission is requested. The information button on the first screen lists the supported documents.
 
-Attach in App Review Information: [appstore/review/passport-sample.png](appstore/review/passport-sample.png) and [appstore/review/licence-sample.png](appstore/review/licence-sample.png) (synthetic).
+Attach in App Review Information: [appstore/review/review-sample.png](appstore/review/review-sample.png), the data page of the [Dutch passport specimen](https://commons.wikimedia.org/wiki/File:Dutch_passport_specimen_issued_9_March_2014.jpg) (CC0, RvIG). One document per image, so the reviewer can pick it directly.
 
 ## Build 11 release
 
