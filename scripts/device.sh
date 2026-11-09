@@ -14,7 +14,7 @@ team=${TEAM_ID:-X933P26489}
 xcodegen generate --quiet
 xcodebuild -project Maske.xcodeproj -scheme Maske -configuration Debug \
     -destination 'generic/platform=iOS' -derivedDataPath build/DerivedData \
-    DEVELOPMENT_TEAM="$team" CODE_SIGN_STYLE=Automatic -allowProvisioningUpdates \
+    DEVELOPMENT_TEAM="$team" CODE_SIGN_STYLE=Automatic -allowProvisioningUpdates -allowProvisioningDeviceRegistration \
     -quiet build
 app=build/DerivedData/Build/Products/Debug-iphoneos/MaskCopy.app
 codesign --verify --strict "$app"

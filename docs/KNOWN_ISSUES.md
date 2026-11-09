@@ -70,7 +70,7 @@ Vision can read upside-down text, so choosing the turn from the strings alone ca
 
 ### 7. Speed
 
-Each photo is read quickly four times (once each way up) to find its orientation and outline, then accurately once or more. On a loaded Mac one page took about a minute. **Not measured on an iPhone.** **Next:** time it on a device; if slow, read two orientations first and only try the others when neither reads well.
+Each photo is read quickly four times (once each way up) to find its orientation and outline, then accurately once or more. On a loaded Mac one page took about a minute. **9 November device baseline:** four generated samples across 12 trials averaged 228 ms per page (110–508 ms) on iPhone 18 Pro/iOS 27.2, excluding image decode and export. Responsive relaunch averaged 306 ms. This does not measure every document, a post-reboot cold launch, photographed specimens or the scanner. See AUDIT for the exact workload and limits.
 
 Build 5 moves import decoding off the main actor and adds immediate opening/reading feedback and cancellation. Cancellation discards late results and skips further pages; it does not interrupt an already running synchronous Vision request. No real-device frame-rate or recognition-time improvement has been measured. Scanner hardware, iCloud file-provider delays, manual VoiceOver and Reduce Motion setting checks remain device work; rendered Simulator checks are recorded in AUDIT.md.
 

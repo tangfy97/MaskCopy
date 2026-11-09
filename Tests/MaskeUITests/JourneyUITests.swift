@@ -3,8 +3,7 @@ import CoreGraphics
 
 final class JourneyUITests: XCTestCase {
     private var fixture: String {
-        URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-            .appendingPathComponent("Fixtures/synthetic/passport-nor.png").path
+        SyntheticFixture.passportPath
     }
     private func capture(_ name: String, app: XCUIApplication) {
         let attachment = XCTAttachment(screenshot: app.screenshot())

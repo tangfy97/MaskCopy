@@ -54,7 +54,11 @@ enum DebugLaunch {
         let defaults = UserDefaults.standard
         if defaults.string(forKey: "MaskeStep") == "supported" { session.path = [.supported]; return }
         guard let paths = defaults.string(forKey: "MaskeFixture") else { return }
-        let images = paths.split(separator: ",").compactMap { UIImage(contentsOfFile: String($0))?.upright() }
+        let images = paths.split(separator: ",").compactMap { path -> CGImage? in
+            let url = path.hasPrefix("/") ? URL(fileURLWithPath: String(path))
+                : URL.cachesDirectory.appendingPathComponent(String(path))
+            return UIImage(contentsOfFile: url.path)?.upright()
+        }
         session.start(with: images)
         if let r = defaults.string(forKey: "MaskeRecipient") { session.recipient = r }
         if let p = defaults.string(forKey: "MaskePurpose") { session.purpose = p }

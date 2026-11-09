@@ -2,10 +2,7 @@ import XCTest
 final class MaskEditorUITests: XCTestCase {
     func testMovingMaskDirectlyOnReview() {
         let app = XCUIApplication()
-        let fixture = URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-            .appendingPathComponent("Fixtures/synthetic/passport-nor.png")
-        app.launchArguments = ["-MaskeFixture", fixture.path]
+        app.launchArguments = ["-MaskeFixture", SyntheticFixture.passportPath]
         app.launch()
         let photo = app.buttons["mask-photo"].firstMatch
         XCTAssertTrue(photo.waitForExistence(timeout: 60))
@@ -33,10 +30,7 @@ final class MaskEditorUITests: XCTestCase {
 
     func testAdjustZoomSaveAndCancel() {
         let app = XCUIApplication()
-        let fixture = URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-            .appendingPathComponent("Fixtures/synthetic/passport-nor.png")
-        app.launchArguments = ["-MaskeFixture", fixture.path, "-MaskeRecipient", "Hotel Nord"]
+        app.launchArguments = ["-MaskeFixture", SyntheticFixture.passportPath, "-MaskeRecipient", "Hotel Nord"]
         app.launch()
         let photo = app.buttons["Photo"].firstMatch
         XCTAssertTrue(photo.waitForExistence(timeout: 60))

@@ -2,6 +2,11 @@
 
 All notable changes to MaskCopy are listed here. Versions follow [Semantic Versioning](https://semver.org).
 
+## Unreleased
+
+- Add repeatable physical-device recognition checks with test-only generated/official specimen resources, relative DEBUG fixture paths for UI tests and first-device registration support.
+- Record the first iPhone launch/render/recognition/editor measurements and the partial hitch trace; keep locked-phone watermark/specimen checks explicitly open. Production Release behavior remains unchanged.
+
 ## [0.1.0] - 2026-11-09
 
 Build 11: fixes from the requested three-skill audit. Uploaded 9 November at 09:08 Amsterdam time; Apple reports Processing. Installation availability is not yet confirmed.

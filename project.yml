@@ -48,6 +48,46 @@ targets:
     platform: iOS
     sources:
       - path: Tests/MaskeAppTests
+      # Generated samples belong to the test bundle only, never the application.
+      - path: Fixtures/synthetic/dl-nld.png
+        buildPhase: resources
+        optional: true
+      - path: Fixtures/synthetic/id-nor-front.png
+        buildPhase: resources
+        optional: true
+      - path: Fixtures/synthetic/id-chn-front.png
+        buildPhase: resources
+        optional: true
+      - path: Fixtures/synthetic/passport-chn.png
+        buildPhase: resources
+        optional: true
+      - path: Fixtures/synthetic/expected.json
+        buildPhase: resources
+        optional: true
+      - path: Fixtures/specimen-focus.json
+        buildPhase: resources
+        optional: true
+      - path: Fixtures/specimens/prado/NLD-F-NLD-FO-07001-front.jpg
+        buildPhase: resources
+        optional: true
+      - path: Fixtures/specimens/prado/NOR-B-NOR-BO-02002-front.jpg
+        buildPhase: resources
+        optional: true
+      - path: Fixtures/specimens/prado/NOR-B-NOR-BO-02002-back.jpg
+        buildPhase: resources
+        optional: true
+      - path: Fixtures/specimens/prado/NOR-F-NOR-FO-08002-front.jpg
+        buildPhase: resources
+        optional: true
+      - path: Fixtures/specimens/prado/NLD-B-NLD-BO-08001-front.jpg
+        buildPhase: resources
+        optional: true
+      - path: Fixtures/specimens/prado/CHN-A-CHN-AO-05001-back.jpg
+        buildPhase: resources
+        optional: true
+      - path: Fixtures/specimens/prado/CHN-F-CHN-FO-02002-front.jpg
+        buildPhase: resources
+        optional: true
     dependencies:
       - target: Maske
     settings:
