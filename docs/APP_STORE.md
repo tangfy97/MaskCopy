@@ -74,9 +74,9 @@ Prepared 9 November 2026. Fill these into App Store Connect (English (U.S.) vers
 | Marketing URL (optional) | https://github.com/tangfy97/MaskCopy |
 | Sign-in required | No |
 
-### Version number (decide before submitting)
+### Version number
 
-The App Store version in App Store Connect must equal the build's `CFBundleShortVersionString`. Builds 1–12 are **0.1.0**, while App Store Connect created the version page as **1.0**. Either rename the App Store version to 0.1.0, or (recommended for a public release) set `MARKETING_VERSION: "1.0.0"` and `CURRENT_PROJECT_VERSION: "13"` in `project.yml`, run `scripts/check.sh`, then `scripts/appstore.sh upload`, and select build 13.
+Decided 9 November 2026: the public release is **1.0.0**. Build 13 is 1.0.0 (builds 1–12 are 0.1.0). The App Store version in App Store Connect must equal the build's `CFBundleShortVersionString`: set the version page to **1.0.0** (it was created as 1.0) and select build 13.
 
 ### English (U.S.)
 
@@ -165,3 +165,10 @@ Build 11 upload completed at 09:08 Amsterdam time on 9 November 2026. Xcode repo
 Build 12 upload completed at 11:09 Amsterdam time on 9 November 2026. Xcode reported Upload succeeded / EXPORT SUCCEEDED and Uploaded package is processing. TestFlight Ready to Test and installation availability are not independently confirmed. Strict archive/IPA signatures, stable bundle identity, 0.1.0 (12), unchanged 1024 px selected-C icon, native LaunchScreen and absence of test/specimen resources were verified. The clean development-signed Release build 12 was installed on the connected iPhone after testing; that is separate from TestFlight installation confirmation.
 
 This update fixes the separately observed Chinese licence address miss. Portrait geometry is unchanged at the owner’s explicit request. Core 23/23 and 43/43 synthetic documents passed. The final 17-test physical suite has 15 passes, 2 expected portrait-threshold failures and no unexpected failures/skips; the three watermark/multi-page/manual-add journeys passed. See AUDIT for raw coverage and accepted exceptions.
+
+
+## Build 13 release (1.0.0)
+
+Build 13 upload completed at 13:08 Amsterdam time on 9 November 2026. Xcode reported Upload succeeded / EXPORT SUCCEEDED and Uploaded package is processing. It is build 12's app renumbered as **1.0.0** for the public release; no app code changed. Verified before and after upload: core 23/23 and 43/43 synthetic documents (121/121 sensitive fields, 96/96 kept); archive MaskCopy 1.0.0 (13), bundle `com.feiyangtang.Maske`, team X933P26489, strict signature, 1024 px AppIcon in Assets.car, no test or specimen resources, 1.3 MB. Ready to Test and App Store submission are not yet confirmed or done.
+
+Before submitting: the account holder accepts the updated Developer Program License Agreement; enter the listing above; set the App Store version to 1.0.0 and select build 13.

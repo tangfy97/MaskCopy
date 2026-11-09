@@ -2,6 +2,13 @@
 
 All notable changes to MaskCopy are listed here. Versions follow [Semantic Versioning](https://semver.org).
 
+## [1.0.0] - 2026-11-09
+
+Build 13: the first App Store release candidate. The same app as 0.1.0 build 12, numbered 1.0.0 for the public release.
+
+- Store listing, screenshots, support page and App Review notes prepared (docs/APP_STORE.md, SUPPORT.md).
+- Known limits are listed in docs/KNOWN_ISSUES.md; review every mask before sharing.
+
 ## [0.1.0] - 2026-11-09
 
 Build 12: bilingual address recovery. Uploaded 9 November at 11:09 Amsterdam time; Apple reports Processing. TestFlight installation availability is not yet confirmed.
