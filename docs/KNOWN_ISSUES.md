@@ -116,6 +116,14 @@ The physical specimen check found an unmasked address when Vision read the separ
 
 On 9 November the owner accepted the existing portrait bounds and requested no further expansion. Four measured official-specimen portrait regions remain below the original 98% rectangle-sampling threshold: Norwegian licence primary/secondary (97.9167% / 95.8333%) and Chinese passport/licence primary (89.7569% each). Tests retain raw coverage and the original threshold as explicit expected failures for these exact regions, and fail any further loss below the accepted baselines. No portrait code or annotation was changed. This acceptance does not prove complete redaction on other photographs or versions.
 
+### 18. Editor zoom slider loses the box being edited (found 9 November)
+
+In the Adjust box editor, dragging the zoom slider zooms towards the top left of the page instead of keeping the selected box centred. On the synthetic Norwegian passport (iPhone 18 Pro Max Simulator) the personal-number box left the screen at about half zoom, so its corners had to be found again by scrolling. **Next:** keep the selected box (or the visible centre) fixed while the slider changes the zoom scale, and add a UI check for it.
+
+### 19. Unexplained masks on the synthetic Dutch licence (found 9 November)
+
+On `dl-nld` the review shows two square masks on the right and a strip along the bottom over empty areas of the synthetic card. They probably come from the Dutch D1 licence calibration (windows and secondary portrait on the real card), whose layout the synthetic fixture doesn't follow. Not yet checked against the official specimen or a real licence photo; if they also land on empty areas there, they break "nothing extra". **Next:** check `NLD-F-NLD-FO-07001` with `maske review`, and only apply the calibration when the card's own features are found.
+
 ### 14. Multi-page import truncation (fixed in revision 11; scanner hardware check open)
 
 The build 10 audit reproduced a three-page PDF yielding only two imported pages: Importing.images(fromPDF:) defaulted to maxPages = 2 and dropped the rest without feedback. The scanner callback similarly took the first four pages. The PDF case is reproduced in an optimized iOS test; scanner behaviour is source-verified while the physical iPhone is offline. The acceptance requirement was explicit page selection/limits before processing, with independent-image memory validation.

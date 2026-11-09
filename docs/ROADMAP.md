@@ -20,7 +20,7 @@ In order. Each step should end with its check in `scripts/check.sh` (or a note o
 
 6. **Localization** to the house standard: English, English (UK), Simplified Chinese, Traditional Chinese (String Catalog). Consider Dutch and Norwegian for the main audience.
 7. **Accessibility pass:** build 5 adapts source rows, document types, Review context and Share inputs to accessibility text sizes. Complete manual VoiceOver, Switch Control, Full Keyboard Access and Reduce Motion checks on an iPhone; see AUDIT.md for the rendered Simulator coverage.
-8. **App Store listing:** screenshots (made from synthetic documents), description, privacy "Data Not Collected", age 4+, category Utilities, support and privacy URLs, review notes (in [APP_STORE.md](APP_STORE.md)). The account holder must accept the updated Developer Program License Agreement first.
+8. **App Store listing:** prepared on 9 November in [APP_STORE.md](APP_STORE.md): copy, keywords, URLs (PRIVACY.md and SUPPORT.md on GitHub), privacy and age answers, review notes with synthetic samples, five 6.9-inch screenshots. Still to do in App Store Connect: enter it, decide the version number (0.1.0 vs 1.0.0, build 13), and the account holder must accept the updated Developer Program License Agreement.
 9. **Website pages** only if the owner asks (tang-spark.no is a personal studio site).
 
 ## Later

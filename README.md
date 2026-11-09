@@ -45,7 +45,8 @@ In the simulator, which has no camera, launch with `-MaskeFixture /path/to/front
 | [docs/ROADMAP.md](docs/ROADMAP.md) | What to do next, in order |
 | [docs/DECISIONS.md](docs/DECISIONS.md) | Why things are the way they are |
 | [docs/SPECIMENS.md](docs/SPECIMENS.md) | Test images: synthetic documents, PRADO, Wikimedia Commons |
-| [docs/APP_STORE.md](docs/APP_STORE.md) | Releasing, App Store Connect and TestFlight |
+| [docs/APP_STORE.md](docs/APP_STORE.md) | Releasing, App Store Connect, the store listing and TestFlight |
+| [SUPPORT.md](SUPPORT.md) | Support page (the App Store Support URL) |
 | [docs/DESIGN.md](docs/DESIGN.md) | Native interface direction and interaction rules |
 | [docs/AUDIT.md](docs/AUDIT.md) | Rendered interface findings, fixes and verification limits |
 | [docs/user-journey.md](docs/user-journey.md) | The user journey (in Chinese) |

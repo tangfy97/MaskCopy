@@ -51,25 +51,109 @@ Run `scripts/ui-check.sh` on a booted Simulator for the editor/export regression
 
 ## App Store Connect
 
+Prepared 9 November 2026. Fill these into App Store Connect (English (U.S.) version page and App Information). Character limits are in brackets.
+
 | Field | Value |
 |---|---|
-| Platform | iOS |
-| Confirmed name | MaskCopy: Safe ID Copies |
+| Platform | iOS (iPhone only) |
+| Name | MaskCopy: Safe ID Copies (saved) |
 | Bundle ID | `com.feiyangtang.Maske` |
 | SKU | `maske-ios` |
 | Primary language | English (U.S.) |
-| User access | Full Access |
-| Category | Utilities (to set) |
-| Price | Free (to set) |
-| App Privacy | Data Not Collected (to set) |
-| Age rating | 4+ (to set) |
+| Primary category | Utilities |
+| Secondary category | Productivity |
+| Price | Free |
+| Availability | All countries and regions except China mainland, which needs an ICP filing number (as for Kvikkshot and Rydd) |
+| Age rating | 4+ (answer "None" / "No" to every questionnaire item) |
+| App Privacy | Data Not Collected |
+| Export compliance | Already answered by `ITSAppUsesNonExemptEncryption = NO` |
+| Content rights | No third-party content |
+| Copyright | 2026 TangSpark |
+| Privacy Policy URL | https://github.com/tangfy97/MaskCopy/blob/main/PRIVACY.md |
+| Support URL | https://github.com/tangfy97/MaskCopy/blob/main/SUPPORT.md |
+| Marketing URL (optional) | https://github.com/tangfy97/MaskCopy |
+| Sign-in required | No |
 
-Before submitting for review: screenshots, description, support and privacy URLs on tang-spark.no, and the localizations.
+### Version number (decide before submitting)
 
-## Notes for App Review (draft)
+The App Store version in App Store Connect must equal the build's `CFBundleShortVersionString`. Builds 1–12 are **0.1.0**, while App Store Connect created the version page as **1.0**. Either rename the App Store version to 0.1.0, or (recommended for a public release) set `MARKETING_VERSION: "1.0.0"` and `CURRENT_PROJECT_VERSION: "13"` in `project.yml`, run `scripts/check.sh`, then `scripts/appstore.sh upload`, and select build 13.
 
-MaskCopy reads identity documents only on the device, with Apple's Vision framework, to suggest which parts to hide. It has no networking code and keeps nothing after sharing. To test without a document, use any of the synthetic images made by `maske fixtures` (made-up people) from the Photos picker.
+### English (U.S.)
 
+**Name** (30): MaskCopy: Safe ID Copies
+
+**Subtitle** (30): Hide ID numbers before sharing
+
+**Promotional text** (170):
+Share a copy of your passport, ID card or driving licence with the numbers, photo and machine-readable zone covered. Everything stays on your iPhone.
+
+**Keywords** (100):
+passport,identity card,driving licence,redact,watermark,privacy,residence permit,document,scan,BSN
+
+(No app or brand names: App Review guideline 2.3.7. Words already in the name and subtitle are indexed anyway.)
+
+**Description** (4000):
+
+Landlords, employers, hotels and agencies often ask for a copy of your ID. Most of them don't need your personal number, document number, photo or the machine-readable zone. MaskCopy makes a copy with those parts covered, marked with who it's for, and never sends your document anywhere.
+
+FOUND AND COVERED
+• Scan with the camera, or pick a photo or a PDF of up to four pages
+• MaskCopy straightens the document and suggests what to cover: personal and document numbers, the machine-readable zone, the card access number, addresses, barcodes and the photo
+• Personal numbers are recognised by their check digits, for example BSN, fødselsnummer, personnummer, PESEL, codice fiscale, NRIC, MyKad and Chinese resident ID numbers
+
+YOU DECIDE
+• Every suggestion is a box you can see before anything is shared
+• Turn a kind on or off, drag a box to move it, tap it to zoom in and adjust its corners, or add your own
+• Recognition varies by document version and photo, so check every box before you share
+
+A COPY FOR ONE RECIPIENT
+• The recipient, the purpose and the date are written across the document, so the copy can't be passed on as yours somewhere else
+• Covered parts are painted over, never blurred
+• Save or share as JPG or PDF, without location or camera details
+
+PRIVATE BY DESIGN
+• Everything happens on your iPhone with Apple's on-device text and image recognition
+• No account, no analytics, no tracking, no uploads
+• Nothing is kept: the document is forgotten when you finish
+• Open source, so anyone can check
+
+Passports, national ID cards, residence permits and driving licences from 27 countries are recognised field by field: the Netherlands, Germany, France, the United Kingdom, Italy, Spain, Norway, Sweden, Denmark, Finland, Belgium, Poland, Ireland, Switzerland, Austria, Portugal, the United States, Canada, Australia, New Zealand, China, Hong Kong, Taiwan, Japan, South Korea, Singapore and Malaysia. Passports from other countries still have their machine-readable zone found.
+
+MaskCopy is free. Made by TangSpark.
+
+**What's New**: First release.
+
+### English (U.K.)
+
+Same as English (U.S.); the copy already uses British spelling ("licence"). Add the localization only if the listing should appear separately in the UK storefront.
+
+### Screenshots
+
+6.9-inch iPhone, 1320 × 2868, opaque PNG, in [appstore/screenshots/en](appstore/screenshots/en). Upload in order 1–5. App Store Connect scales them for smaller iPhones. They show synthetic documents only (made-up people from `maske fixtures`).
+
+| File | Headline |
+|---|---|
+| 1-hide.png | Share your ID, not all of it |
+| 2-copy.png | A copy for one recipient |
+| 3-watermark.png | Say who it's for |
+| 4-home.png | Scan, or pick a photo or PDF |
+| 5-documents.png | Passports, ID cards, permits, licences |
+
+#### Remaking the screenshots
+
+1. Boot the iPhone 18 Pro Max Simulator and override the status bar: `xcrun simctl status_bar <id> override --time "9:41" --batteryState charged --batteryLevel 100 --wifiBars 3 --cellularMode active --cellularBars 4`.
+2. `scripts/build.sh`, install, and open a synthetic document cropped to the card (the Simulator cannot remove the table): `sips -c <h-180> <w-180> --cropOffset 90 90 Fixtures/synthetic/passport-nor.png --out passport-nor-doc.png`, then launch with `-MaskeFixture /abs/path/passport-nor-doc.png`.
+3. Capture each screen with `xcrun simctl io <id> screenshot`, then compose: `swift scripts/storeshot.swift <capture.png> docs/appstore/screenshots/en/<n>.png "<headline>" "<subline>"`.
+
+## Notes for App Review
+
+> MaskCopy makes a copy of an identity document (passport, ID card, residence permit or driving licence) with sensitive parts covered, for sharing with a landlord, employer or hotel. All recognition runs on the device with Apple's Vision framework. The app has no networking code, no account, no analytics and no in-app purchases, and it keeps nothing after the user finishes.
+>
+> To try it without a real document, use the attached synthetic sample images (made-up people): save one to Photos and choose Photos on the first screen, or show it on another screen and tap Scan. MaskCopy straightens the document and covers the passport number, personal number, photo and machine-readable zone. Tap a box to adjust it, then Continue, enter a recipient (for example "Hotel Nord"), tap Preview copy, and Save or Share as JPG or PDF.
+>
+> The camera is used only while scanning (VisionKit document camera). Photos are chosen with the system picker, so no photo library permission is requested. The information button on the first screen lists the supported documents.
+
+Attach in App Review Information: [appstore/review/passport-sample.png](appstore/review/passport-sample.png) and [appstore/review/licence-sample.png](appstore/review/licence-sample.png) (synthetic).
 
 ## Build 11 release
 
