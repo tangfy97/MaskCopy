@@ -29,6 +29,7 @@ struct TextLine {
     /// Vision may return the same word box for two characters. Use its cut only when the
     /// nearest non-space characters on either side actually have separate, ordered boxes.
     func cutPoint(at boundary: String.Index) -> CGPoint? {
+        if text.isRightToLeft { return rightToLeftCutPoint(at: boundary) }
         guard let candidate,
               let before = text[..<boundary].lastIndex(where: { !$0.isWhitespace }),
               let after = text[boundary...].firstIndex(where: { !$0.isWhitespace }),
@@ -37,6 +38,23 @@ struct TextLine {
         let a = Rectifier.quad(left), b = Rectifier.quad(right)
         let end = lerp(a.tr, a.br, 0.5), start = lerp(b.tl, b.bl, 0.5)
         guard a.area() > 0, b.area() > 0, start.x >= end.x,
+              start.x - end.x <= box.width * 0.15,
+              abs(start.y - end.y) <= box.height * 0.5 else { return nil }
+        return lerp(end, start, 0.5)
+    }
+}
+
+extension TextLine {
+    /// On a right-to-left line the text before `boundary` is on the right and the rest on its
+    /// left, in whatever order digits inside them run. Vision's boxes for the two parts give
+    /// the gap between them.
+    func rightToLeftCutPoint(at boundary: String.Index) -> CGPoint? {
+        guard let candidate, boundary > text.startIndex, boundary < text.endIndex,
+              let first = try? candidate.boundingBox(for: text.startIndex..<boundary),
+              let second = try? candidate.boundingBox(for: boundary..<text.endIndex) else { return nil }
+        let right = Rectifier.quad(first), left = Rectifier.quad(second)
+        let end = lerp(left.tr, left.br, 0.5), start = lerp(right.tl, right.bl, 0.5)
+        guard right.area() > 0, left.area() > 0, start.x >= end.x - box.width * 0.02,
               start.x - end.x <= box.width * 0.15,
               abs(start.y - end.y) <= box.height * 0.5 else { return nil }
         return lerp(end, start, 0.5)
@@ -67,6 +85,13 @@ struct MappedText {
             defer { i = s.index(after: i) }
             if dropSpaces && ch.isWhitespace { continue }
             var t = String(ch).folding(options: [.diacriticInsensitive, .widthInsensitive], locale: nil).uppercased()
+            // Arabic-Indic digits (٠–٩, ۰–۹) are read as the digits they are.
+            t = String(t.map { c -> Character in
+                guard let v = c.unicodeScalars.first?.value, c.unicodeScalars.count == 1 else { return c }
+                if (0x0660...0x0669).contains(v) { return Character(String(v - 0x0660)) }
+                if (0x06F0...0x06F9).contains(v) { return Character(String(v - 0x06F0)) }
+                return c
+            })
             if latinize || digitize {
                 t = String(t.map { MappedText.homoglyphs[$0] ?? $0 })
             }
@@ -111,6 +136,16 @@ extension String {
 
     var containsCJK: Bool { unicodeScalars.contains { (0x3040...0x30FF).contains($0.value) || (0x4E00...0x9FFF).contains($0.value) || (0xAC00...0xD7AF).contains($0.value) } }
     var containsKana: Bool { unicodeScalars.contains { (0x3040...0x30FF).contains($0.value) } }
+    /// Arabic script (Arabic, Persian and Urdu letters, presentation forms).
+    var containsArabic: Bool {
+        unicodeScalars.contains { (0x0600...0x06FF).contains($0.value) && !(0x0660...0x0669).contains($0.value) && !(0x06F0...0x06F9).contains($0.value)
+            || (0x0750...0x077F).contains($0.value) || (0xFB50...0xFDFF).contains($0.value) || (0xFE70...0xFEFF).contains($0.value) }
+    }
+    /// Laid out right to left: the first letter is Arabic (Unicode's first-strong rule).
+    var isRightToLeft: Bool {
+        guard let first = first(where: { $0.isLetter }) else { return false }
+        return String(first).containsArabic
+    }
     var containsHangul: Bool { unicodeScalars.contains { (0xAC00...0xD7AF).contains($0.value) } }
 }
 

@@ -383,6 +383,7 @@ extension Region {
         case .oceania: "Australia and New Zealand"
         case .eastAsia: "East Asia"
         case .southeastAsia: "Southeast Asia"
+        case .middleEast: "Middle East and North Africa"
         case .other: "More"
         }
     }

@@ -36,6 +36,8 @@ final class Doc {
     let size: CGSize
     let tint: (CGFloat, CGFloat, CGFloat)
     var items: [(String, CGPoint, CGFloat, String, Role)] = [] // text, origin (fraction), size, font, role
+    /// Items laid out right to left: their x is the right edge, and "label|value" puts the value left of the label.
+    var rightToLeft: Set<Int> = []
     var photos: [(CGRect, Role)] = []
     var barcode: (CGRect, String)?
 
@@ -75,6 +77,13 @@ final class Doc {
     }
 
     func portrait(_ r: CGRect, _ role: Role = .plain) -> Doc { photos.append((r, role)); return self }
+
+    /// Arabic text ending at `right`.
+    @discardableResult
+    func ar(_ s: String, _ right: CGFloat, _ y: CGFloat, _ size: CGFloat = 30, _ role: Role = .plain, bold: Bool = false) -> Doc {
+        rightToLeft.insert(items.count)
+        return t(s, right, y, size, role, font: bold ? "GeezaPro-Bold" : "GeezaPro")
+    }
 }
 
 enum MRZBuilder {
@@ -420,6 +429,107 @@ enum Fixtures {
             .field("Alamat / Address", "NO 12 JALAN BUNGA RAYA, 50450 KUALA LUMPUR", 0.32, 0.52, .hide(.address))
             .portrait(CGRect(x: 0.03, y: 0.2, width: 0.25, height: 0.6)))
 
+        // MARK: United States: green card, passport card, state ID
+        docs.append(Doc("rp-usa-front", .residencePermit, "US", tint: (0.93, 0.96, 0.93))
+            .t("UNITED STATES OF AMERICA", 0.04, 0.04, 30, .plain, font: "Helvetica-Bold")
+            .t("PERMANENT RESIDENT", 0.58, 0.05, 32, .plain, font: "Helvetica-Bold")
+            .portrait(CGRect(x: 0.04, y: 0.22, width: 0.27, height: 0.6))
+            .field("Surname", "SPECIMEN", 0.38, 0.16)
+            .field("Given Name", "TEST V", 0.38, 0.28)
+            .field("USCIS#", "000-000-001", 0.38, 0.40, .hide(.personalNumber))
+            .field("Category", "IR1", 0.66, 0.40)
+            .field("Country of Birth", "CANADA", 0.38, 0.52)
+            .field("Date of Birth        Sex", "17 AUG 1958     F", 0.38, 0.64)
+            .field("Card Expires:", "04/02/2034", 0.38, 0.78))
+        docs.append(Doc("id-usa-passcard", .idCard, "US", tint: (0.94, 0.95, 0.97))
+            .t("UNITED STATES OF AMERICA", 0.36, 0.04, 30, .plain, font: "Helvetica-Bold")
+            .t("PASSPORT CARD", 0.36, 0.11, 26)
+            .portrait(CGRect(x: 0.04, y: 0.2, width: 0.27, height: 0.62))
+            .field("Surname", "TRAVELER", 0.36, 0.20)
+            .field("Given Names", "HAPPY", 0.36, 0.32)
+            .field("Passport Card no.", "C03005988", 0.66, 0.20, .hide(.documentNumber))
+            .field("Date of Birth", "04 JUL 1967", 0.36, 0.44)
+            .field("Expires On", "07 AUG 2034", 0.36, 0.56))
+        docs.append(Doc("id-usa-ny", .idCard, "US", tint: (0.95, 0.95, 0.97))
+            .t("NEW YORK STATE", 0.04, 0.04, 38, .plain, font: "Helvetica-Bold")
+            .t("IDENTIFICATION CARD", 0.50, 0.06, 26)
+            .portrait(CGRect(x: 0.04, y: 0.2, width: 0.27, height: 0.62))
+            .t("ID NO. |123 456 789", 0.36, 0.20, 30, .hide(.documentNumber))
+            .t("DOE, JANE", 0.36, 0.32, 30, .keep)
+            .t("123 MAIN ST", 0.36, 0.41, 28, .hide(.address))
+            .t("ALBANY, NY 12207", 0.36, 0.48, 28, .hide(.address))
+            .t("DOB |08/31/1985", 0.36, 0.60, 28, .keep)
+            .t("EXPIRES |08/31/2032", 0.36, 0.69, 28, .keep))
+
+        // MARK: Saudi Arabia (made-up numbers with valid Luhn digits; Hijri dates)
+        docs.append(passport("passport-sau", "SAU", "SA", title: "المملكة العربية السعودية  KINGDOM OF SAUDI ARABIA  PASSPORT",
+                             surname: "ALQAHTANI", given: "SARA", doc: "R1234567"))
+        docs.append(Doc("id-sau-front", .idCard, "SA", tint: (0.93, 0.96, 0.94))
+            .ar("المملكة العربية السعودية", 0.96, 0.04, 32, bold: true)
+            .t("KINGDOM OF SAUDI ARABIA", 0.36, 0.05, 26, .plain, font: "Helvetica-Bold")
+            .ar("بطاقة الهوية الوطنية", 0.96, 0.13, 28)
+            .t("NATIONAL IDENTITY CARD", 0.36, 0.14, 22)
+            .portrait(CGRect(x: 0.04, y: 0.22, width: 0.27, height: 0.6))
+            .ar("سارة محمد القحطاني", 0.96, 0.27, 32, .keep, bold: true)
+            .t("SARA MOHAMMED ALQAHTANI", 0.36, 0.37, 28, .keep)
+            .ar("رقم الهوية |١٠١٢٣٤٥٦٧٢", 0.96, 0.49, 32, .hide(.personalNumber))
+            .ar("تاريخ الميلاد |1405/03/12", 0.96, 0.62, 28, .keep)
+            .ar("تاريخ الانتهاء |1450/01/01", 0.96, 0.74, 28, .keep))
+        docs.append(Doc("rp-sau-front", .residencePermit, "SA", tint: (0.94, 0.95, 0.97))
+            .ar("المملكة العربية السعودية - وزارة الداخلية", 0.96, 0.04, 28, bold: true)
+            .t("KINGDOM OF SAUDI ARABIA", 0.04, 0.05, 24, .plain, font: "Helvetica-Bold")
+            .ar("هوية مقيم", 0.96, 0.13, 30, bold: true)
+            .t("RESIDENT IDENTITY", 0.04, 0.14, 24)
+            .portrait(CGRect(x: 0.04, y: 0.25, width: 0.25, height: 0.58))
+            .t("ID No. |2123456788", 0.34, 0.27, 30, .hide(.personalNumber))
+            .ar("رقم الهوية", 0.96, 0.27, 28)
+            .t("JOHN SMITH", 0.34, 0.39, 30, .keep)
+            .ar("جون سميث", 0.96, 0.39, 30, .keep)
+            .t("Nationality |EGYPT", 0.34, 0.51, 26)
+            .ar("الجنسية |مصر", 0.96, 0.51, 26)
+            .t("Employer |ABC TRADING CO", 0.34, 0.63, 26)
+            .ar("صاحب العمل", 0.96, 0.63, 26)
+            .t("Expiry |1450/01/01", 0.34, 0.75, 26, .keep))
+        docs.append(Doc("dl-sau", .drivingLicence, "SA", tint: (0.95, 0.95, 0.93))
+            .ar("المملكة العربية السعودية", 0.96, 0.04, 30, bold: true)
+            .ar("رخصة قيادة", 0.96, 0.12, 30, bold: true)
+            .t("DRIVING LICENSE", 0.36, 0.06, 28, .plain, font: "Helvetica-Bold")
+            .portrait(CGRect(x: 0.04, y: 0.2, width: 0.27, height: 0.62))
+            .ar("رقم الهوية |1012345672", 0.96, 0.28, 30, .hide(.personalNumber))
+            .t("Name |SARA ALQAHTANI", 0.36, 0.40, 28, .keep)
+            .t("Blood Type  O+", 0.36, 0.52, 26)
+            .ar("تاريخ الانتهاء |1450/01/01", 0.96, 0.64, 28, .keep))
+
+        // MARK: Egypt (made-up national number with a valid date and governorate)
+        let egyptNumber = "٢٩٠٠١٠١٠١٢٣٤٥٦" // 29001010123456
+        docs.append(passport("passport-egy", "EGY", "EG", title: "جمهورية مصر العربية  ARAB REPUBLIC OF EGYPT  PASSPORT",
+                             surname: "HASSAN", given: "AHMED", doc: "A12345678"))
+        docs.append(Doc("id-egy-front", .idCard, "EG", tint: (0.95, 0.94, 0.92))
+            .ar("جمهورية مصر العربية", 0.96, 0.04, 30, bold: true)
+            .ar("بطاقة تحقيق الشخصية", 0.96, 0.12, 28)
+            .portrait(CGRect(x: 0.04, y: 0.18, width: 0.27, height: 0.6))
+            .ar("أحمد", 0.96, 0.25, 36, .keep, bold: true)
+            .ar("محمد علي حسن", 0.96, 0.35, 34, .keep, bold: true)
+            .ar("١٢ شارع التحرير", 0.96, 0.47, 32, .hide(.address))
+            .ar("الدقي - الجيزة", 0.96, 0.57, 32, .hide(.address))
+            .ar(egyptNumber, 0.96, 0.79, 40, .hide(.personalNumber), bold: true)
+            .t("IR1234567", 0.06, 0.84, 28, .hide(.documentNumber)))
+        docs.append(Doc("id-egy-back", .idCard, "EG", tint: (0.95, 0.94, 0.92))
+            .ar(egyptNumber, 0.96, 0.08, 34, .hide(.personalNumber), bold: true)
+            .ar("مهندس", 0.96, 0.25, 30, .keep)
+            .ar("جهة العمل |شركة النيل", 0.96, 0.37, 28)
+            .ar("ذكر", 0.96, 0.50, 28)
+            .ar("البطاقة سارية حتى |2030/01/01", 0.96, 0.75, 28, .keep))
+        docs.append(Doc("dl-egy", .drivingLicence, "EG", tint: (0.93, 0.95, 0.96))
+            .ar("جمهورية مصر العربية", 0.96, 0.04, 28, bold: true)
+            .ar("رخصة قيادة خاصة", 0.96, 0.12, 30, bold: true)
+            .portrait(CGRect(x: 0.04, y: 0.2, width: 0.27, height: 0.62))
+            .ar("الاسم |أحمد محمد علي", 0.96, 0.26, 30, .keep)
+            .ar("الرقم القومي |" + egyptNumber, 0.96, 0.38, 30, .hide(.personalNumber))
+            .ar("العنوان |١٢ شارع التحرير الدقي", 0.96, 0.50, 28, .hide(.address))
+            .ar("وحدة مرور الدقي", 0.96, 0.62, 28)
+            .ar("تاريخ الانتهاء |2030/01/01", 0.96, 0.74, 28, .keep))
+
         return docs
     }
 
@@ -492,7 +602,8 @@ enum Fixtures {
             record(.hide(.barcode), px, "PDF417")
         }
 
-        for (whole, origin, size, fontName, wholeRole) in doc.items {
+        for (index, (whole, origin, size, fontName, wholeRole)) in doc.items.enumerated() {
+            let rtl = doc.rightToLeft.contains(index)
             // "Label|value": the label is drawn as plain text, only the value is expected to be hidden.
             var segments: [(String, Role)] = [(whole, wholeRole)]
             if whole.contains("|") {
@@ -500,7 +611,9 @@ enum Fixtures {
                 segments = [(parts[0], .plain), (parts[1], wholeRole)]
             }
             var x = origin.x * W
-            for (text, role) in segments {
+            for (segment, role) in segments {
+            // Right to left, the label's trailing space separates it from the value on its left.
+            let text = rtl ? String(segment.reversed().drop(while: { $0 == " " }).reversed()) : segment
             let font = CTFontCreateWithName(fontName as CFString, size, nil)
             let attrs: [NSAttributedString.Key: Any] = [
                 NSAttributedString.Key(kCTFontAttributeName as String): font,
@@ -509,6 +622,7 @@ enum Fixtures {
             let line = CTLineCreateWithAttributedString(NSAttributedString(string: text, attributes: attrs))
             var ascent: CGFloat = 0, descent: CGFloat = 0
             let width = CGFloat(CTLineGetTypographicBounds(line, &ascent, &descent, nil))
+            if rtl { x -= width }
             let top = origin.y * H
             ctx.textPosition = CGPoint(x: x, y: H - top - ascent)
             // The ink itself (not the line's typographic box): what a mask has to cover exactly.
@@ -519,7 +633,7 @@ enum Fixtures {
             let inkRect = ink.isNull || ink.width <= 0 ? CGRect(x: x, y: top, width: width, height: ascent + descent)
                 : CGRect(x: ink.minX, y: H - ink.maxY, width: ink.width, height: ink.height)
             record(role, inkRect, text)
-            x += width
+            if !rtl { x += width } else { x -= CGFloat(segment.count - text.count) * size * 0.28 }
             }
         }
 

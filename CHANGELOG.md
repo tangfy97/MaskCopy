@@ -2,6 +2,15 @@
 
 All notable changes to MaskCopy are listed here. Versions follow [Semantic Versioning](https://semver.org).
 
+## [Unreleased]
+
+United States, Saudi Arabia and Egypt, the three largest download countries in the first month.
+
+- Saudi Arabia and Egypt are supported (29 countries): Saudi passport, national ID, iqama (resident identity) and driving licence; Egyptian passport, national ID (front and back) and driving licence. Saudi identity and iqama numbers are checked with their Luhn digit; Egyptian national numbers by their birth date and governorate.
+- Arabic text: Arabic-Indic digits (٠–٩) are read as digits, Arabic labels (رقم الهوية, الرقم القومي, العنوان …) find their values, and values beside a label are cut correctly on right-to-left lines. The unlabelled address on the front of the Egyptian ID is found from its position below the name.
+- United States: green card USCIS#/A-number, passport card number, USCIS receipt numbers, "IDENTIFICATION CARD" state IDs. A date followed by the holder's sex ("17 AUG 1958 F") is no longer masked as a number. The passport MRZ is recovered on small scans by reading an enlarged crop.
+- Eleven new synthetic documents; 54/54 fully right, 144/144 sensitive fields hidden, 134/134 kept.
+
 ## [1.0.0] - 2026-11-09
 
 Build 13: the first App Store release candidate. The same app as 0.1.0 build 12, numbered 1.0.0 for the public release.

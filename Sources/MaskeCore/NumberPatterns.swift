@@ -77,9 +77,16 @@ extension NumberPattern {
         NumberPattern("BY personal number", ["BY"], .strong, #"\d{7}[A-Z]\d{3}[A-Z]{2}\d"#, { _ in true }),
         // Americas
         NumberPattern("US SSN", ["US"], .countryGated, #"\d{3}-\d{2}-\d{4}"#, Checksum.usSocialSecurityNumber),
+        NumberPattern("US A-number", ["US"], .countryGated, #"A?\d{3}-\d{3}-\d{3}"#, Checksum.usAlienNumber),
+        NumberPattern("US USCIS receipt", ["US"], .countryGated,
+                      #"(?:EAC|WAC|LIN|SRC|NBC|MSC|IOE|YSC|ZLA|ZSF|ZNY|ZHN)\d{10}"#, kind: .documentNumber, { _ in true }),
+        NumberPattern("US passport card", ["US"], .countryGated, #"C\d{8}"#, kind: .documentNumber, { _ in true }),
         NumberPattern("CA Ontario licence", ["CA"], .strong, #"[A-Z]\d{4}-?\d{5}-?\d{5}"#, kind: .documentNumber, { _ in true }),
         NumberPattern("MX CURP", ["MX"], .strong, #"[A-Z]{4}\d{6}[HMX][A-Z]{5}[0-9A-Z]\d"#, Checksum.mexicanCURP),
         NumberPattern("BR CPF", ["BR"], .countryGated, #"\d{3}\.?\d{3}\.?\d{3}-?\d{2}"#, Checksum.brazilianCPF),
+        // Middle East and North Africa (Arabic-Indic digits are read as ASCII digits by MappedText)
+        NumberPattern("SA identity number", ["SA"], .countryGated, #"[12]\d{9}"#, numeric: true, Checksum.saudiIdentityNumber),
+        NumberPattern("EG national number", ["EG"], .strong, #"[23]\d{13}"#, numeric: true, Checksum.egyptianNationalNumber),
         // Oceania
         NumberPattern("NZ licence", ["NZ"], .countryGated, #"[A-Z]{2}\d{6}"#, kind: .documentNumber, { _ in true }),
         // Asia

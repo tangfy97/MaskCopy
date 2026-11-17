@@ -150,3 +150,18 @@ If correction returns nil, `straighten` now returns the source image with full-f
 ## 20. Norwegian passport (2020) secondary portrait not masked
 
 On the official specimen (Commons "Norwegian Passport Specimen.jpg") `maske review` covers the main photo, passport number, CAN and MRZ but leaves the small secondary portrait right of "CAN" visible. In the Simulator (no faces) the estimated portrait zone also runs down into the MRZ, covering extra. **Next:** add the passport's secondary-portrait position to the Norwegian calibration, as for the ID card, and add a synthetic fixture.
+
+## 21. United States, Saudi Arabia and Egypt: what is and is not verified (17 November)
+
+These three countries were the largest sources of downloads from 17 October to 16 November (US ≈34, Saudi Arabia ≈16, Egypt ≈4). Saudi Arabia and Egypt are now on the supported list; see CHANGELOG.
+
+**Verified:** 14 synthetic documents (US passport, licence front and back, green card, passport card, New York ID; Saudi passport, national ID with Arabic-Indic digits, iqama, licence; Egyptian passport, ID front and back, licence) are fully right on the Mac. All 32 sensitive fields are hidden and all 45 kept fields stay visible, and the original 43 documents are unchanged. On 55 tilted, rotated, quarter-turned, half-turned and steep copies of the 11 new documents (`maske warp` / `maske angles`), 113/115 sensitive fields reach 98% coverage and 190/190 kept fields stay visible. The two shortfalls are Egyptian ID address lines at just under 98%, where the upright reference box's corners extend past slightly tilted text; the ink itself was checked by eye and is covered. On the official US PRADO specimens the 2006 passport MRZ (previously missed on the 600 px scan) and the green-card USCIS#/A-number on both card generations are now masked.
+
+**Not verified:**
+- No official Saudi or Egyptian specimen has been checked. The synthetic layouts follow the published field structure, not a real card. Real cards have guilloche, holograms and Arabic calligraphy that may read differently. Collect PRADO or government specimens (`SAU`, `EGY`) and run `maske review`.
+- Vision's Arabic reading has only been tested on the Mac, not on an iPhone or in the Simulator.
+- The Egyptian ID address is found by position: Arabic lines in the lower 60% of the space between the card's heading and the national number (or the longest digit line, when OCR drops digits). This survived OCR missing the first-name line on angled copies. On a real card with a different spacing it can mask a name line or miss an address line. Review is required.
+- The Egyptian national number's check digit is not published; numbers are validated by birth date and governorate only.
+- The back of the Egyptian ID shows religion and marital status, and Saudi iqamas show employer and profession. These are left visible: they are not identity numbers. A user who wants them hidden must use Add box.
+- Fingerprints printed on US green cards are not masked (there is no fingerprint detector). The optical stripe on the 2003 green-card back can carry the card number in faint print that OCR does not read.
+- US state licences and IDs follow AAMVA, but only California, Ontario-style and New York synthetic layouts are checked. Other states' label words (for example "LIC#", "ID:", "ICN") are covered by labels, not by fixtures.
