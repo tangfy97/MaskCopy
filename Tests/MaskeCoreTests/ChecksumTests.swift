@@ -186,6 +186,11 @@ final class ChecksumTests: XCTestCase {
         ])
         XCTAssertEqual(noFiller.1.count, 2)
 
+        // A number from a misread MRZ ("01X00T47") found inside the printed one covers all of it.
+        let printed = "Pass-Nr. C01X00T47 D"
+        let inner = printed.range(of: "01X00T47")!
+        XCTAssertEqual(String(printed[Page.wholeToken(inner, in: printed)]), "C01X00T47")
+
         // A TD1 first line with no filler (the Emirates ID number fills the optional data).
         XCTAssertTrue(MRZReader.isFullTD1FirstLine("ILARE1234567897784199012345676"))
         XCTAssertFalse(MRZReader.isFullTD1FirstLine("ILARE1234567898784199012345676"))

@@ -22,6 +22,8 @@ United States, Canada, the United Arab Emirates, the United Kingdom, Germany, th
     - the town and postcode lines below a street.
   - A number printed in the MRZ is found elsewhere on the page despite O/0 and I/1 confusion.
   - Employer-number exceptions no longer apply on identity documents.
+- A document number read from the MRZ with a character missing no longer leaves the start of the printed number visible: a match inside a longer code covers the whole code.
+- The Save button on the copy screen shows its text again (it was white on light glass).
 - IBANs are recognised on any document (ISO 7064 MOD 97-10 and the country's length).
 - United Kingdom and Germany, for payslips and letters: National Insurance numbers, NHS numbers (Mod 11), the German Steuer-ID (MOD 11,10), Rentenversicherungsnummer and Krankenversichertennummer, each with its check; labels for UTR, share codes, sort codes and account numbers, V-nummer, BSN/sofinr., polis- and rekeningnummer.
 - German and Dutch street addresses (Musterstraße 12a, Dorpsstraat 10A) and Dutch postcodes (1234 AB) are found without a label. Street addresses were never looked for when the country was unknown; fixed.

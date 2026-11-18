@@ -232,7 +232,8 @@ struct ReadyCopyView: View {
                 }
                 Text(saved ? "Saved" : (format == .jpg ? "Save JPG" : "Save PDF"))
             }
-            .frame(maxWidth: .infinity)
+            // The action bar sets white text for its prominent buttons; this one sits on light glass.
+            .frame(maxWidth: .infinity).foregroundStyle(Color.fjord)
         }
         .secondaryAction()
         .accessibilityLabel(saved ? "Saved to Files" : (format == .jpg ? "Save JPG" : "Save PDF"))

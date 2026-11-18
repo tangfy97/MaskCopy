@@ -297,3 +297,28 @@ Baseline captures are kept at `build/UXReview/before/{home,review,share,document
 - The signed release archive passed strict signature verification as 0.1.0 (5), includes the unchanged 1024 × 1024 AppIcon, and contains no fixture images or test bundles. App Store Connect accepted the upload at 11:54 Amsterdam time on 8 November and reported Processing. Ready to Test remains unconfirmed.
 
 Still unverified: physical camera capture, real-device frame pacing and recognition time, manual VoiceOver use, Switch Control and Full Keyboard Access. Reduce Motion is respected by the drawing-mode transition and standard navigation remains native; a system-setting device check is still needed. No business-impact, frame-rate or full-conformance score is claimed.
+
+## Simulator run of 18 November 2026
+
+Everything that can run on an iPhone 18 Pro Simulator (iOS 27.2) passed after two fixes:
+
+| Suite | Result |
+|---|---|
+| App and UI tests (`scripts/ui-check.sh`) | 30 passed, 4 skipped |
+| Engine tests (MaskeCoreTests, run through the package scheme on the Simulator) | 29/29 passed |
+| Photo import from the system picker | 1/1 passed |
+
+Of the 4 skipped tests:
+- three need an iPhone (official specimens, Chinese licence address, recognition pipeline);
+- the fourth is the photo import test, which ran separately on a second, temporary Simulator.
+
+To run the photo import test:
+1. Create a Simulator that has only one generated passport in its Photos library.
+2. Run the test with `TEST_RUNNER_MASKCOPY_SYNTHETIC_PHOTO_IMPORT=1 … -only-testing:MaskeUITests/ImportUITests`.
+
+What the import test found:
+- **A masking leak.** The Simulator read the MRZ of `passport-deu` without the document number's first character, and the shorter match then won over the full printed number. As a result, the shared copy showed the number's first characters ("C01"). A match inside a longer code now covers the whole code.
+- **An unreadable Save button.** Its label was white on light glass, because the action bar set white text for every button in it.
+- **An outdated test assumption.** The test expected the system picker's bar to be titled "Photos", which iOS 27 no longer does.
+
+Faces, barcodes and the three device-only tests still need an iPhone.

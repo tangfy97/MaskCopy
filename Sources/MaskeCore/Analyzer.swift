@@ -459,13 +459,23 @@ struct Page {
                 if misses <= allowed {
                     let lower = v.value.index(v.value.startIndex, offsetBy: i)
                     let upper = v.value.index(lower, offsetBy: needle.count)
-                    if let o = v.originalRange(lower..<upper) { addPart(kind, of: line, o, note: note) }
+                    if let o = v.originalRange(lower..<upper) { addPart(kind, of: line, Self.wholeToken(o, in: line.text), note: note) }
                     i += needle.count
                 } else {
                     i += 1
                 }
             }
         }
+    }
+
+    /// A match inside a longer run of letters and digits ("01X00T47" in "C01X00T47", when the MRZ
+    /// lost a character) is widened to the whole run, so no character of the number stays visible.
+    static func wholeToken(_ range: Range<String.Index>, in text: String) -> Range<String.Index> {
+        let isPart = { (c: Character) in c.isLetter || c.isNumber }
+        var lower = range.lowerBound, upper = range.upperBound
+        while lower > text.startIndex, isPart(text[text.index(before: lower)]) { lower = text.index(before: lower) }
+        while upper < text.endIndex, isPart(text[upper]) { upper = text.index(after: upper) }
+        return lower..<upper
     }
 
     /// The document number is often printed twice (in the heading and beside the photo).

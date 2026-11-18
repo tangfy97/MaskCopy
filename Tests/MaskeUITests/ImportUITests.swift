@@ -9,8 +9,7 @@ final class ImportUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchWithoutTour()
         app.buttons["Choose photos"].tap()
-        let pickerBar = app.navigationBars["Photos"]
-        XCTAssertTrue(pickerBar.waitForExistence(timeout: 10))
+        // The system picker's title changes between iOS versions; wait for the photo itself.
         let onboardingClose = app.buttons["Close"].firstMatch
         if onboardingClose.exists { onboardingClose.tap() }
         let picker = XCTAttachment(screenshot: app.screenshot())
@@ -18,9 +17,9 @@ final class ImportUITests: XCTestCase {
         picker.lifetime = .keepAlways
         add(picker)
         let photo = app.images.matching(NSPredicate(format: "label BEGINSWITH 'Photo,'")).firstMatch
-        XCTAssertTrue(photo.waitForExistence(timeout: 10), app.debugDescription)
+        XCTAssertTrue(photo.waitForExistence(timeout: 15), app.debugDescription)
         photo.tap()
-        let done = pickerBar.buttons["Done"]
+        let done = app.buttons["Done"].firstMatch
         if done.waitForExistence(timeout: 3) { done.tap() }
         XCTAssertTrue(app.buttons["mask-photo"].firstMatch.waitForExistence(timeout: 60))
         app.buttons["Continue"].tap()
