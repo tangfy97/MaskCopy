@@ -33,6 +33,33 @@ public enum Checksum {
         return sum % 10 == 0
     }
 
+    // MARK: International
+
+    /// IBAN lengths by country (ISO 13616 registry, SWIFT); other countries need 15–34 characters.
+    static let ibanLengths: [String: Int] = [
+        "AD": 24, "AE": 23, "AL": 28, "AT": 20, "AZ": 28, "BA": 20, "BE": 16, "BG": 22, "BH": 22, "BR": 29, "CH": 21,
+        "CR": 22, "CY": 28, "CZ": 24, "DE": 22, "DK": 18, "DO": 28, "EE": 20, "EG": 29, "ES": 24, "FI": 18, "FO": 18,
+        "FR": 27, "GB": 22, "GE": 22, "GI": 23, "GL": 18, "GR": 27, "GT": 28, "HR": 21, "HU": 28, "IE": 22, "IL": 23,
+        "IQ": 23, "IS": 26, "IT": 27, "JO": 30, "KW": 30, "KZ": 20, "LB": 28, "LI": 21, "LT": 20, "LU": 20, "LV": 21,
+        "MC": 27, "MD": 24, "ME": 22, "MK": 19, "MR": 27, "MT": 31, "MU": 30, "NL": 18, "NO": 15, "PK": 24, "PL": 28,
+        "PS": 29, "PT": 25, "QA": 29, "RO": 24, "RS": 22, "SA": 24, "SE": 24, "SI": 19, "SK": 24, "SM": 27, "TN": 24,
+        "TR": 26, "UA": 29, "VG": 24, "XK": 20,
+    ]
+
+    /// IBAN (ISO 13616): country, two check digits and the account, checked with ISO 7064 MOD 97-10.
+    public static func iban(_ s: String) -> Bool {
+        let c = Array(s.uppercased().filter { !$0.isWhitespace })
+        guard c.count >= 15, c.count <= 34 else { return false }
+        if let n = ibanLengths[String(c[0..<2])], n != c.count { return false }
+        var rest = 0
+        for ch in c[4...] + c[0..<4] {
+            if let v = ch.wholeNumberValue, ch.isASCII { rest = (rest * 10 + v) % 97 }
+            else if let v = letterValue(ch) { rest = (rest * 100 + v) % 97 }
+            else { return false }
+        }
+        return rest == 1
+    }
+
     // MARK: Europe
 
     /// Netherlands, burgerservicenummer: the 11-proef.
@@ -72,6 +99,53 @@ public enum Checksum {
         if let i = "XYZ".firstIndex(of: first) { t = String("XYZ".distance(from: "XYZ".startIndex, to: i)) + t.dropFirst() }
         guard let n = Int(t.prefix(8)) else { return false }
         return t.last == Array("TRWAGMYFPDXBNJZSQVHLCKE")[n % 23]
+    }
+
+    /// Spain, Seguridad Social affiliation number (NUSS/NAF): province, eight digits, two check digits
+    /// (mod 97 of the province and number; numbers below 10 000 000 are read as province × 10⁷ + number).
+    public static func spanishSocialSecurity(_ s: String) -> Bool {
+        let d = digits(s)
+        guard d.count == 12 else { return false }
+        let province = d[0] * 10 + d[1]
+        guard (1...53).contains(province) || province == 66 else { return false }
+        let body = d[2..<10].reduce(0) { $0 * 10 + $1 }
+        let value = body < 10_000_000 ? body + province * 10_000_000 : province * 100_000_000 + body
+        return value % 97 == d[10] * 10 + d[11]
+    }
+
+    /// Spain, NIF of a company or other legal entity (formerly CIF), from the AEAT's composition rules.
+    /// Used only to keep an employer's number visible.
+    public static func spanishCompanyNIF(_ s: String) -> Bool {
+        let c = Array(s.uppercased().filter { $0.isLetter || $0.isNumber })
+        guard c.count == 9, "ABCDEFGHJNPQRSUVW".contains(c[0]) else { return false }
+        let d = c[1..<8].compactMap { $0.isASCII ? $0.wholeNumberValue : nil }
+        guard d.count == 7 else { return false }
+        let a = d[1] + d[3] + d[5]
+        let b = [0, 2, 4, 6].reduce(0) { let x = 2 * d[$1]; return $0 + x / 10 + x % 10 }
+        let control = (10 - (a + b) % 10) % 10
+        let digit = Character(String(control)), letter = Array("JABCDEFGHI")[control]
+        if "ABEH".contains(c[0]) { return c[8] == digit }
+        if "NPQRSW".contains(c[0]) { return c[8] == letter }
+        return c[8] == digit || c[8] == letter
+    }
+
+    /// France, NIR (numéro de sécurité sociale): 13 characters and a key 97 − (number mod 97). Corsica's
+    /// departments 2A and 2B count as 19 and 18. Vision reads "2A"/"2B" as "24"/"28" now and then, so those
+    /// are tried as Corsica too: hiding a look-alike is better than missing the number.
+    public static func frenchNIR(_ s: String) -> Bool {
+        let t = s.uppercased().filter { $0.isLetter || $0.isNumber }
+        guard t.count == 15, let key = Int(t.suffix(2)) else { return false }
+        let head = String(t.prefix(13))
+        var readings = [head.replacingOccurrences(of: "2A", with: "19").replacingOccurrences(of: "2B", with: "18")]
+        let dept = head.dropFirst(5).prefix(2)
+        if dept == "24" || dept == "28" {
+            let i = head.index(head.startIndex, offsetBy: 5)
+            readings.append(head.replacingCharacters(in: i..<head.index(i, offsetBy: 2), with: dept == "24" ? "19" : "18"))
+        }
+        return readings.contains { r in
+            guard r.allSatisfy(\.isNumber), let n = Int(r) else { return false }
+            return 97 - n % 97 == key
+        }
     }
 
     /// Portugal, NIF.
@@ -267,6 +341,73 @@ public enum Checksum {
         return d.count == 13 && validYYYYMMDD(d)
     }
 
+    /// United Kingdom, National Insurance number: two prefix letters, six digits and a suffix A–D.
+    /// No check digit; HMRC's allocation rules exclude some letters and prefixes.
+    public static func britishNationalInsurance(_ s: String) -> Bool {
+        let c = Array(s.uppercased().filter { !$0.isWhitespace })
+        guard c.count == 9 || c.count == 8 else { return false }
+        let prefix = String(c[0...1])
+        return !"DFIQUV".contains(c[0]) && !"DFIOQUV".contains(c[1])
+            && !["BG", "GB", "KN", "NK", "NT", "TN", "ZZ"].contains(prefix)
+            && c[2...7].allSatisfy(\.isNumber) && (c.count == 8 || "ABCD".contains(c[8]))
+    }
+
+    /// United Kingdom, NHS number: ten digits; weights 10…2 on the first nine, check digit 11 minus
+    /// the sum modulo 11 (11 → 0, 10 is never issued). NHS Data Dictionary example 943 476 5919.
+    public static func nhsNumber(_ s: String) -> Bool {
+        let d = digits(s)
+        guard d.count == 10 else { return false }
+        var check = 11 - weighted(Array(d[0..<9]), [10, 9, 8, 7, 6, 5, 4, 3, 2]) % 11
+        if check == 11 { check = 0 }
+        return check != 10 && check == d[9]
+    }
+
+    /// Germany, steuerliche Identifikationsnummer: eleven digits, not starting with 0. In the first ten
+    /// exactly one digit occurs twice or three times; the last is an ISO 7064 MOD 11,10 check digit (BZSt).
+    public static func germanTaxID(_ s: String) -> Bool {
+        let d = digits(s)
+        guard d.count == 11, d[0] != 0 else { return false }
+        var counts = [Int](repeating: 0, count: 10)
+        for x in d[0..<10] { counts[x] += 1 }
+        let repeated = counts.filter { $0 > 1 }
+        guard repeated.count == 1, repeated[0] <= 3 else { return false }
+        var p = 10
+        for x in d[0..<10] {
+            var s = (x + p) % 10
+            if s == 0 { s = 10 }
+            p = s * 2 % 11
+        }
+        return (11 - p) % 10 == d[10]
+    }
+
+    /// Germany, Rentenversicherungsnummer (the "SV-Nummer" on payslips): area (2 digits), birth date
+    /// DDMMYY, the birth surname's initial, a serial (00–49 men, 50–99 women) and a check digit. The
+    /// letter counts as its two-digit alphabet position; weights 2,1,2,5,7,1,2,1,2,1,2,1, digit sums of
+    /// the products, modulo 10 (Deutsche Rentenversicherung; example 15 070649 C 103).
+    public static func germanPensionNumber(_ s: String) -> Bool {
+        let c = Array(s.uppercased().filter { !$0.isWhitespace })
+        guard c.count == 12, let l = letterValue(c[8]) else { return false }
+        let head = c[0..<8].compactMap(\.wholeNumberValue), tail = c[9..<12].compactMap(\.wholeNumberValue)
+        guard head.count == 8, tail.count == 3, validDDMM(head, at: 2) else { return false }
+        let n = l - 9 // A = 1
+        let values = head + [n / 10, n % 10] + tail[0...1]
+        let sum = zip(values, [2, 1, 2, 5, 7, 1, 2, 1, 2, 1, 2, 1]).map { $0 * $1 / 10 + $0 * $1 % 10 }.reduce(0, +)
+        return sum % 10 == tail[2]
+    }
+
+    /// Germany, Krankenversichertennummer: a letter and nine digits. The letter counts as its two-digit
+    /// alphabet position; weights alternate 1, 2 with digit sums, modulo 10 (GKV-Spitzenverband).
+    public static func germanHealthInsuranceNumber(_ s: String) -> Bool {
+        let c = Array(s.uppercased())
+        guard c.count == 10, let l = letterValue(c[0]) else { return false }
+        let d = c[1...].compactMap(\.wholeNumberValue)
+        guard d.count == 9 else { return false }
+        let n = l - 9
+        let values = [n / 10, n % 10] + d[0..<8]
+        let sum = values.enumerated().map { i, v in let p = v * (i % 2 == 0 ? 1 : 2); return p / 10 + p % 10 }.reduce(0, +)
+        return sum % 10 == d[8]
+    }
+
     /// Luxembourg, matricule: a date and five digits.
     public static func luxembourgMatricule(_ s: String) -> Bool {
         let d = digits(s)
@@ -286,6 +427,53 @@ public enum Checksum {
     /// and employment authorization cards: nine digits, "000-000-001".
     public static func usAlienNumber(_ s: String) -> Bool { digits(s).count == 9 }
 
+    /// Canada, social insurance number: nine digits with a Luhn check digit. The first digit is the
+    /// region of registration (1–7), 9 for temporary residents or 0 for CRA individual tax numbers;
+    /// 8 starts business numbers.
+    public static func canadianSIN(_ s: String) -> Bool {
+        let d = digits(s)
+        return d.count == 9 && d[0] != 8 && luhn(d)
+    }
+
+    /// Canada, Ontario health number: ten digits with a Luhn check digit (Ministry of Health
+    /// technical specification), optionally followed by a one- or two-letter version code.
+    public static func ontarioHealthNumber(_ s: String) -> Bool {
+        let d = digits(s)
+        return d.count == 10 && d[0] != 0 && luhn(d)
+    }
+
+    /// Canada, British Columbia personal health number: ten digits starting with 9. Digits 2–9 are
+    /// weighted 2, 4, 8, 5, 10, 9, 7, 3, each product taken modulo 11; the check digit is 11 minus the
+    /// sum modulo 11 (BC Ministry of Health, PharmaNet specification).
+    public static func britishColumbiaHealthNumber(_ s: String) -> Bool {
+        let d = digits(s)
+        guard d.count == 10, d[0] == 9 else { return false }
+        let sum = zip(d[1...8], [2, 4, 8, 5, 10, 9, 7, 3]).map { $0 * $1 % 11 }.reduce(0, +)
+        let check = 11 - sum % 11
+        return check < 10 && check == d[9]
+    }
+
+    /// Canada, Quebec health insurance number (NAM): three letters of the surname, one of the given
+    /// name, birth date YYMMDD (month plus 50 for women) and two digits.
+    public static func quebecHealthNumber(_ s: String) -> Bool {
+        let d = digits(s)
+        guard d.count == 8 else { return false }
+        let month = d[2] * 10 + d[3], day = d[4] * 10 + d[5]
+        return ((1...12).contains(month) || (51...62).contains(month)) && (1...31).contains(day)
+    }
+
+    /// Canada, Quebec driving licence: a letter, four digits from the surname, a six-digit birth date
+    /// and two control digits ("A1234-150785-01"). Whether the date is DDMMYY or YYMMDD is not
+    /// published consistently, and women's months may carry +50, so either reading is accepted.
+    public static func quebecLicence(_ s: String) -> Bool {
+        let d = digits(s)
+        guard d.count == 12 else { return false }
+        func date(_ dd: Int, _ mm: Int) -> Bool {
+            ((1...12).contains(mm) || (51...62).contains(mm)) && (1...31).contains(dd)
+        }
+        return date(d[4] * 10 + d[5], d[6] * 10 + d[7]) || date(d[8] * 10 + d[9], d[6] * 10 + d[7])
+    }
+
     /// Mexico, CURP.
     public static func mexicanCURP(_ s: String) -> Bool {
         let c = Array(s.uppercased())
@@ -300,6 +488,17 @@ public enum Checksum {
     }
 
     // MARK: Middle East and North Africa
+
+    /// United Arab Emirates, Emirates ID number: 784 (the country), the holder's birth year, seven
+    /// digits and a Luhn check digit over all fifteen ("784-1990-1234567-6").
+    public static func emiratesID(_ s: String) -> Bool {
+        let d = digits(s)
+        return d.count == 15 && d[0] == 7 && d[1] == 8 && d[2] == 4 && validYear(d, at: 3) && luhn(d)
+    }
+
+    static func validYear(_ d: [Int], at i: Int) -> Bool {
+        (1900...2100).contains(d[i] * 1000 + d[i + 1] * 100 + d[i + 2] * 10 + d[i + 3])
+    }
 
     /// Saudi Arabia, national identity number (citizens, starting 1) and iqama number
     /// (residents, starting 2): ten digits with a Luhn check digit.
@@ -346,6 +545,65 @@ public enum Checksum {
         }
         let birth = c[6..<14].compactMap(\.wholeNumberValue)
         return c[17] == Array("10X98765432")[sum % 11] && birth.count == 8 && validYYYYMMDD(birth)
+    }
+
+    /// China, old foreign permanent resident card (2004/2017): nationality letters, authority code,
+    /// YYMMDD birth date, serial and check digit. The check is unpublished, so only the date is checked.
+    public static func chineseForeignResidentOld(_ s: String) -> Bool {
+        let d = digits(s)
+        guard d.count == 12 else { return false }
+        let month = d[6] * 10 + d[7], day = d[8] * 10 + d[9]
+        return (1...12).contains(month) && (1...31).contains(day)
+    }
+
+    /// China, unified social credit code (GB 32100-2015, mod 31 over the 31 allowed characters).
+    /// Used only to keep an employer's code visible.
+    public static func chineseSocialCreditCode(_ s: String) -> Bool {
+        let set = Array("0123456789ABCDEFGHJKLMNPQRTUWXY")
+        let c = Array(s.uppercased().filter { $0.isLetter || $0.isNumber })
+        guard c.count == 18 else { return false }
+        let w = [1, 3, 9, 27, 19, 26, 16, 17, 20, 29, 25, 13, 8, 24, 10, 30, 28]
+        var sum = 0
+        for i in 0..<17 {
+            guard let v = set.firstIndex(of: c[i]) else { return false }
+            sum += v * w[i]
+        }
+        return set.contains(c[17]) && c[17] == set[(31 - sum % 31) % 31]
+    }
+
+    /// India, GSTIN: two-digit state, the holder's PAN, entity number, "Z" and a mod 36 check character.
+    /// Used only to keep an employer's number visible.
+    public static func indianGSTIN(_ s: String) -> Bool {
+        let set = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+        let c = Array(s.uppercased())
+        guard c.count == 15, c[13] == "Z" else { return false }
+        var sum = 0
+        for i in 0..<14 {
+            guard let v = set.firstIndex(of: c[i]) else { return false }
+            let p = v * (i % 2 == 0 ? 1 : 2)
+            sum += p / 36 + p % 36
+        }
+        return c[14] == set[(36 - sum % 36) % 36]
+    }
+
+    /// Australia, tax file number (9 digits, weights 1 4 3 7 5 8 6 9 10, mod 11).
+    public static func australianTFN(_ s: String) -> Bool {
+        let d = digits(s)
+        return d.count == 9 && weighted(d, [1, 4, 3, 7, 5, 8, 6, 9, 10]) % 11 == 0
+    }
+
+    /// Australia, Medicare card number: first digit 2–6, check digit 9 = weights 1 3 7 9 1 3 7 9 mod 10,
+    /// then the issue number and optionally the holder's reference number.
+    public static func australianMedicare(_ s: String) -> Bool {
+        let d = digits(s)
+        guard d.count == 10 || d.count == 11, (2...6).contains(d[0]) else { return false }
+        return weighted(d, [1, 3, 7, 9, 1, 3, 7, 9]) % 10 == d[8]
+    }
+
+    /// A payment card number: 16 to 19 digits with a Luhn digit.
+    public static func paymentCard(_ s: String) -> Bool {
+        let d = digits(s)
+        return (16...19).contains(d.count) && luhn(d)
     }
 
     /// Hong Kong identity card number.

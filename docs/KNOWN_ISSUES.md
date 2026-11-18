@@ -173,3 +173,52 @@ These three countries were the largest sources of downloads from 17 October to 1
 - `JourneyUITests/testKeyboardAndSharingLatestCopy` once timed out waiting for Close to become hittable during a full run; it then passed alone and 5 times in a row. Likely Simulator timing under load; watch for it.
 - The tour's US passport specimen shows the engine's real photo mask, which leaves a thin strip below the portrait (clothing, not the face) visible; portrait extents are unchanged at the owner's request. The Chinese ID sample has a grey photo placeholder, so no photo mask is shown there.
 - The tour's globe is deliberately approximate (1:110m outlines, about 4000 dots); small countries get one dot.
+
+## 23. United States and Canada detectors: what is not verified (18 November)
+
+Formats and check digits come from a research report checked against published examples (Canada's test SIN, BC Ministry of Health's worked PHN, CMS's example Medicare number). Still open:
+
+- Quebec licence numbers: sources disagree whether the six-digit date is DDMMYY or YYMMDD; both are accepted. The last two control digits are unpublished and not checked.
+- Canadian passports issued since 2023: one source gives the number as `A123456BC`; not confirmed against the official specimen. The MRZ covers both formats either way.
+- Canadian PR card ID numbers, IMM 1442 permit numbers and BC licence numbers have no check digit and too generic a shape to find without a label; they are hidden only when labelled.
+- Only Florida and Illinois licence numbers are recognised without a label (by their hyphenated layout). Other states' numbers rely on labels (4d, DLN, LIC#, ID NO …).
+- Canadian specimen images are Crown copyright: they may be used for local testing only, never bundled. US federal specimens (USCIS M-274) are public domain.
+- No synthetic document for the Canadian passport, IMM 1442 permit, CRA notice of assessment access code or SIN on its own; SIN is covered by unit tests only.
+
+## 24. United Arab Emirates and the second Gulf/Egypt review: open points (18 November)
+
+The research report for Saudi Arabia, the UAE and Egypt was thinner than the US/Canada one and gave few primary sources. Only what could be checked was implemented.
+
+- Emirates ID: the 784 number and its Luhn digit are well established; the card number's format (9 characters) and the exact back layout are not confirmed against an official specimen. The card number is hidden by its label.
+- UAE driving licences differ by emirate (Dubai RTA, Abu Dhabi …). Only the "License No." and "Traffic Code No." labels are covered; the licence number has no published format.
+- The report says the Egyptian ID's factory serial (`[A-Z]{2}\d{7}`, front bottom) can stay visible. MaskCopy keeps hiding it as a document number, like every other card number, until an official source says otherwise.
+- The report recommends hiding religion on the back of the Egyptian ID (special-category data under Law 151/2020). It is still left visible (issue 21); that is the owner's call.
+- Saudi National Address lines on bills (building number, 5-digit postcode, 4-digit additional number) are not detected yet; they do not appear on ID cards.
+- IBAN: the pattern reads groups of four; when another short word follows the IBAN on the same line, the match fails its check and the IBAN is left to its label ("IBAN"). No synthetic document has an IBAN yet (unit tests only).
+
+## 25. United Kingdom, Germany and the Netherlands: open points (18 November)
+
+- The UK Unique Taxpayer Reference, Right to Work/Rent share codes, sort codes and account numbers have no reliable published check or a shape that looks like dates and amounts; they are hidden only by their labels.
+- The German Führerschein number (field 5) has a check character whose algorithm is not published; it is hidden by its field code. German passport numbers are covered by the MRZ and labels.
+- The Dutch V-nummer: the report says it passes the 11-proef; not confirmed, so it is hidden by its label only. Health insurance policy numbers vary by insurer and are label-only.
+- The loonheffingennummer on a Dutch payslip is the employer's (RSIN + L + two digits), not the employee's, and stays visible; the report recommended hiding it. The employee's BSN is hidden.
+- German church tax (KiSt, "rk", "ev") on payslips reveals religion; it is left visible for now, like religion on the Egyptian ID (issue 24). The owner decides.
+- The synthetic payslips are card-sized with a few lines. Real payslips are A4 with dozens of lines, tables and transaction rows; workflows for them belong to Pro and need their own fixtures.
+
+## 26. Spain, France and Denmark: open points (18 November)
+
+- No authority publishes worked examples for the Spanish Seguridad Social number or the French NIR; both checks follow the published rule and were tested on constructed numbers. The company NIF rule is confirmed on the AEAT's own NIF (Q2826000H).
+- Label-only, no published check: Spanish regional health card codes (CIP, CIPA, NUHSA, TIS: a different format in every community), the TIE support number (also in its MRZ), the French numéro fiscal (the report's mod 523 is unverified), carte Vitale serial, CAF number, AGDREF number, the French and Danish licence numbers (field 5), Danish reg.nr./konto.
+- The Danish yellow health card has no number of its own; its CPR is found. The doctor's name, address and phone on the card are not masked yet.
+- A line that is only a postcode and town ("28013 Madrid", "75002 PARIS") is also counted as an unlabelled number; it is masked as the address anyway.
+- Faroe Islands P-tal (DDMMYY-XXX) and Spanish CCC on its own line, without its label, are not handled. A bare 8-digit Danish number is never masked without a label: CVR, licence and phone numbers all have that shape.
+
+## 27. India, China and Australia: open points (18 November)
+
+- Australian driver licence and card numbers differ by state and have no published check; they are hidden by "Licence No." and "Card No." labels. On VIC, WA, SA, TAS and NT cards the card number is on the back: people must scan both sides.
+- Label-only, no published check: Aadhaar VID (16 digits, would also look like a card number), UAN, ESIC IP number, passport file number, ration card, BSB and account numbers, ImmiCard and visa grant numbers, 社会保障卡 card serial, 驾驶证档案编号.
+- The ATO, Services Australia, GSTN and SAMR publish no worked examples in the specs we found. The ABN check is confirmed on the ABR's published example. The TFN, Medicare, GSTIN and unified social credit code checks follow published rules and pass the commonly cited examples.
+- The PAN's tenth character is a check character with an unpublished algorithm; PAN, EPIC and Centrelink CRN are matched by shape only (EPIC and CRN only on Indian or Australian documents).
+- An all-digit unified social credit code could also pass the resident ID check; it stays visible only after its label. Indian and Australian addresses are found only after a label, S/O-style prefix or a street-type word; Indian addresses on their own lines without these are not found.
+- The Aadhaar secure QR code and Chinese licence QR codes are hidden as barcodes, which needs a device (the Simulator finds no barcodes).
+

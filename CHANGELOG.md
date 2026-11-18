@@ -2,6 +2,27 @@
 
 All notable changes to MaskCopy are listed here. Versions follow [Semantic Versioning](https://semver.org).
 
+## [Unreleased]
+
+United States, Canada, the United Arab Emirates, the United Kingdom, Germany, the Netherlands, Spain, France, Denmark, India, China and Australia, from field-by-field reviews of their documents.
+
+- Canada: social insurance numbers (Luhn), Ontario health numbers with version code (Luhn), British Columbia personal health numbers (Mod 11), Quebec health insurance numbers (NAM) and Quebec driving licence numbers are recognised; the permanent resident card is supported (ID No / N° ID). French labels (N° de passeport, Numéro du permis, Numéro d'assurance maladie, NAS, UCI/IUC …) and French street addresses (RUE, BOUL., AVENUE, CHEMIN …) are found.
+- United States: Medicare numbers (MBI), Florida and Illinois licence numbers, the EAD "Card#" label; health cards and services cards are read as ID cards.
+- United Arab Emirates is supported (30 countries): passport, Emirates ID for citizens and residents (784 number with its Luhn digit; card number; the back's MRZ, whose first line has no filler), and driving licence (licence and traffic code numbers).
+- IBANs are recognised on any document (ISO 7064 MOD 97-10 and the country's length).
+- United Kingdom and Germany, for payslips and letters: National Insurance numbers, NHS numbers (Mod 11), the German Steuer-ID (MOD 11,10), Rentenversicherungsnummer and Krankenversichertennummer, each with its check; labels for UTR, share codes, sort codes and account numbers, V-nummer, BSN/sofinr., polis- and rekeningnummer.
+- German and Dutch street addresses (Musterstraße 12a, Dorpsstraat 10A) and Dutch postcodes (1234 AB) are found without a label. Street addresses were never looked for when the country was unknown; fixed.
+- Company registration numbers, tax codes and tax classes (KvK, Tax Code, Steuerklasse …) stay visible. Malta ID and New Zealand licence numbers, which have no check digit, are looked for only on documents from those countries (a UK tax code "1257L" was masked as a Maltese number).
+- Spain, France and Denmark, for payslips and letters: the Spanish Seguridad Social number (NUSS/NAF, mod 97) and the French NIR (key 97 − n mod 97, Corsica 2A/2B, also when OCR reads 2A as 24); labels for regional health card codes (CIP, CIPA, NUHSA, TIS), numéro fiscal, CAF allocataire, numéro étranger/AGDREF, NEPH and Danish reg.nr./konto.
+- Spanish (C/ Mayor, 12, 3º B), French (12 bis rue …, bd, quai) and Danish (Nørregade 12, 2. tv.; 1165 København K) addresses are found without a label.
+- Employer numbers stay visible: the Spanish company NIF/CIF (checked with the AEAT rule, also after a "NIF" label), CCC, SIREN/SIRET, code APE/NAF, URSSAF and CVR. A number right after such a label is never taken for a personal one (a SIREN is also a valid Canadian SIN).
+- India: driving licence numbers (state code, RTO, year, serial), EPIC voter IDs on Indian documents; labels for VID, UAN, ESIC, passport file number, ration card and PAN; only a person's or family's PAN is hidden. A masked Aadhaar ("XXXX XXXX 1234") stays as it is, as UIDAI allows. Addresses after S/O, D/O, W/O and C/O are found.
+- China: the old 15-character foreign permanent resident card number, Home Return and mainland travel permit numbers on Chinese documents; labels for 卡号, 社会保障号码, 银行卡号 and 账号; addresses such as 北京市朝阳区建国路88号 without a label. The residence permit for Hong Kong, Macao and Taiwan residents and the 2023 foreign permanent resident card use the resident ID's 18-digit number and were already found.
+- Australia: tax file numbers (mod 11), Medicare card numbers (check digit, issue number and IRN), Centrelink CRNs on Australian documents; labels for BSB and account numbers. The Medicare card is read as an ID card.
+- Payment card numbers (16–19 digits, Luhn) on any document.
+- Employer numbers stay visible: ABN, ACN, TAN, GSTIN (mod 36), a company's or firm's PAN, and the Chinese unified social credit code (GB 32100-2015).
+- Twenty-one new synthetic documents (EAD, Medicare card, Quebec licence, Canadian PR card, Ontario health card, BC Services Card, UAE passport, Emirates ID front and back, UAE resident card, UAE licence, UK, German, Dutch, Spanish, French, Danish, Indian, Chinese and Australian payslips, Australian Medicare card); 75/75 fully right, 206/206 sensitive fields hidden, 201/201 kept.
+
 ## [1.1.0] - 2026-11-17
 
 Build 15 (TestFlight; build 14 had the first tour). United States, Saudi Arabia and Egypt, the three largest download countries in the first month, and a short tour.

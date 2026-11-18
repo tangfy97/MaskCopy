@@ -18,7 +18,7 @@ The rules work on the straightened page. It does not rely on a template per coun
 |---|---|---|
 | Machine-readable zone | The bottom-most run of lines of `A–Z 0–9 <`, read as TD3 (passports), TD1 (ID cards, residence permits), TD2, or a licence line. For an incomplete passport result, retry OCR in a crop and use aligned rows to cover text that could not be parsed | ICAO 9303, ISO 18013, Dutch eDL reading manual |
 | Kind and country | The MRZ's issuing state; otherwise words printed on the document (`KONINKRIJK DER NEDERLANDEN`, `居民身份证`, US state names…); otherwise a number only one country uses | |
-| Personal and document numbers | About 45 national formats, each a pattern plus its check (BSN 11-proef, fødselsnummer, PESEL, codice fiscale, 身份证号, NRIC, HKID, CURP…), in `NumberPatterns.swift` | National rules |
+| Personal and document numbers | About 60 national formats, each a pattern plus its check (BSN 11-proef, fødselsnummer, PESEL, codice fiscale, 身份证号, NRIC, HKID, CURP, SIN, Medicare…), in `NumberPatterns.swift` | National rules |
 | Values from the MRZ | The document and personal numbers read from the MRZ, wherever else they are printed | ICAO 9303 |
 | Labelled fields | Labels in many languages (`Persoonsnummer`, `Personal No.`, `住址`, `주소`…) and the value to their right or below, in `Labels.swift` | |
 | Numbered licence fields | `4d` personal number, `5` licence number, `8` address | EU Directive 2006/126/EC, ISO/IEC 18013-1, AAMVA |

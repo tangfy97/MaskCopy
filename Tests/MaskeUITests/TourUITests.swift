@@ -9,7 +9,7 @@ final class TourUITests: XCTestCase {
         app.buttons["Continue"].tap()
         XCTAssertTrue(app.staticTexts["Mark who it’s for"].waitForExistence(timeout: 2))
         app.buttons["Continue"].tap()
-        XCTAssertTrue(app.staticTexts["29 countries"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["30 countries"].waitForExistence(timeout: 2))
         XCTAssertFalse(app.buttons["Skip"].exists)
         app.buttons["Start"].tap()
         XCTAssertTrue(app.buttons["Scan document"].waitForExistence(timeout: 3))

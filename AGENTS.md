@@ -35,7 +35,7 @@ Sources/MaskeCore/          The engine, shared by the app and the CLI (compiled 
   InkFit.swift              Fits a text box to its ink (angle, edges, label/value cut); Luma image buffer
   Geometry.swift            Quad (four corners, normalized, origin top-left) and Homography
   MRZ.swift                 ICAO 9303 TD1/TD2/TD3 + ISO 18013 licence line reader with check digits
-  NumberPatterns.swift      ~45 national number formats (regex + check), strong vs country-gated
+  NumberPatterns.swift      ~60 national number formats (regex + check), strong vs country-gated
   Checksums.swift           The check-digit algorithms
   Labels.swift              Field labels in many languages, numbered licence field codes
   Countries.swift           Country table, supported list (27), country/document keywords
