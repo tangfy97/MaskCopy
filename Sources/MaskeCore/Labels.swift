@@ -37,6 +37,11 @@ enum Labels {
         // Asia
         "公民身份号码", "公民身份號碼", "身份证号", "身份證號", "身分證統一編號", "統一編號", "個人番号", "주민등록번호",
         "NRIC", "FIN", "NO. KP", "NO KP", "NO. K/P", "IDENTITY CARD NO", "I/C NO", "AADHAAR",
+        "VID", "VIRTUAL ID", "EPIC", "EPIC NO", "FILE NO", "FILE NUMBER", "UAN", "UNIVERSAL ACCOUNT NUMBER", "ESIC", "ESIC NO",
+        "IP NO", "IP NUMBER", "RATION CARD NO", "PAN", "PAN NO", "PERMANENT ACCOUNT NUMBER", "卡号", "社会保障号码", "社会保障卡号",
+        "银行卡号", "账号", "银行账号",
+        // Oceania
+        "TFN", "TAX FILE NUMBER", "BSB", "ACC NO", "CRN", "CUSTOMER REFERENCE NUMBER", "IMMICARD NO", "VISA GRANT NUMBER",
     ]
 
     static let documentNumber: [String] = [
@@ -54,7 +59,7 @@ enum Labels {
     static let address: [String] = [
         "ADDRESS", "RESIDENTIAL ADDRESS", "ADRES", "ADRESSE", "ADRESA", "ADRESAS", "ANSCHRIFT", "WOHNORT", "INDIRIZZO",
         "RESIDENZA", "住居地", "DIRECCION", "DOMICILIO", "MORADA", "OSOITE", "BOSTEDSADRESSE", "BOPÆL", "ADRESS", "LAKCIM",
-        "ADRES ZAMIESZKANIA", "MIEJSCE ZAMIESZKANIA", "ΔΙΕΥΘΥΝΣΗ", "АДРЕС", "АДРЕСА", "住址", "住所", "주소", "ALAMAT",
+        "ADRES ZAMIESZKANIA", "MIEJSCE ZAMIESZKANIA", "ΔΙΕΥΘΥΝΣΗ", "АДРЕС", "АДРЕСА", "住址", "住所", "주소", "ALAMAT", "S/O", "D/O", "W/O", "C/O",
         "العنوان", "عنوان", "محل الإقامة", "محل الاقامة", "جهة الإقامة",
     ]
 
@@ -65,7 +70,8 @@ enum Labels {
         "KVK", "KAMER VAN KOOPHANDEL", "TAX CODE", "STEUERKLASSE", "STKL", "COMPANY NO", "COMPANY NUMBER",
         "COMPANY REG", "HANDELSREGISTER", "HRB", "BTW", "VAT NO", "VAT REG", "UST-IDNR",
         "CIF", "C.I.F.", "CCC", "C.C.C.", "CODIGO CUENTA COTIZACION", "SIREN", "SIRET", "N° SIRET", "URSSAF", "CODE APE",
-        "APE ", "CODE NAF", "CVR", "SE-NR",
+        "APE ", "CODE NAF", "CVR", "SE-NR", "ABN", "A.B.N.", "ACN", "A.C.N.", "TAN ", "TAN:", "GSTIN", "GST NO",
+        "统一社会信用代码", "纳税人识别号", "税号",
     ]
 
     /// Names of fields that are not hidden. An address that runs over several lines stops at one.

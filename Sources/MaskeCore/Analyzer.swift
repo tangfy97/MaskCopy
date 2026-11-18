@@ -104,7 +104,7 @@ public struct Analyzer {
         }
         if country?.code == "EG", kind == .idCard { page.findEgyptianIDAddress() }
         let streetCountries: Set<String> = ["US", "CA", "AU", "NZ", "GB", "IE", "SG", "MY", "DE", "NL", "AT", "CH", "BE", "LU", "FR",
-                                            "ES", "DK"]
+                                            "ES", "DK", "CN"]
         if country.map({ streetCountries.contains($0.code) }) ?? true {
             page.findStreetAddresses()
         }
@@ -495,7 +495,9 @@ struct Page {
             let valueRange = start..<stop
             let value = line.text[valueRange]
             // An employer's company number after a generic "NIF" label stays visible.
-            if Self.isCompanyNumber(String(value)) { return }
+            if isCompanyNumber(String(value)) { return }
+            // A masked Aadhaar ("XXXX XXXX 1234"): UIDAI lets the last four digits be shown.
+            if String(value).range(of: #"^[Xx]{4} ?[Xx]{4} ?\d{4}$"#, options: .regularExpression) != nil { return }
             // Stop at a second label on the same line ("Date of birth   Personal No.").
             if looksLikeValue(String(value), kind) && !Labels.rules.contains(where: { $0.1.contains { String(value).foldedUpper.hasPrefix($0) } }) {
                 let q = line.quad(for: valueRange)
@@ -535,13 +537,13 @@ struct Page {
                 .min(by: { $0.box.minX < $1.box.minX })
         }
         if let right = beside {
-            if Self.isCompanyNumber(right.text) { return }
+            if isCompanyNumber(right.text) { return }
             add(kind, right.quad, note: note)
             if kind == .address { addContinuation(below: right.box, among: lines, note: note) }
             return
         }
         // Below, starting near the label's left edge.
-        if let below = lineBelow(labelBox, among: lines, maxGap: 1.8), looksLikeValue(below.text, kind), !Self.isCompanyNumber(below.text) {
+        if let below = lineBelow(labelBox, among: lines, maxGap: 1.8), looksLikeValue(below.text, kind), !isCompanyNumber(below.text) {
             add(kind, below.quad, note: note)
             if kind == .address { addContinuation(below: below.box, among: lines, note: note) }
         }
@@ -559,10 +561,21 @@ struct Page {
         }
     }
 
-    /// A Spanish company NIF (formerly CIF): the employer's, not the holder's.
-    static func isCompanyNumber(_ s: String) -> Bool {
+    /// An employer's number, not the holder's: a Spanish company NIF (formerly CIF), an Indian PAN of a
+    /// company, firm or trust, a TAN or GSTIN, a Chinese unified social credit code with letters (an
+    /// all-digit one could be a resident ID, so it stays visible only after its label).
+    /// Each only on documents from its country or of unknown country: a Singapore NRIC (S1234567D) also
+    /// passes the Spanish company check.
+    func isCompanyNumber(_ s: String) -> Bool {
         let t = s.uppercased().filter { $0.isLetter || $0.isNumber }
-        return t.count == 9 && Checksum.spanishCompanyNIF(t)
+        func from(_ code: String) -> Bool { country == nil || country == code }
+        switch t.count {
+        case 9: return from("ES") && Checksum.spanishCompanyNIF(t)
+        case 10: return from("IN") && t.range(of: #"^(?:[A-Z]{3}[ABCFGJLT][A-Z]\d{4}[A-Z]|[A-Z]{4}\d{5}[A-Z])$"#, options: .regularExpression) != nil
+        case 15: return from("IN") && Checksum.indianGSTIN(t)
+        case 18: return from("CN") && t.prefix(17).contains(where: \.isLetter) && Checksum.chineseSocialCreditCode(t)
+        default: return false
+        }
     }
 
     /// Numbers have digits; an address may not. This keeps a neighbouring label from being taken for the value.
@@ -639,7 +652,7 @@ struct Page {
             if Self.date.firstMatch(in: folded, range: NSRange(folded.startIndex..., in: folded)) != nil { continue }
             // A number after the name of a field that is not secret (a company or tax-class number).
             let upper = line.text.foldedUpper
-            if Labels.keptNumbers.contains(where: { upper.hasPrefix($0) }) || Self.isCompanyNumber(t) { continue }
+            if Labels.keptNumbers.contains(where: { upper.hasPrefix($0) }) || isCompanyNumber(t) { continue }
             let digits = t.filter(\.isNumber).count, letters = t.count - digits
             // A number another rule already masks (the Egyptian national number) is not a second finding.
             if findings.contains(where: { $0.rect.intersectionArea(line.box) > 0.5 * line.box.area }) { continue }
@@ -705,7 +718,7 @@ struct Page {
         #"^\s*(?:\d{1,2}[ ./-]*(?:[A-Z]{3,5}|\d{1,2})[ ./-]*\d{2,4}|\d{4}[ ./-]*\d{1,2}[ ./-]*\d{1,2})(?:\s+[MFX])?\s*$"#)
 
     static let street = try! NSRegularExpression(pattern:
-        #"^(?:BLK |BLOCK |NO\.? ?|LOT |UNIT )?\d{1,5}[A-Z]?[ ,/-]+(?:[A-Z0-9'.-]+ )*(?:ST|STREET|RD|ROAD|AVE|AVENUE|DR|DRIVE|LN|LANE|BLVD|WAY|CT|COURT|PL|PLACE|CRES|CRESCENT|HWY|TCE|TERRACE|PDE|PARADE|CL|CLOSE|SQ|GROVE|GR)\b|\b(?:JALAN|JLN|LORONG|TAMAN|PERSIARAN)\b|^\d{1,5}[A-Z]?(?: (?:BIS|TER|QUATER))?,? (?:RUE|BOUL|BOULEVARD|BOUL\.|BD|AV\.?|AVENUE|CH\.?|CHEMIN|RANG|ROUTE|RTE|MONTEE|COTE|IMPASSE|IMP\.|ALLEE|ALL\.|PROMENADE|PLACE|PL\.|QUAI|COURS|SQUARE) |^[A-Z][A-Z'.-]*(?: [A-Z][A-Z'.-]*)*(?:STRASSE|STR\.|STRAAT|WEG|LAAN|PLEIN|GRACHT|KADE|DIJK|SINGEL|ALLEE|PLATZ|RING|GASSE|DAMM) \d{1,5} ?[A-Z]?(?:[ -]\d{1,4})?(?: ?[A-Z]{1,3})?,?$|^(?:C/|CL\.|CALLE|AVDA\.?|AVENIDA|PZA\.?|PLAZA|PASEO|P[º°O]\.|CTRA\.?|CARRETERA|RONDA|TRAVESIA|CAMINO|RAMBLA|GRAN VIA) ?[A-Z][^,]*, ?(?:N[º°O]\.? ?)?(?:\d{1,4}|S/N)\b|^[A-ZÆØÅ][A-ZÆØÅ'.-]*(?: [A-ZÆØÅ][A-ZÆØÅ'.-]*)*(?:GADE|VEJ|ALLE|VAENGET|VÆNGET|PLADS|STRAEDE|STRÆDE|TORV|BAKKE|PARKEN|BOULEVARD) \d{1,4}[A-Z]?(?:,? ?(?:ST|KL|\d{1,2})\.?(?: ?(?:TV|TH|MF|\d{1,3})\.?)?)?$"#)
+        #"^(?:BLK |BLOCK |NO\.? ?|LOT |UNIT )?\d{1,5}[A-Z]?[ ,/-]+(?:[A-Z0-9'.-]+ )*(?:ST|STREET|RD|ROAD|AVE|AVENUE|DR|DRIVE|LN|LANE|BLVD|WAY|CT|COURT|PL|PLACE|CRES|CRESCENT|HWY|TCE|TERRACE|PDE|PARADE|CL|CLOSE|SQ|GROVE|GR)\b|\b(?:JALAN|JLN|LORONG|TAMAN|PERSIARAN)\b|^\d{1,5}[A-Z]?(?: (?:BIS|TER|QUATER))?,? (?:RUE|BOUL|BOULEVARD|BOUL\.|BD|AV\.?|AVENUE|CH\.?|CHEMIN|RANG|ROUTE|RTE|MONTEE|COTE|IMPASSE|IMP\.|ALLEE|ALL\.|PROMENADE|PLACE|PL\.|QUAI|COURS|SQUARE) |^[A-Z][A-Z'.-]*(?: [A-Z][A-Z'.-]*)*(?:STRASSE|STR\.|STRAAT|WEG|LAAN|PLEIN|GRACHT|KADE|DIJK|SINGEL|ALLEE|PLATZ|RING|GASSE|DAMM) \d{1,5} ?[A-Z]?(?:[ -]\d{1,4})?(?: ?[A-Z]{1,3})?,?$|(?:省|市|自治区)\S*(?:路|街|道|巷|弄|村|镇)\S*\d+号|^(?:C/|CL\.|CALLE|AVDA\.?|AVENIDA|PZA\.?|PLAZA|PASEO|P[º°O]\.|CTRA\.?|CARRETERA|RONDA|TRAVESIA|CAMINO|RAMBLA|GRAN VIA) ?[A-Z][^,]*, ?(?:N[º°O]\.? ?)?(?:\d{1,4}|S/N)\b|^[A-ZÆØÅ][A-ZÆØÅ'.-]*(?: [A-ZÆØÅ][A-ZÆØÅ'.-]*)*(?:GADE|VEJ|ALLE|VAENGET|VÆNGET|PLADS|STRAEDE|STRÆDE|TORV|BAKKE|PARKEN|BOULEVARD) \d{1,4}[A-Z]?(?:,? ?(?:ST|KL|\d{1,2})\.?(?: ?(?:TV|TH|MF|\d{1,3})\.?)?)?$"#)
     static let postcodeLine = try! NSRegularExpression(pattern:
         #"^\d{4,6} [A-ZÆØÅ]{3,}|^\d{4} ?[A-Z]{2} [A-Z]{2,}|\b(?:[A-Z]{2,3} \d{4,5}(?:-\d{4})?|\d{4,6})$|\b[A-Z]\d[A-Z] ?\d[A-Z]\d$|\b[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}$"#)
 

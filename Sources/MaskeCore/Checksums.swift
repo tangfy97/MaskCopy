@@ -547,6 +547,65 @@ public enum Checksum {
         return c[17] == Array("10X98765432")[sum % 11] && birth.count == 8 && validYYYYMMDD(birth)
     }
 
+    /// China, old foreign permanent resident card (2004/2017): nationality letters, authority code,
+    /// YYMMDD birth date, serial and check digit. The check is unpublished, so only the date is checked.
+    public static func chineseForeignResidentOld(_ s: String) -> Bool {
+        let d = digits(s)
+        guard d.count == 12 else { return false }
+        let month = d[6] * 10 + d[7], day = d[8] * 10 + d[9]
+        return (1...12).contains(month) && (1...31).contains(day)
+    }
+
+    /// China, unified social credit code (GB 32100-2015, mod 31 over the 31 allowed characters).
+    /// Used only to keep an employer's code visible.
+    public static func chineseSocialCreditCode(_ s: String) -> Bool {
+        let set = Array("0123456789ABCDEFGHJKLMNPQRTUWXY")
+        let c = Array(s.uppercased().filter { $0.isLetter || $0.isNumber })
+        guard c.count == 18 else { return false }
+        let w = [1, 3, 9, 27, 19, 26, 16, 17, 20, 29, 25, 13, 8, 24, 10, 30, 28]
+        var sum = 0
+        for i in 0..<17 {
+            guard let v = set.firstIndex(of: c[i]) else { return false }
+            sum += v * w[i]
+        }
+        return set.contains(c[17]) && c[17] == set[(31 - sum % 31) % 31]
+    }
+
+    /// India, GSTIN: two-digit state, the holder's PAN, entity number, "Z" and a mod 36 check character.
+    /// Used only to keep an employer's number visible.
+    public static func indianGSTIN(_ s: String) -> Bool {
+        let set = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+        let c = Array(s.uppercased())
+        guard c.count == 15, c[13] == "Z" else { return false }
+        var sum = 0
+        for i in 0..<14 {
+            guard let v = set.firstIndex(of: c[i]) else { return false }
+            let p = v * (i % 2 == 0 ? 1 : 2)
+            sum += p / 36 + p % 36
+        }
+        return c[14] == set[(36 - sum % 36) % 36]
+    }
+
+    /// Australia, tax file number (9 digits, weights 1 4 3 7 5 8 6 9 10, mod 11).
+    public static func australianTFN(_ s: String) -> Bool {
+        let d = digits(s)
+        return d.count == 9 && weighted(d, [1, 4, 3, 7, 5, 8, 6, 9, 10]) % 11 == 0
+    }
+
+    /// Australia, Medicare card number: first digit 2–6, check digit 9 = weights 1 3 7 9 1 3 7 9 mod 10,
+    /// then the issue number and optionally the holder's reference number.
+    public static func australianMedicare(_ s: String) -> Bool {
+        let d = digits(s)
+        guard d.count == 10 || d.count == 11, (2...6).contains(d[0]) else { return false }
+        return weighted(d, [1, 3, 7, 9, 1, 3, 7, 9]) % 10 == d[8]
+    }
+
+    /// A payment card number: 16 to 19 digits with a Luhn digit.
+    public static func paymentCard(_ s: String) -> Bool {
+        let d = digits(s)
+        return (16...19).contains(d.count) && luhn(d)
+    }
+
     /// Hong Kong identity card number.
     public static func hongKongID(_ s: String) -> Bool {
         let c = Array(s.uppercased().filter { $0.isLetter || $0.isNumber })

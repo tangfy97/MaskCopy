@@ -66,6 +66,25 @@ final class ChecksumTests: XCTestCase {
         XCTAssertFalse(Checksum.egyptianNationalNumber("19001010112345"))
     }
 
+    func testIndiaChinaAndAustralia() {
+        // ABR's published ABN example; ATO TFN rule; Medicare rule.
+        XCTAssertTrue(Checksum.australianTFN("876 543 210"))
+        XCTAssertTrue(Checksum.australianTFN("123 456 782"))
+        XCTAssertFalse(Checksum.australianTFN("123 456 789"))
+        XCTAssertTrue(Checksum.australianMedicare("3189 97702 1"))
+        XCTAssertFalse(Checksum.australianMedicare("3189 97703 1"))
+        XCTAssertFalse(Checksum.australianMedicare("1189 97702 1"), "first digit 2–6")
+        XCTAssertTrue(Checksum.indianGSTIN("27AAPFU0939F1ZV"))
+        XCTAssertFalse(Checksum.indianGSTIN("27AAPFU0939F1ZW"))
+        XCTAssertTrue(Checksum.chineseSocialCreditCode("91350100M000100Y43"))
+        XCTAssertFalse(Checksum.chineseSocialCreditCode("91350100M000100Y44"))
+        XCTAssertFalse(Checksum.chineseSocialCreditCode("91350100M000100Y4I"), "I is not in the code's alphabet")
+        XCTAssertTrue(Checksum.paymentCard("6222 0212 3456 7890 128"))
+        XCTAssertFalse(Checksum.paymentCard("6222 0212 3456 7890 129"))
+        XCTAssertTrue(Checksum.chineseForeignResidentOld("USA110089123145"))
+        XCTAssertFalse(Checksum.chineseForeignResidentOld("USA110089133145"))
+    }
+
     func testSpainFranceAndDenmark() {
         // The AEAT's own NIF (Agencia Estatal de Administración Tributaria) is a published company NIF.
         XCTAssertTrue(Checksum.spanishCompanyNIF("Q2826000H"))

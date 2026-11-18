@@ -44,6 +44,11 @@ struct NumberPattern {
 
 extension NumberPattern {
     static let jmbgCountries: Set<String> = ["SI", "RS", "MK", "ME", "BA", "HR"]
+    /// Indian state and union territory codes at the start of a driving licence number.
+    static let indianStates: Set<String> = [
+        "AN", "AP", "AR", "AS", "BR", "CG", "CH", "CT", "DD", "DL", "DN", "GA", "GJ", "HP", "HR", "JH", "JK", "KA", "KL", "LA",
+        "LD", "MH", "ML", "MN", "MP", "MZ", "NL", "OD", "OR", "PB", "PY", "RJ", "SK", "TG", "TN", "TR", "TS", "UK", "UP", "WB",
+    ]
 
     static let all: [NumberPattern] = [
         // Europe
@@ -114,12 +119,18 @@ extension NumberPattern {
         NumberPattern("MX CURP", ["MX"], .strong, #"[A-Z]{4}\d{6}[HMX][A-Z]{5}[0-9A-Z]\d"#, Checksum.mexicanCURP),
         NumberPattern("BR CPF", ["BR"], .countryGated, #"\d{3}\.?\d{3}\.?\d{3}-?\d{2}"#, Checksum.brazilianCPF),
         // International
+        NumberPattern("Payment card", [], .strong, #"[2-6]\d{3}(?: ?\d{4}){2} ?\d{4}(?: ?\d{1,3})?"#, numeric: true,
+                      Checksum.paymentCard),
         NumberPattern("IBAN", [], .strong, #"[A-Z]{2}\d{2}(?: ?[A-Z0-9]{4}){2,7}(?: ?[A-Z0-9]{1,3})?"#, Checksum.iban),
         // Middle East and North Africa (Arabic-Indic digits are read as ASCII digits by MappedText)
         NumberPattern("SA identity number", ["SA"], .countryGated, #"[12]\d{9}"#, numeric: true, Checksum.saudiIdentityNumber),
         NumberPattern("AE Emirates ID", ["AE"], .strong, #"784-?\d{4}-?\d{7}-?\d"#, numeric: true, Checksum.emiratesID),
         NumberPattern("EG national number", ["EG"], .strong, #"[23]\d{13}"#, numeric: true, Checksum.egyptianNationalNumber),
         // Oceania
+        NumberPattern("AU tax file number", ["AU"], .countryGated, #"\d{3} ?\d{3} ?\d{3}"#, numeric: true, Checksum.australianTFN),
+        NumberPattern("AU Medicare number", ["AU"], .countryGated, #"[2-6]\d{3} ?\d{5} ?\d(?:[ /-]?\d)?"#, numeric: true,
+                      Checksum.australianMedicare),
+        NumberPattern("AU Centrelink CRN", ["AU"], .countryOnly, #"\d{3} ?\d{3} ?\d{3} ?[A-Z]"#, { _ in true }),
         NumberPattern("NZ licence", ["NZ"], .countryOnly, #"[A-Z]{2}\d{6}"#, kind: .documentNumber, { _ in true }),
         // Asia
         NumberPattern("CN 身份证号", ["CN"], .strong, #"\d{17}[\dX]"#, Checksum.chineseResidentID),
@@ -133,6 +144,13 @@ extension NumberPattern {
         NumberPattern("MY MyKad", ["MY"], .countryGated, #"\d{6}-\d{2}-\d{4}"#, Checksum.malaysianNRIC),
         NumberPattern("MY MyKad", ["MY"], .countryGated, #"\d{12}"#, numeric: true, Checksum.malaysianNRIC),
         NumberPattern("IN Aadhaar", ["IN"], .countryGated, #"[2-9]\d{3}\s?\d{4}\s?\d{4}"#, numeric: true, Checksum.verhoeff),
-        NumberPattern("IN PAN", ["IN"], .strong, #"[A-Z]{3}[ABCFGHLJPT][A-Z]\d{4}[A-Z]"#, { _ in true }),
+        // A PAN's fourth letter is the holder type: P a person, H a Hindu undivided family; the others
+        // (company, firm, trust …) are an employer's and stay visible.
+        NumberPattern("IN PAN", ["IN"], .strong, #"[A-Z]{3}[PH][A-Z]\d{4}[A-Z]"#, { _ in true }),
+        NumberPattern("IN driving licence", ["IN"], .countryGated, #"[A-Z]{2}[- ]?\d{2}[- ]?(?:19|20)\d{2} ?\d{7}"#,
+                      kind: .documentNumber, { indianStates.contains(String($0.prefix(2))) }),
+        NumberPattern("IN EPIC", ["IN"], .countryOnly, #"[A-Z]{3}\d{7}"#, kind: .documentNumber, { _ in true }),
+        NumberPattern("CN 外国人永久居留证 (2004)", ["CN"], .countryGated, #"[A-Z]{3}\d{12}"#, Checksum.chineseForeignResidentOld),
+        NumberPattern("CN 通行证", ["CN"], .countryOnly, #"[HMC]\d{8}(?:\d{2})?"#, kind: .documentNumber, { _ in true }),
     ]
 }

@@ -213,3 +213,12 @@ The research report for Saudi Arabia, the UAE and Egypt was thinner than the US/
 - A line that is only a postcode and town ("28013 Madrid", "75002 PARIS") is also counted as an unlabelled number; it is masked as the address anyway.
 - Faroe Islands P-tal (DDMMYY-XXX) and Spanish CCC on its own line, without its label, are not handled. A bare 8-digit Danish number is never masked without a label: CVR, licence and phone numbers all have that shape.
 
+## 27. India, China and Australia: open points (18 November)
+
+- Australian driver licence and card numbers differ by state and have no published check; they are hidden by "Licence No." and "Card No." labels. On VIC, WA, SA, TAS and NT cards the card number is on the back: people must scan both sides.
+- Label-only, no published check: Aadhaar VID (16 digits, would also look like a card number), UAN, ESIC IP number, passport file number, ration card, BSB and account numbers, ImmiCard and visa grant numbers, 社会保障卡 card serial, 驾驶证档案编号.
+- The ATO, Services Australia, GSTN and SAMR publish no worked examples in the specs we found. The ABN check is confirmed on the ABR's published example. The TFN, Medicare, GSTIN and unified social credit code checks follow published rules and pass the commonly cited examples.
+- The PAN's tenth character is a check character with an unpublished algorithm; PAN, EPIC and Centrelink CRN are matched by shape only (EPIC and CRN only on Indian or Australian documents).
+- An all-digit unified social credit code could also pass the resident ID check; it stays visible only after its label. Indian and Australian addresses are found only after a label, S/O-style prefix or a street-type word; Indian addresses on their own lines without these are not found.
+- The Aadhaar secure QR code and Chinese licence QR codes are hidden as barcodes, which needs a device (the Simulator finds no barcodes).
+

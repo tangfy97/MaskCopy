@@ -204,7 +204,7 @@ public enum Countries {
         ("PERSONALAUSWEIS", .idCard), ("IDENTITETSKORT", .idCard), ("CARTA DI IDENTITA", .idCard), ("DOCUMENTO NACIONAL", .idCard),
         ("居民身份证", .idCard), ("身份證", .idCard), ("身分證", .idCard), ("주민등록증", .idCard), ("個人番号カード", .idCard), ("KAD PENGENALAN", .idCard),
         ("HEALTH INSURANCE", .idCard), ("HEALTH CARD", .idCard), ("CARTE SANTE", .idCard), ("HEALTH + SANTE", .idCard),
-        ("SERVICES CARD", .idCard), ("RESIDENT PERMANENT", .residencePermit),
+        ("SERVICES CARD", .idCard), ("MEDICARE", .idCard), ("RESIDENT PERMANENT", .residencePermit),
         ("MYKAD", .idCard), ("NRIC", .idCard), ("ID CARD", .idCard), ("CARTAO DE CIDADAO", .idCard), ("DOWOD OSOBISTY", .idCard),
     ] as [(String, DocumentKind)]).map { ($0.0.foldedUpper, $0.1) }
 }
