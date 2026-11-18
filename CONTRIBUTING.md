@@ -20,6 +20,7 @@ Edit `project.yml`, not the `.xcodeproj`. How the engine works and how to add a 
 - **Never add a real person's document**, masked or not, to the repository, an issue or a pull request. Add a synthetic one to `Sources/maske/Fixtures.swift` with made-up details and valid check digits.
 - MaskCopy stays offline: no networking, analytics or third-party code. Text, faces and barcodes are read only with Apple's Vision framework.
 - If a change affects what MaskCopy keeps or shares, update [PRIVACY.md](PRIVACY.md) in the same pull request.
+- MaskCopy is open core ([docs/OPEN_CORE.md](docs/OPEN_CORE.md)). Detectors and anything that decides what is hidden belong here; please run `git config core.hooksPath .githooks` once so the pre-commit check runs.
 - MaskCopy uses standard iOS controls and its small palette in `Theme.swift`. Please don't add custom styling.
 
 By contributing you agree that your work is licensed under the [Apache License 2.0](LICENSE).

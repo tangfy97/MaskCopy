@@ -1,4 +1,9 @@
 name: Maske
+# MaskCopy Pro: a private source tree next to this repository, compiled in only when MASKCOPY_PRO is
+# set (scripts/appstore.sh). Without it this project is the complete free app. See docs/OPEN_CORE.md.
+include:
+  - path: ../MaskCopyPro/project.pro.yml
+    enable: ${MASKCOPY_PRO}
 options:
   deploymentTarget:
     iOS: "18.0"

@@ -89,6 +89,7 @@ struct HomeView: View {
         .sheet(item: $selection, onDismiss: finishSelection) { source in
             PageSelectionView(source: source) { indices in pendingImport = (source, indices) }
         }
+        .proEntry()
         .onDisappear { fileTask?.cancel(); openingFile = false }
         #if DEBUG
         .task {

@@ -26,6 +26,7 @@ Why MaskCopy is the way it is. Newest last. Change a decision only with the owne
 | 2026-11-08 | Add zoom and direct four-corner editing of existing masks | Automatic borders on borderless and security portraits remain uncertain. The user needs a precise way to correct the actual exported geometry |
 | 2026-11-08 | Keep the UI self-explanatory with very little instructional text | The owner explicitly dislikes explanation paragraphs. Tapping a mask opens its editor; visible corner handles, zoom, Hide, Reset, Cancel and Save communicate the actions |
 | 2026-11-17 | The tour ships three official specimen images (US passport, public domain; Chinese ID sample, CC0; Dutch passport, CC0) with the engine's own masks, and a dotted globe from public-domain Natural Earth data; sources in NOTICE | The owner wanted real behaviour on real official documents; only images with an open licence are committed, the other specimens stay git-ignored |
+| 2026-11-17 | Open core: engine, masking, rendering and the free app stay Apache 2.0 here; MaskCopy Pro (one-time purchase) is proprietary in a private repository, compiled in only for App Store builds via a conditional XcodeGen include and `MASKCOPY_PRO` | Paid features must not be public, while everything that decides what is hidden stays auditable; the public repository still builds the complete free app |
 
 ## 8 November 2026: MaskCopy and the three-stage copy flow
 
