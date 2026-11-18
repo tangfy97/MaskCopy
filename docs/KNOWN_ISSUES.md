@@ -196,3 +196,12 @@ The research report for Saudi Arabia, the UAE and Egypt was thinner than the US/
 - Saudi National Address lines on bills (building number, 5-digit postcode, 4-digit additional number) are not detected yet; they do not appear on ID cards.
 - IBAN: the pattern reads groups of four; when another short word follows the IBAN on the same line, the match fails its check and the IBAN is left to its label ("IBAN"). No synthetic document has an IBAN yet (unit tests only).
 
+## 25. United Kingdom, Germany and the Netherlands: open points (18 November)
+
+- The UK Unique Taxpayer Reference, Right to Work/Rent share codes, sort codes and account numbers have no reliable published check or a shape that looks like dates and amounts; they are hidden only by their labels.
+- The German Führerschein number (field 5) has a check character whose algorithm is not published; it is hidden by its field code. German passport numbers are covered by the MRZ and labels.
+- The Dutch V-nummer: the report says it passes the 11-proef; not confirmed, so it is hidden by its label only. Health insurance policy numbers vary by insurer and are label-only.
+- The loonheffingennummer on a Dutch payslip is the employer's (RSIN + L + two digits), not the employee's, and stays visible; the report recommended hiding it. The employee's BSN is hidden.
+- German church tax (KiSt, "rk", "ev") on payslips reveals religion; it is left visible for now, like religion on the Egyptian ID (issue 24). The owner decides.
+- The synthetic payslips are card-sized with a few lines. Real payslips are A4 with dozens of lines, tables and transaction rows; workflows for them belong to Pro and need their own fixtures.
+

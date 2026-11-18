@@ -66,6 +66,26 @@ final class ChecksumTests: XCTestCase {
         XCTAssertFalse(Checksum.egyptianNationalNumber("19001010112345"))
     }
 
+    func testUnitedKingdomAndGermany() {
+        XCTAssertTrue(Checksum.britishNationalInsurance("AB 12 34 56 C"))
+        XCTAssertFalse(Checksum.britishNationalInsurance("GB 12 34 56 C"))
+        XCTAssertFalse(Checksum.britishNationalInsurance("DA 12 34 56 C"))
+        XCTAssertFalse(Checksum.britishNationalInsurance("AB 12 34 56 E"))
+        XCTAssertTrue(Checksum.nhsNumber("943 476 5919")) // NHS Data Dictionary
+        XCTAssertFalse(Checksum.nhsNumber("943 476 5918"))
+        for id in ["86095742719", "47036892816", "65929970489", "57549285017", "25768131411"] { // BZSt examples
+            XCTAssertTrue(Checksum.germanTaxID(id), id)
+        }
+        XCTAssertFalse(Checksum.germanTaxID("86095742718"))
+        XCTAssertFalse(Checksum.germanTaxID("12345678903")) // no repeated digit
+        XCTAssertTrue(Checksum.germanPensionNumber("15070649C103")) // Deutsche Rentenversicherung
+        XCTAssertTrue(Checksum.germanPensionNumber("65 170839 J 003"))
+        XCTAssertFalse(Checksum.germanPensionNumber("15070649C104"))
+        XCTAssertFalse(Checksum.germanPensionNumber("15073249C103")) // day 32? month 32
+        XCTAssertTrue(Checksum.germanHealthInsuranceNumber("A123456780"))
+        XCTAssertFalse(Checksum.germanHealthInsuranceNumber("A123456781"))
+    }
+
     func testEmiratesIDAndIBAN() {
         XCTAssertTrue(Checksum.emiratesID("784-1990-1234567-6"))
         XCTAssertFalse(Checksum.emiratesID("784-1990-1234567-5"))

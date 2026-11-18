@@ -8,6 +8,8 @@ struct NumberPattern {
         case strong
         /// Only on documents from `countries`, or when the country is unknown.
         case countryGated
+        /// Only on documents known to be from `countries`: too common a shape, with no check digit.
+        case countryOnly
     }
 
     let name: String
@@ -35,6 +37,7 @@ struct NumberPattern {
         switch strength {
         case .strong: return true
         case .countryGated: return country == nil || countries.contains(country!)
+        case .countryOnly: return country.map(countries.contains) ?? false
         }
     }
 }
@@ -66,9 +69,16 @@ extension NumberPattern {
         NumberPattern("HR OIB", ["HR"], .countryGated, #"\d{11}"#, numeric: true, Checksum.croatianOIB),
         NumberPattern("JMBG / EMŠO", jmbgCountries, .countryGated, #"\d{13}"#, numeric: true, Checksum.yugoslavJMBG),
         NumberPattern("IE PPS", ["IE"], .countryGated, #"\d{7}[A-W][A-IW]?"#, Checksum.irishPPS),
-        NumberPattern("MT identity number", ["MT"], .countryGated, #"\d{3,7}[MGAPLHBZ]"#, { _ in true }),
+        NumberPattern("MT identity number", ["MT"], .countryOnly, #"\d{3,7}[MGAPLHBZ]"#, { _ in true }),
         NumberPattern("LU matricule", ["LU"], .countryGated, #"(?:19|20)\d{11}"#, numeric: true, Checksum.luxembourgMatricule),
         NumberPattern("CH AHV/AVS", ["CH", "LI"], .strong, #"756\.?\d{4}\.?\d{4}\.?\d{2}"#, Checksum.ean13),
+        NumberPattern("GB National Insurance", ["GB"], .countryGated,
+                      #"[A-CEGHJ-PR-TW-Z][A-CEGHJ-NPR-TW-Z] ?\d{2} ?\d{2} ?\d{2} ?[A-D]"#, Checksum.britishNationalInsurance),
+        NumberPattern("GB NHS number", ["GB"], .countryGated, #"\d{3}[ -]?\d{3}[ -]?\d{4}"#, numeric: true, Checksum.nhsNumber),
+        NumberPattern("DE Steuer-ID", ["DE"], .countryGated, #"\d{2} ?\d{3} ?\d{3} ?\d{3}"#, numeric: true, Checksum.germanTaxID),
+        NumberPattern("DE Rentenversicherungsnummer", ["DE"], .countryGated, #"\d{2} ?\d{6} ?[A-Z] ?\d{3}"#,
+                      Checksum.germanPensionNumber),
+        NumberPattern("DE Krankenversichertennummer", ["DE"], .countryGated, #"[A-Z]\d{9}"#, Checksum.germanHealthInsuranceNumber),
         NumberPattern("GB driving licence", ["GB"], .strong, #"[A-Z9]{5}\d{6}[A-Z9]{2}\d[A-Z]{2}"#, kind: .documentNumber, { _ in true }),
         NumberPattern("TR kimlik", ["TR"], .countryGated, #"[1-9]\d{10}"#, numeric: true, Checksum.turkishIdentityNumber),
         NumberPattern("UA УНЗР", ["UA"], .countryGated, #"\d{8}-\d{5}"#, Checksum.ukrainianRecordNumber),
@@ -106,7 +116,7 @@ extension NumberPattern {
         NumberPattern("AE Emirates ID", ["AE"], .strong, #"784-?\d{4}-?\d{7}-?\d"#, numeric: true, Checksum.emiratesID),
         NumberPattern("EG national number", ["EG"], .strong, #"[23]\d{13}"#, numeric: true, Checksum.egyptianNationalNumber),
         // Oceania
-        NumberPattern("NZ licence", ["NZ"], .countryGated, #"[A-Z]{2}\d{6}"#, kind: .documentNumber, { _ in true }),
+        NumberPattern("NZ licence", ["NZ"], .countryOnly, #"[A-Z]{2}\d{6}"#, kind: .documentNumber, { _ in true }),
         // Asia
         NumberPattern("CN 身份证号", ["CN"], .strong, #"\d{17}[\dX]"#, Checksum.chineseResidentID),
         NumberPattern("HK identity card", ["HK"], .strong, #"[A-Z]{1,2}\d{6}\(?[0-9A]\)?"#, Checksum.hongKongID),

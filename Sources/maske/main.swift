@@ -129,7 +129,7 @@ case "eval":
             if coverage(Quad(b.rect), a.findings) <= 0.1 { kept += 1 } else { ok = false; problems.append("\(e.name): hidden by mistake “\(b.text)”") }
         }
         if a.kind.rawValue == e.kind { kindsOK += 1 } else { problems.append("\(e.name): kind \(a.kind.rawValue), expected \(e.kind)") }
-        if a.country?.code == e.country { countriesOK += 1 } else { problems.append("\(e.name): country \(a.country?.code ?? "?"), expected \(e.country)") }
+        if (a.country?.code ?? "") == e.country { countriesOK += 1 } else { problems.append("\(e.name): country \(a.country?.code ?? "?"), expected \(e.country)") }
         if ok { docsOK += 1 }
         // Expected ink (green outlines) against the masks (red), on the original image.
         if let o = Warp.overlay(image, expected: e.hide.map { Quad($0.rect) }, found: a.findings.filter(\.isOn).map(\.shape)) {

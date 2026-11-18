@@ -294,6 +294,73 @@ public enum Checksum {
         return d.count == 13 && validYYYYMMDD(d)
     }
 
+    /// United Kingdom, National Insurance number: two prefix letters, six digits and a suffix A–D.
+    /// No check digit; HMRC's allocation rules exclude some letters and prefixes.
+    public static func britishNationalInsurance(_ s: String) -> Bool {
+        let c = Array(s.uppercased().filter { !$0.isWhitespace })
+        guard c.count == 9 || c.count == 8 else { return false }
+        let prefix = String(c[0...1])
+        return !"DFIQUV".contains(c[0]) && !"DFIOQUV".contains(c[1])
+            && !["BG", "GB", "KN", "NK", "NT", "TN", "ZZ"].contains(prefix)
+            && c[2...7].allSatisfy(\.isNumber) && (c.count == 8 || "ABCD".contains(c[8]))
+    }
+
+    /// United Kingdom, NHS number: ten digits; weights 10…2 on the first nine, check digit 11 minus
+    /// the sum modulo 11 (11 → 0, 10 is never issued). NHS Data Dictionary example 943 476 5919.
+    public static func nhsNumber(_ s: String) -> Bool {
+        let d = digits(s)
+        guard d.count == 10 else { return false }
+        var check = 11 - weighted(Array(d[0..<9]), [10, 9, 8, 7, 6, 5, 4, 3, 2]) % 11
+        if check == 11 { check = 0 }
+        return check != 10 && check == d[9]
+    }
+
+    /// Germany, steuerliche Identifikationsnummer: eleven digits, not starting with 0. In the first ten
+    /// exactly one digit occurs twice or three times; the last is an ISO 7064 MOD 11,10 check digit (BZSt).
+    public static func germanTaxID(_ s: String) -> Bool {
+        let d = digits(s)
+        guard d.count == 11, d[0] != 0 else { return false }
+        var counts = [Int](repeating: 0, count: 10)
+        for x in d[0..<10] { counts[x] += 1 }
+        let repeated = counts.filter { $0 > 1 }
+        guard repeated.count == 1, repeated[0] <= 3 else { return false }
+        var p = 10
+        for x in d[0..<10] {
+            var s = (x + p) % 10
+            if s == 0 { s = 10 }
+            p = s * 2 % 11
+        }
+        return (11 - p) % 10 == d[10]
+    }
+
+    /// Germany, Rentenversicherungsnummer (the "SV-Nummer" on payslips): area (2 digits), birth date
+    /// DDMMYY, the birth surname's initial, a serial (00–49 men, 50–99 women) and a check digit. The
+    /// letter counts as its two-digit alphabet position; weights 2,1,2,5,7,1,2,1,2,1,2,1, digit sums of
+    /// the products, modulo 10 (Deutsche Rentenversicherung; example 15 070649 C 103).
+    public static func germanPensionNumber(_ s: String) -> Bool {
+        let c = Array(s.uppercased().filter { !$0.isWhitespace })
+        guard c.count == 12, let l = letterValue(c[8]) else { return false }
+        let head = c[0..<8].compactMap(\.wholeNumberValue), tail = c[9..<12].compactMap(\.wholeNumberValue)
+        guard head.count == 8, tail.count == 3, validDDMM(head, at: 2) else { return false }
+        let n = l - 9 // A = 1
+        let values = head + [n / 10, n % 10] + tail[0...1]
+        let sum = zip(values, [2, 1, 2, 5, 7, 1, 2, 1, 2, 1, 2, 1]).map { $0 * $1 / 10 + $0 * $1 % 10 }.reduce(0, +)
+        return sum % 10 == tail[2]
+    }
+
+    /// Germany, Krankenversichertennummer: a letter and nine digits. The letter counts as its two-digit
+    /// alphabet position; weights alternate 1, 2 with digit sums, modulo 10 (GKV-Spitzenverband).
+    public static func germanHealthInsuranceNumber(_ s: String) -> Bool {
+        let c = Array(s.uppercased())
+        guard c.count == 10, let l = letterValue(c[0]) else { return false }
+        let d = c[1...].compactMap(\.wholeNumberValue)
+        guard d.count == 9 else { return false }
+        let n = l - 9
+        let values = [n / 10, n % 10] + d[0..<8]
+        let sum = values.enumerated().map { i, v in let p = v * (i % 2 == 0 ? 1 : 2); return p / 10 + p % 10 }.reduce(0, +)
+        return sum % 10 == d[8]
+    }
+
     /// Luxembourg, matricule: a date and five digits.
     public static func luxembourgMatricule(_ s: String) -> Bool {
         let d = digits(s)

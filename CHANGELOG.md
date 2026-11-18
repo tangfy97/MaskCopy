@@ -4,13 +4,16 @@ All notable changes to MaskCopy are listed here. Versions follow [Semantic Versi
 
 ## [Unreleased]
 
-United States, Canada and the United Arab Emirates, from field-by-field reviews of their documents.
+United States, Canada, the United Arab Emirates, the United Kingdom, Germany and the Netherlands, from field-by-field reviews of their documents.
 
 - Canada: social insurance numbers (Luhn), Ontario health numbers with version code (Luhn), British Columbia personal health numbers (Mod 11), Quebec health insurance numbers (NAM) and Quebec driving licence numbers are recognised; the permanent resident card is supported (ID No / N° ID). French labels (N° de passeport, Numéro du permis, Numéro d'assurance maladie, NAS, UCI/IUC …) and French street addresses (RUE, BOUL., AVENUE, CHEMIN …) are found.
 - United States: Medicare numbers (MBI), Florida and Illinois licence numbers, the EAD "Card#" label; health cards and services cards are read as ID cards.
 - United Arab Emirates is supported (30 countries): passport, Emirates ID for citizens and residents (784 number with its Luhn digit; card number; the back's MRZ, whose first line has no filler), and driving licence (licence and traffic code numbers).
 - IBANs are recognised on any document (ISO 7064 MOD 97-10 and the country's length).
-- Eleven new synthetic documents (EAD, Medicare card, Quebec licence, Canadian PR card, Ontario health card, BC Services Card, UAE passport, Emirates ID front and back, UAE resident card, UAE licence); 65/65 fully right, 165/165 sensitive fields hidden, 166/166 kept.
+- United Kingdom and Germany, for payslips and letters: National Insurance numbers, NHS numbers (Mod 11), the German Steuer-ID (MOD 11,10), Rentenversicherungsnummer and Krankenversichertennummer, each with its check; labels for UTR, share codes, sort codes and account numbers, V-nummer, BSN/sofinr., polis- and rekeningnummer.
+- German and Dutch street addresses (Musterstraße 12a, Dorpsstraat 10A) and Dutch postcodes (1234 AB) are found without a label. Street addresses were never looked for when the country was unknown; fixed.
+- Company registration numbers, tax codes and tax classes (KvK, Tax Code, Steuerklasse …) stay visible. Malta ID and New Zealand licence numbers, which have no check digit, are looked for only on documents from those countries (a UK tax code "1257L" was masked as a Maltese number).
+- Fourteen new synthetic documents (EAD, Medicare card, Quebec licence, Canadian PR card, Ontario health card, BC Services Card, UAE passport, Emirates ID front and back, UAE resident card, UAE licence, UK, German and Dutch payslips); 68/68 fully right, 179/179 sensitive fields hidden, 177/177 kept.
 
 ## [1.1.0] - 2026-11-17
 

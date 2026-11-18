@@ -13,7 +13,12 @@ enum Labels {
         "PERSONNR", "CPR", "PERSONNUMMER/PERSONAL", "HENKILOTUNNUS", "KENNITALA", "ISIKUKOOD", "ASMENS KODAS", "PERSONAS KODS",
         "PESEL", "RODNE CISLO", "CNP", "ЕГН", "EGN", "OIB", "EMSO", "JMBG", "ЈМБГ", "CODICE FISCALE", "NIF", "NISS",
         "IDENTIFICACAO CIVIL", "PPS", "AHV", "AVS", "SZEMELYI AZONOSITO", "KIMLIK NO", "T.C. KIMLIK", "УНЗР", "ЗАПИС №",
-        "IDNP", "NUMRI PERSONAL", "LICHNY NOMER", "ИДЕНТИФИКАЦИОННЫЙ НОМЕР", "PERSONLIG ID",
+        "IDNP", "NUMRI PERSONAL", "NI NO", "NI NUMBER", "NINO", "NATIONAL INSURANCE", "NHS NO", "NHS NUMBER", "UTR",
+        "UNIQUE TAXPAYER REFERENCE", "SHARE CODE", "SORT CODE", "ACCOUNT NO", "ACCOUNT NUMBER", "A/C NO", "STEUER-ID",
+        "STEUER-IDNR", "IDNR", "IDENTIFIKATIONSNUMMER", "STEUERLICHE IDENTIFIKATIONSNUMMER", "SV-NUMMER", "SV-NR",
+        "SOZIALVERSICHERUNGSNUMMER", "RV-NUMMER", "RENTENVERSICHERUNGSNUMMER", "VERSICHERTENNUMMER", "VERSICHERTEN-NR",
+        "KRANKENVERSICHERTENNUMMER", "KV-NR", "KONTONUMMER", "V-NUMMER", "V-NR", "VREEMDELINGENNUMMER", "BSN/SOFINR",
+        "SOFINUMMER", "SOFI-NR", "POLISNUMMER", "ZORGVERZEKERINGSNUMMER", "REKENINGNUMMER", "LICHNY NOMER", "ИДЕНТИФИКАЦИОННЫЙ НОМЕР", "PERSONLIG ID",
         // Americas
         "CURP", "CPF", "USCIS#", "USCIS #", "USCIS NO", "USCIS NUMBER", "A#", "A #", "A-NUMBER", "A NUMBER", "ALIEN NUMBER",
         "ALIEN REGISTRATION", "ALIEN NO", "MEDICARE NUMBER", "MEDICARE NO", "SIN NO", "NAS",
@@ -47,6 +52,12 @@ enum Labels {
     ]
 
     static let cardAccessNumber: [String] = ["CAN"]
+
+    /// Labels of numbers that are not secret and stay visible: company registrations, tax codes and classes.
+    static let keptNumbers: [String] = [
+        "KVK", "KAMER VAN KOOPHANDEL", "TAX CODE", "STEUERKLASSE", "STKL", "COMPANY NO", "COMPANY NUMBER",
+        "COMPANY REG", "HANDELSREGISTER", "HRB", "BTW", "VAT NO", "VAT REG", "UST-IDNR",
+    ]
 
     /// Names of fields that are not hidden. An address that runs over several lines stops at one.
     static let otherFields: [String] = [

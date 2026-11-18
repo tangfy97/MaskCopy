@@ -103,7 +103,8 @@ public struct Analyzer {
             page.findCardAccessNumber()
         }
         if country?.code == "EG", kind == .idCard { page.findEgyptianIDAddress() }
-        if let code = country?.code, ["US", "CA", "AU", "NZ", "GB", "IE", "SG", "MY"].contains(code) || country == nil {
+        let streetCountries: Set<String> = ["US", "CA", "AU", "NZ", "GB", "IE", "SG", "MY", "DE", "NL", "AT", "CH", "BE", "LU", "FR"]
+        if country.map({ streetCountries.contains($0.code) }) ?? true {
             page.findStreetAddresses()
         }
 
@@ -612,6 +613,9 @@ struct Page {
             // Dates, also in Arabic-Indic digits and with the holder's sex after them ("17 AUG 1958 F").
             let folded = MappedText(line.text, dropSpaces: false).value
             if Self.date.firstMatch(in: folded, range: NSRange(folded.startIndex..., in: folded)) != nil { continue }
+            // A number after the name of a field that is not secret (a company or tax-class number).
+            let upper = line.text.foldedUpper
+            if Labels.keptNumbers.contains(where: { upper.hasPrefix($0) }) { continue }
             let digits = t.filter(\.isNumber).count, letters = t.count - digits
             // A number another rule already masks (the Egyptian national number) is not a second finding.
             if findings.contains(where: { $0.rect.intersectionArea(line.box) > 0.5 * line.box.area }) { continue }
@@ -677,9 +681,9 @@ struct Page {
         #"^\s*(?:\d{1,2}[ ./-]*(?:[A-Z]{3,5}|\d{1,2})[ ./-]*\d{2,4}|\d{4}[ ./-]*\d{1,2}[ ./-]*\d{1,2})(?:\s+[MFX])?\s*$"#)
 
     static let street = try! NSRegularExpression(pattern:
-        #"^(?:BLK |BLOCK |NO\.? ?|LOT |UNIT )?\d{1,5}[A-Z]?[ ,/-]+(?:[A-Z0-9'.-]+ )*(?:ST|STREET|RD|ROAD|AVE|AVENUE|DR|DRIVE|LN|LANE|BLVD|WAY|CT|COURT|PL|PLACE|CRES|CRESCENT|HWY|TCE|TERRACE|PDE|PARADE|CL|CLOSE|SQ|GROVE|GR)\b|\b(?:JALAN|JLN|LORONG|TAMAN|PERSIARAN)\b|^\d{1,5}[A-Z]?,? (?:RUE|BOUL|BOULEVARD|BOUL\.|AV\.?|AVENUE|CH\.?|CHEMIN|RANG|ROUTE|RTE|MONTEE|COTE|IMPASSE|ALLEE|PROMENADE|PLACE) "#)
+        #"^(?:BLK |BLOCK |NO\.? ?|LOT |UNIT )?\d{1,5}[A-Z]?[ ,/-]+(?:[A-Z0-9'.-]+ )*(?:ST|STREET|RD|ROAD|AVE|AVENUE|DR|DRIVE|LN|LANE|BLVD|WAY|CT|COURT|PL|PLACE|CRES|CRESCENT|HWY|TCE|TERRACE|PDE|PARADE|CL|CLOSE|SQ|GROVE|GR)\b|\b(?:JALAN|JLN|LORONG|TAMAN|PERSIARAN)\b|^\d{1,5}[A-Z]?,? (?:RUE|BOUL|BOULEVARD|BOUL\.|AV\.?|AVENUE|CH\.?|CHEMIN|RANG|ROUTE|RTE|MONTEE|COTE|IMPASSE|ALLEE|PROMENADE|PLACE) |^[A-Z][A-Z'.-]*(?: [A-Z][A-Z'.-]*)*(?:STRASSE|STR\.|STRAAT|WEG|LAAN|PLEIN|GRACHT|KADE|DIJK|SINGEL|ALLEE|PLATZ|RING|GASSE|DAMM) \d{1,5} ?[A-Z]?(?:[ -]\d{1,4})?(?: ?[A-Z]{1,3})?,?$"#)
     static let postcodeLine = try! NSRegularExpression(pattern:
-        #"^\d{4,6} [A-Z]{3,}|\b(?:[A-Z]{2,3} \d{4,5}(?:-\d{4})?|\d{4,6})$|\b[A-Z]\d[A-Z] ?\d[A-Z]\d$|\b[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}$"#)
+        #"^\d{4,6} [A-Z]{3,}|^\d{4} ?[A-Z]{2} [A-Z]{2,}|\b(?:[A-Z]{2,3} \d{4,5}(?:-\d{4})?|\d{4,6})$|\b[A-Z]\d[A-Z] ?\d[A-Z]\d$|\b[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}$"#)
 
     mutating func findStreetAddresses() {
         let lines = textLines
