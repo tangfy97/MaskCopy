@@ -58,3 +58,5 @@ Replace gesture-only mask creation with a centred editor draft and native page t
 ## 9 November: preserve accepted portrait boundaries
 
 After device validation, the owner accepted the current portrait coverage and requested no expansion. Preserve those mask shapes. Keep the original annotation threshold visible as expected failures for the four measured regions, alongside baseline floors that reject further loss. Repair the separately discovered Chinese licence address miss with a constrained bilingual label/value association; do not change portrait detection, unrelated OCR or global thresholds.
+| 2026-11-18 | Canadian health card numbers are hidden as personal numbers, and health cards are read as ID cards | People hand them over as photo ID in Canada although several provinces forbid asking for them; the number is never needed by a landlord or employer |
+| 2026-11-18 | Short ambiguous labels ("SIN", "NAM") are not used; "SIN NO", "NAS" and the full French wording are | "SIN" is Spanish for "without" and "NAM" occurs in "VIET NAM"; a stray label match would mask an unrelated value |

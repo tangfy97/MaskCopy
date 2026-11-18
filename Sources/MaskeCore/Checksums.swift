@@ -286,6 +286,53 @@ public enum Checksum {
     /// and employment authorization cards: nine digits, "000-000-001".
     public static func usAlienNumber(_ s: String) -> Bool { digits(s).count == 9 }
 
+    /// Canada, social insurance number: nine digits with a Luhn check digit. The first digit is the
+    /// region of registration (1–7), 9 for temporary residents or 0 for CRA individual tax numbers;
+    /// 8 starts business numbers.
+    public static func canadianSIN(_ s: String) -> Bool {
+        let d = digits(s)
+        return d.count == 9 && d[0] != 8 && luhn(d)
+    }
+
+    /// Canada, Ontario health number: ten digits with a Luhn check digit (Ministry of Health
+    /// technical specification), optionally followed by a one- or two-letter version code.
+    public static func ontarioHealthNumber(_ s: String) -> Bool {
+        let d = digits(s)
+        return d.count == 10 && d[0] != 0 && luhn(d)
+    }
+
+    /// Canada, British Columbia personal health number: ten digits starting with 9. Digits 2–9 are
+    /// weighted 2, 4, 8, 5, 10, 9, 7, 3, each product taken modulo 11; the check digit is 11 minus the
+    /// sum modulo 11 (BC Ministry of Health, PharmaNet specification).
+    public static func britishColumbiaHealthNumber(_ s: String) -> Bool {
+        let d = digits(s)
+        guard d.count == 10, d[0] == 9 else { return false }
+        let sum = zip(d[1...8], [2, 4, 8, 5, 10, 9, 7, 3]).map { $0 * $1 % 11 }.reduce(0, +)
+        let check = 11 - sum % 11
+        return check < 10 && check == d[9]
+    }
+
+    /// Canada, Quebec health insurance number (NAM): three letters of the surname, one of the given
+    /// name, birth date YYMMDD (month plus 50 for women) and two digits.
+    public static func quebecHealthNumber(_ s: String) -> Bool {
+        let d = digits(s)
+        guard d.count == 8 else { return false }
+        let month = d[2] * 10 + d[3], day = d[4] * 10 + d[5]
+        return ((1...12).contains(month) || (51...62).contains(month)) && (1...31).contains(day)
+    }
+
+    /// Canada, Quebec driving licence: a letter, four digits from the surname, a six-digit birth date
+    /// and two control digits ("A1234-150785-01"). Whether the date is DDMMYY or YYMMDD is not
+    /// published consistently, and women's months may carry +50, so either reading is accepted.
+    public static func quebecLicence(_ s: String) -> Bool {
+        let d = digits(s)
+        guard d.count == 12 else { return false }
+        func date(_ dd: Int, _ mm: Int) -> Bool {
+            ((1...12).contains(mm) || (51...62).contains(mm)) && (1...31).contains(dd)
+        }
+        return date(d[4] * 10 + d[5], d[6] * 10 + d[7]) || date(d[8] * 10 + d[9], d[6] * 10 + d[7])
+    }
+
     /// Mexico, CURP.
     public static func mexicanCURP(_ s: String) -> Bool {
         let c = Array(s.uppercased())

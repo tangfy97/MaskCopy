@@ -62,7 +62,7 @@ public enum Countries {
         c("AZ", "AZE", .europe, europeDocs),
         // North America
         c("US", "USA", .northAmerica, [.passport, .idCard, .residencePermit, .drivingLicence]),
-        c("CA", "CAN", .northAmerica, [.passport, .idCard, .drivingLicence]),
+        c("CA", "CAN", .northAmerica, [.passport, .idCard, .residencePermit, .drivingLicence]),
         c("MX", "MEX", .northAmerica, [.passport, .idCard, .drivingLicence]),
         // Oceania
         c("AU", "AUS", .oceania, [.passport, .drivingLicence]),
@@ -155,7 +155,7 @@ public enum Countries {
                 "SOUTH CAROLINA", "SOUTH DAKOTA", "TENNESSEE", "TEXAS", "UTAH", "VERMONT", "VIRGINIA", "WASHINGTON",
                 "WEST VIRGINIA", "WISCONSIN", "WYOMING",
             ],
-            "CA": ["CANADA", "ONTARIO", "QUEBEC", "BRITISH COLUMBIA", "ALBERTA", "MANITOBA", "SASKATCHEWAN", "NOVA SCOTIA", "NEW BRUNSWICK"],
+            "CA": ["CANADA", "ONTARIO", "QUEBEC", "BRITISH COLUMBIA", "ALBERTA", "MANITOBA", "SASKATCHEWAN", "NOVA SCOTIA", "NEW BRUNSWICK", "PRINCE EDWARD ISLAND", "NEWFOUNDLAND"],
             "MX": ["ESTADOS UNIDOS MEXICANOS", "MEXICO"],
             "AU": ["AUSTRALIA", "NEW SOUTH WALES", "QUEENSLAND", "WESTERN AUSTRALIA", "SOUTH AUSTRALIA", "TASMANIA", "VICROADS", "NORTHERN TERRITORY"],
             "NZ": ["NEW ZEALAND", "WAKA KOTAHI", "AOTEAROA"],
@@ -201,6 +201,8 @@ public enum Countries {
         ("IDENTITY CARD", .idCard), ("CARTE D'IDENTITE", .idCard), ("CARTE NATIONALE", .idCard), ("IDENTITEITSKAART", .idCard),
         ("PERSONALAUSWEIS", .idCard), ("IDENTITETSKORT", .idCard), ("CARTA DI IDENTITA", .idCard), ("DOCUMENTO NACIONAL", .idCard),
         ("居民身份证", .idCard), ("身份證", .idCard), ("身分證", .idCard), ("주민등록증", .idCard), ("個人番号カード", .idCard), ("KAD PENGENALAN", .idCard),
+        ("HEALTH INSURANCE", .idCard), ("HEALTH CARD", .idCard), ("CARTE SANTE", .idCard), ("HEALTH + SANTE", .idCard),
+        ("SERVICES CARD", .idCard), ("RESIDENT PERMANENT", .residencePermit),
         ("MYKAD", .idCard), ("NRIC", .idCard), ("ID CARD", .idCard), ("CARTAO DE CIDADAO", .idCard), ("DOWOD OSOBISTY", .idCard),
     ] as [(String, DocumentKind)]).map { ($0.0.foldedUpper, $0.1) }
 }

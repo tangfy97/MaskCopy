@@ -16,7 +16,9 @@ enum Labels {
         "IDNP", "NUMRI PERSONAL", "LICHNY NOMER", "ИДЕНТИФИКАЦИОННЫЙ НОМЕР", "PERSONLIG ID",
         // Americas
         "CURP", "CPF", "USCIS#", "USCIS #", "USCIS NO", "USCIS NUMBER", "A#", "A #", "A-NUMBER", "A NUMBER", "ALIEN NUMBER",
-        "ALIEN REGISTRATION", "ALIEN NO",
+        "ALIEN REGISTRATION", "ALIEN NO", "MEDICARE NUMBER", "MEDICARE NO", "SIN NO", "NAS",
+        "NUMERO D'ASSURANCE SOCIALE", "HEALTH NUMBER", "HEALTH CARD NUMBER", "HEALTH CARD NO", "PERSONAL HEALTH NUMBER", "PHN",
+        "NUMERO DE LA CARTE SANTE", "NUMERO D'ASSURANCE MALADIE", "UCI", "IUC", "CLIENT ID", "N° ID", "NO ID",
         // Middle East and North Africa
         "رقم الهوية", "رقم الهوية الوطنية", "رقم السجل المدني", "السجل المدني", "رقم الإقامة", "رقم الاقامة", "رقم الحدود",
         "الرقم القومي", "رقم قومي", "الرقم القومى", "ID NUMBER", "IQAMA NO", "IQAMA NUMBER", "CIVIL REGISTRY", "BORDER NO",
@@ -31,7 +33,8 @@ enum Labels {
         "NUMERO DOCUMENTO", "NUM SOPORTE", "NUMERO DE SOPORTE", "CARD NO", "CARD NUMBER", "LICENCE NO", "LICENSE NO",
         "LICENCE NUMBER", "LICENSE NUMBER", "LIC NO", "LIC#", "DL NO", "DLN", "DL#", "ID#", "DD", "KARTNUMMER", "KORTNUMMER",
         "护照号", "护照号码", "護照號碼", "证号", "證號", "档案编号", "番号", "免許証番号", "旅券番号", "면허번호", "여권번호",
-        "NO. PASPORT", "NO. LESEN", "CARD ACCESS", "PASSPORT CARD NO", "INVENTORY CONTROL", "ICN",
+        "NO. PASPORT", "NO. LESEN", "CARD ACCESS", "PASSPORT CARD NO", "INVENTORY CONTROL", "ICN", "CARD#", "CARD #",
+        "N° DE PASSEPORT", "NO DE PASSEPORT", "NUMERO DE PASSEPORT", "NUMERO DU PERMIS", "N° DU PERMIS", "NO DU PERMIS",
         "رقم الجواز", "رقم جواز السفر", "رقم الرخصة", "رقم رخصة القيادة", "رقم البطاقة", "رقم المصنع", "DRIVING LICENSE NO",
     ]
 

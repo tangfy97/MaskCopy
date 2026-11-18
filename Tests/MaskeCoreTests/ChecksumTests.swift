@@ -32,6 +32,27 @@ final class ChecksumTests: XCTestCase {
         XCTAssertFalse(Checksum.singaporeNRIC("S1234567A"))
     }
 
+    func testUnitedStatesAndCanada() {
+        // Canada's published test SIN; Luhn-valid made-up health numbers; BC Ministry of Health's worked PHN.
+        XCTAssertTrue(Checksum.canadianSIN("046 454 286"))
+        XCTAssertFalse(Checksum.canadianSIN("046 454 287"))
+        XCTAssertFalse(Checksum.canadianSIN("800 000 002")) // 8 is for business numbers
+        XCTAssertTrue(Checksum.ontarioHealthNumber("1234-567-897"))
+        XCTAssertFalse(Checksum.ontarioHealthNumber("1234-567-898"))
+        XCTAssertTrue(Checksum.britishColumbiaHealthNumber("9698 658 215"))
+        XCTAssertFalse(Checksum.britishColumbiaHealthNumber("9698 658 216"))
+        XCTAssertTrue(Checksum.quebecHealthNumber("TREM 8557 1512")) // born 15 July 1985, female (+50)
+        XCTAssertFalse(Checksum.quebecHealthNumber("TREM 8513 1512"))
+        XCTAssertTrue(Checksum.quebecLicence("T6512-150785-01"))
+        XCTAssertFalse(Checksum.quebecLicence("T6512-159985-01"))
+        XCTAssertFalse(Checksum.usSocialSecurityNumber("912-34-5678")) // ITIN range
+        // CMS's published example Medicare number.
+        let mbi = NumberPattern.all.first { $0.name == "US Medicare number" }!
+        for (s, found) in [("1EG4-TE5-MK73", true), ("1EG4TE5MK73", true), ("1SG4-TE5-MK73", false)] {
+            XCTAssertEqual(mbi.regex.firstMatch(in: s, range: NSRange(s.startIndex..., in: s)) != nil, found, s)
+        }
+    }
+
     func testMiddleEast() {
         // Made-up numbers built with the published Luhn rule.
         XCTAssertTrue(Checksum.saudiIdentityNumber("1012345672"))

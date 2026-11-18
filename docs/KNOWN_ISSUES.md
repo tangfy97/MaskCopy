@@ -173,3 +173,15 @@ These three countries were the largest sources of downloads from 17 October to 1
 - `JourneyUITests/testKeyboardAndSharingLatestCopy` once timed out waiting for Close to become hittable during a full run; it then passed alone and 5 times in a row. Likely Simulator timing under load; watch for it.
 - The tour's US passport specimen shows the engine's real photo mask, which leaves a thin strip below the portrait (clothing, not the face) visible; portrait extents are unchanged at the owner's request. The Chinese ID sample has a grey photo placeholder, so no photo mask is shown there.
 - The tour's globe is deliberately approximate (1:110m outlines, about 4000 dots); small countries get one dot.
+
+## 23. United States and Canada detectors: what is not verified (18 November)
+
+Formats and check digits come from a research report checked against published examples (Canada's test SIN, BC Ministry of Health's worked PHN, CMS's example Medicare number). Still open:
+
+- Quebec licence numbers: sources disagree whether the six-digit date is DDMMYY or YYMMDD; both are accepted. The last two control digits are unpublished and not checked.
+- Canadian passports issued since 2023: one source gives the number as `A123456BC`; not confirmed against the official specimen. The MRZ covers both formats either way.
+- Canadian PR card ID numbers, IMM 1442 permit numbers and BC licence numbers have no check digit and too generic a shape to find without a label; they are hidden only when labelled.
+- Only Florida and Illinois licence numbers are recognised without a label (by their hyphenated layout). Other states' numbers rely on labels (4d, DLN, LIC#, ID NO …).
+- Canadian specimen images are Crown copyright: they may be used for local testing only, never bundled. US federal specimens (USCIS M-274) are public domain.
+- No synthetic document for the Canadian passport, IMM 1442 permit, CRA notice of assessment access code or SIN on its own; SIN is covered by unit tests only.
+

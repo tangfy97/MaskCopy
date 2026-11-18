@@ -2,6 +2,14 @@
 
 All notable changes to MaskCopy are listed here. Versions follow [Semantic Versioning](https://semver.org).
 
+## [Unreleased]
+
+United States and Canada, from a field-by-field review of their identity documents.
+
+- Canada: social insurance numbers (Luhn), Ontario health numbers with version code (Luhn), British Columbia personal health numbers (Mod 11), Quebec health insurance numbers (NAM) and Quebec driving licence numbers are recognised; the permanent resident card is supported (ID No / N° ID). French labels (N° de passeport, Numéro du permis, Numéro d'assurance maladie, NAS, UCI/IUC …) and French street addresses (RUE, BOUL., AVENUE, CHEMIN …) are found.
+- United States: Medicare numbers (MBI), Florida and Illinois licence numbers, the EAD "Card#" label; health cards and services cards are read as ID cards.
+- Six new synthetic documents (EAD, Medicare card, Quebec licence, Canadian PR card, Ontario health card, BC Services Card); 60/60 fully right, 153/153 sensitive fields hidden, 152/152 kept.
+
 ## [1.1.0] - 2026-11-17
 
 Build 15 (TestFlight; build 14 had the first tour). United States, Saudi Arabia and Egypt, the three largest download countries in the first month, and a short tour.
