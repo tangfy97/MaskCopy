@@ -14,7 +14,7 @@ final class JourneyUITests: XCTestCase {
     private func documentApp(recipient: String = "Hotel Nord", purpose: String = "Check-in") -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-MaskeFixture", fixture, "-MaskeRecipient", recipient, "-MaskePurpose", purpose]
-        app.launch()
+        app.launchWithoutTour()
         XCTAssertTrue(app.buttons["mask-photo"].firstMatch.waitForExistence(timeout: 60))
         return app
     }
@@ -25,7 +25,7 @@ final class JourneyUITests: XCTestCase {
     }
     func testHomeAndDocuments() {
         let app = XCUIApplication()
-        app.launch()
+        app.launchWithoutTour()
         XCTAssertTrue(app.buttons["Choose photos"].waitForExistence(timeout: 5))
         capture("Home", app: app)
         app.buttons["Documents"].tap()
@@ -106,7 +106,7 @@ final class JourneyUITests: XCTestCase {
     func testUnreadableImportShowsRecovery() {
         let app = XCUIApplication()
         app.launchArguments = ["-MaskeFixture", "/tmp/maske-missing-synthetic-fixture.png"]
-        app.launch()
+        app.launchWithoutTour()
         XCTAssertTrue(app.alerts["Couldn’t open document"].waitForExistence(timeout: 5))
         app.alerts.buttons["OK"].tap()
         XCTAssertTrue(app.buttons["Choose photos"].exists)
@@ -179,7 +179,7 @@ final class JourneyUITests: XCTestCase {
         context.closePDF()
         let app = XCUIApplication()
         app.launchArguments = ["-MaskeImportPDF", url.path]
-        app.launch()
+        app.launchWithoutTour()
         XCTAssertTrue(app.collectionViews["page-selection"].waitForExistence(timeout: 10))
         XCTAssertFalse(app.buttons["import-selected-pages"].isEnabled)
         for index in 1...4 { app.buttons["import-page-\(index)"].tap() }
@@ -195,7 +195,7 @@ final class JourneyUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Choose photos"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.navigationBars["Hide details"].exists)
         app.terminate()
-        app.launch()
+        app.launchWithoutTour()
         XCTAssertTrue(app.buttons["import-page-1"].waitForExistence(timeout: 10))
         app.buttons["import-page-1"].tap()
         if !fifth.isHittable { app.collectionViews.firstMatch.swipeUp() }
@@ -222,7 +222,7 @@ final class JourneyUITests: XCTestCase {
     func testMultiPageMaskAndWatermarkTargeting() {
         let app = XCUIApplication()
         app.launchArguments = ["-MaskeFixture", fixture + "," + fixture, "-MaskeRecipient", "Hotel Nord"]
-        app.launch()
+        app.launchWithoutTour()
         XCTAssertTrue(app.buttons["Continue"].waitForExistence(timeout: 90))
         app.buttons["Add box"].tap()
         app.buttons["Page 2"].tap()

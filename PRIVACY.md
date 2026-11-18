@@ -1,6 +1,6 @@
 # Privacy Policy
 
-*Last updated: 9 November 2026*
+*Last updated: 17 November 2026*
 
 MaskCopy is an iPhone app for sharing a copy of an identity document with parts of it hidden, made by TangSpark.
 
@@ -14,6 +14,7 @@ What MaskCopy does on your iPhone:
 - It keeps the document and its preview in memory while you review it. It writes a temporary JPG or PDF only when you choose Save or Share. Save opens the system Files picker; the copy remains at the destination you choose until you delete it. Temporary working copies are queued for deletion when you finish, leave the document, start again, or next open MaskCopy. Cleanup and export writes share a serial background queue. It keeps no history.
 - The copy it makes has the hidden parts painted over with an opaque fill. The recipient, purpose and date form a translucent diagonal watermark inside every document page. You can move it separately on each page before exporting. Red lettering is blended with the document to preserve dark printing; light lettering keeps the watermark visible over opaque masks. JPG and PDF contain only the flattened copy, with no source photo metadata such as location or camera details. PDF contains a single image page, without text layers, annotations or a metadata dictionary.
 - While a document is open, MaskCopy covers it when you switch apps, so it doesn't show in the app switcher.
+- It remembers one number on your iPhone: which version of its short introduction tour you have seen, so the tour shows once after installing and once after each update that adds something.
 
 Where the copy goes after you share it is up to you and the app you share it with.
 

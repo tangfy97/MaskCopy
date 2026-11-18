@@ -7,7 +7,7 @@ final class ImportUITests: XCTestCase {
             throw XCTSkip("Requires an isolated simulator seeded with one generated passport")
         }
         let app = XCUIApplication()
-        app.launch()
+        app.launchWithoutTour()
         app.buttons["Choose photos"].tap()
         let pickerBar = app.navigationBars["Photos"]
         XCTAssertTrue(pickerBar.waitForExistence(timeout: 10))

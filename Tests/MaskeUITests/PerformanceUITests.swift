@@ -6,7 +6,7 @@ final class PerformanceUITests: XCTestCase {
         let options = XCTMeasureOptions()
         options.iterationCount = 5
         measure(metrics: [XCTApplicationLaunchMetric(waitUntilResponsive: true)], options: options) {
-            app.launch()
+            app.launchWithoutTour()
             XCTAssertTrue(app.buttons["Choose photos"].waitForExistence(timeout: 5))
             app.terminate()
         }

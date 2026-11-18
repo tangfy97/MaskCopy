@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		048D218AC0F6600363744E08 /* AnalysisCancellation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AF3D1653F5568428CBA67F1 /* AnalysisCancellation.swift */; };
 		0998FDEBF0626664C9352C75 /* MaskEditorUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78F729484B3006C05C146C5A /* MaskEditorUITests.swift */; };
+		0A0C670506DD0A0402988659 /* TourView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5C560F600F23A6D0FFB9F34 /* TourView.swift */; };
 		0B4BE34C4B8FE97821CDF9EC /* WatermarkPositionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC01CF283A668D2AFD9B92D7 /* WatermarkPositionView.swift */; };
 		0D4E3F6CC2FFDB1A02CF17A3 /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8366745B1FCCBCF5AF035B2B /* Session.swift */; };
 		1F8E745BC3DA96B694F9599F /* SyntheticFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2711B531E3AEDDA106E26A9A /* SyntheticFixture.swift */; };
@@ -33,6 +34,7 @@
 		60232038FA47B65248BD2459 /* ReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 082B5E48B442BD50BC7ABAD5 /* ReviewView.swift */; };
 		62A02A24253B441197622347 /* ShareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D46FFAE03D181A5E1D9CE2 /* ShareView.swift */; };
 		6D99FFE7F6505551DA237AE7 /* Labels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3373E6F28AAFDECBC6B70F37 /* Labels.swift */; };
+		6FAD4F9A43AE324A1E88050E /* TourUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B84F6EEB42C0949FC49497A1 /* TourUITests.swift */; };
 		79DC1018C05C876CC01E5E79 /* CHN-A-CHN-AO-05001-back.jpg in Resources */ = {isa = PBXBuildFile; fileRef = FF7F320D650D28085A728F9B /* CHN-A-CHN-AO-05001-back.jpg */; };
 		7E9623FA864CD215EB98F200 /* PageSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF91427A531473EBFD0A7778 /* PageSelectionView.swift */; };
 		80431E25C243ECC1BAD84857 /* JourneyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0258ACF72C2640B9F0C509C /* JourneyUITests.swift */; };
@@ -118,8 +120,10 @@
 		A4278ABD6FCFA3C0B75FA049 /* dl-nld.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "dl-nld.png"; sourceTree = "<group>"; };
 		AE7AAE74EC07DF819F18D670 /* NOR-B-NOR-BO-02002-back.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "NOR-B-NOR-BO-02002-back.jpg"; sourceTree = "<group>"; };
 		B3BDA47AFB011977147143FC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B84F6EEB42C0949FC49497A1 /* TourUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourUITests.swift; sourceTree = "<group>"; };
 		BF91427A531473EBFD0A7778 /* PageSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageSelectionView.swift; sourceTree = "<group>"; };
 		C2E11C768EF1D07A0AF788F0 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		C5C560F600F23A6D0FFB9F34 /* TourView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourView.swift; sourceTree = "<group>"; };
 		D0258ACF72C2640B9F0C509C /* JourneyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyUITests.swift; sourceTree = "<group>"; };
 		D1D46FFAE03D181A5E1D9CE2 /* ShareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareView.swift; sourceTree = "<group>"; };
 		D6118F749B0DDE1EFD59DC94 /* MRZ.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRZ.swift; sourceTree = "<group>"; };
@@ -208,6 +212,7 @@
 				78F729484B3006C05C146C5A /* MaskEditorUITests.swift */,
 				81A068DD303F8A141291FC33 /* PerformanceUITests.swift */,
 				2711B531E3AEDDA106E26A9A /* SyntheticFixture.swift */,
+				B84F6EEB42C0949FC49497A1 /* TourUITests.swift */,
 			);
 			name = MaskeUITests;
 			path = Tests/MaskeUITests;
@@ -261,6 +266,7 @@
 				D1D46FFAE03D181A5E1D9CE2 /* ShareView.swift */,
 				5E43200AC0D7D46E718C7DF3 /* SupportedView.swift */,
 				C2E11C768EF1D07A0AF788F0 /* Theme.swift */,
+				C5C560F600F23A6D0FFB9F34 /* TourView.swift */,
 				FC01CF283A668D2AFD9B92D7 /* WatermarkPositionView.swift */,
 			);
 			name = MaskeApp;
@@ -406,6 +412,7 @@
 				0998FDEBF0626664C9352C75 /* MaskEditorUITests.swift in Sources */,
 				9DD61B7C3D0F28601959ACEF /* PerformanceUITests.swift in Sources */,
 				1F8E745BC3DA96B694F9599F /* SyntheticFixture.swift in Sources */,
+				6FAD4F9A43AE324A1E88050E /* TourUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -448,6 +455,7 @@
 				409754F5A28899305228FD82 /* SupportedView.swift in Sources */,
 				8AF5AAD0F06C44730FA78466 /* Text.swift in Sources */,
 				D16E2BA61B55A10B6F515175 /* Theme.swift in Sources */,
+				0A0C670506DD0A0402988659 /* TourView.swift in Sources */,
 				0B4BE34C4B8FE97821CDF9EC /* WatermarkPositionView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -641,7 +649,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 14;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -654,7 +662,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.1.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -699,7 +707,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 14;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -718,7 +726,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;

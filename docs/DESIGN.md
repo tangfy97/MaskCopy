@@ -14,7 +14,11 @@ Sources: [WWDC26 Design](https://developer.apple.com/wwdc26/guides/design/), [Ma
 
 ## Home and icon language
 
-Home contains one central Scan control and lightweight Photos/Files actions. No large brand text, hero illustration, large cards, slogan, tutorial or introductory heading. The supported list is behind the native information control. At accessibility sizes the source actions may stack and the whole layout can scroll without shrinking the selected text size.
+Home contains one central Scan control and lightweight Photos/Files actions. No large brand text, hero illustration, large cards, slogan or introductory heading on Home itself.
+
+## Tour
+
+At the owner's request (17 November) a short full-screen tour appears once after installing and once after an update that adds something. Everyone sees the whole tour, after installing and after updating: three core pages (scan, check masks, watermark) followed by the new pages; Skip ends it at any page. 1.0 stored nothing, so an update from 1.0 cannot be told from a new install, and the owner wants everyone to see the full tour anyway. Each page is one drawing, a short title and at most one line of detail; new pages carry a New badge. Native page control, Skip and one Continue/Start button. The drawings (Theme.swift, `TourArtwork`) use the real mask colour and watermark red. `Tour.current` and each page's `release` decide what is shown; the only stored value is `MaskeTourSeen`. UI tests launch with `-MaskeTourSeen 99`; TourUITests covers install, update with Skip, and already seen. The supported list is behind the native information control. At accessibility sizes the source actions may stack and the whole layout can scroll without shrinking the selected text size.
 
 The owner selected privacy-logo C and requested a more obvious lock. The AppIcon now has a larger corner lock, with its body increased from 172 to 224 normalized units and its shackle from 106 to 126. The card/redaction identity remains intact. `scripts/icon.swift` renders production artwork; `scripts/brand-study.swift` reproduces the comparison studies in `Design/Studies/2026-11-08`. Theme.swift uses the same selected geometry for the app-switcher privacy cover. No decorative logo is shown on Home.
 

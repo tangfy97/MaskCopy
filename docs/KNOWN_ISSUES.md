@@ -165,3 +165,9 @@ These three countries were the largest sources of downloads from 17 October to 1
 - The back of the Egyptian ID shows religion and marital status, and Saudi iqamas show employer and profession. These are left visible: they are not identity numbers. A user who wants them hidden must use Add box.
 - Fingerprints printed on US green cards are not masked (there is no fingerprint detector). The optical stripe on the 2003 green-card back can carry the card number in faint print that OCR does not read.
 - US state licences and IDs follow AAMVA, but only California, Ontario-style and New York synthetic layouts are checked. Other states' label words (for example "LIC#", "ID:", "ICN") are covered by labels, not by fixtures.
+
+## 22. Tour and UI suite: verification limits (17 November)
+
+- The tour was checked on the iOS 27.2 Simulator only (iPhone 18 Pro): light, dark and the largest accessibility text size; a real fresh install with no launch arguments showed the tour, Skip saved it, and a relaunch went straight to Home. The iOS 18–25 fallback look and a physical iPhone are not checked.
+- An update from 1.0 cannot be told from a new install (1.0 stored nothing). By the owner's choice everyone sees the whole tour and can Skip it.
+- `JourneyUITests/testKeyboardAndSharingLatestCopy` once timed out waiting for Close to become hittable during a full run; it then passed alone and 5 times in a row. Likely Simulator timing under load; watch for it.
