@@ -66,6 +66,23 @@ final class ChecksumTests: XCTestCase {
         XCTAssertFalse(Checksum.egyptianNationalNumber("19001010112345"))
     }
 
+    func testEmiratesIDAndIBAN() {
+        XCTAssertTrue(Checksum.emiratesID("784-1990-1234567-6"))
+        XCTAssertFalse(Checksum.emiratesID("784-1990-1234567-5"))
+        XCTAssertFalse(Checksum.emiratesID("785-1990-1234567-1"))
+        // Examples from the SWIFT IBAN registry.
+        for s in ["NL91 ABNA 0417 1643 00", "GB82 WEST 1234 5698 7654 32", "SA03 8000 0000 6080 1016 7519",
+                  "AE07 0331 2345 6789 0123 456", "DE89 3704 0044 0532 0130 00"] {
+            XCTAssertTrue(Checksum.iban(s), s)
+        }
+        XCTAssertFalse(Checksum.iban("NL91 ABNA 0417 1643 01"))
+        XCTAssertFalse(Checksum.iban("NL91 ABNA 0417 1643 0"))
+        let iban = NumberPattern.all.first { $0.name == "IBAN" }!
+        let line = "IBAN: SA03 8000 0000 6080 1016 7519"
+        let m = iban.regex.firstMatch(in: line, range: NSRange(line.startIndex..., in: line))!
+        XCTAssertTrue(iban.validate((line as NSString).substring(with: m.range)))
+    }
+
     func testMRZ() {
         // ICAO 9303 specimen passport.
         let mrz = MRZReader.parse([
@@ -88,5 +105,9 @@ final class ChecksumTests: XCTestCase {
         XCTAssertEqual(td1?.documentNumber, "D23145890")
         XCTAssertEqual(td1?.checksumsValid, true)
         XCTAssertEqual(td1?.documentKind, .idCard)
+
+        // A TD1 first line with no filler (the Emirates ID number fills the optional data).
+        XCTAssertTrue(MRZReader.isFullTD1FirstLine("ILARE1234567897784199012345676"))
+        XCTAssertFalse(MRZReader.isFullTD1FirstLine("ILARE1234567898784199012345676"))
     }
 }

@@ -99,8 +99,11 @@ extension NumberPattern {
                       Checksum.quebecLicence),
         NumberPattern("MX CURP", ["MX"], .strong, #"[A-Z]{4}\d{6}[HMX][A-Z]{5}[0-9A-Z]\d"#, Checksum.mexicanCURP),
         NumberPattern("BR CPF", ["BR"], .countryGated, #"\d{3}\.?\d{3}\.?\d{3}-?\d{2}"#, Checksum.brazilianCPF),
+        // International
+        NumberPattern("IBAN", [], .strong, #"[A-Z]{2}\d{2}(?: ?[A-Z0-9]{4}){2,7}(?: ?[A-Z0-9]{1,3})?"#, Checksum.iban),
         // Middle East and North Africa (Arabic-Indic digits are read as ASCII digits by MappedText)
         NumberPattern("SA identity number", ["SA"], .countryGated, #"[12]\d{9}"#, numeric: true, Checksum.saudiIdentityNumber),
+        NumberPattern("AE Emirates ID", ["AE"], .strong, #"784-?\d{4}-?\d{7}-?\d"#, numeric: true, Checksum.emiratesID),
         NumberPattern("EG national number", ["EG"], .strong, #"[23]\d{13}"#, numeric: true, Checksum.egyptianNationalNumber),
         // Oceania
         NumberPattern("NZ licence", ["NZ"], .countryGated, #"[A-Z]{2}\d{6}"#, kind: .documentNumber, { _ in true }),

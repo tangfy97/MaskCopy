@@ -185,3 +185,14 @@ Formats and check digits come from a research report checked against published e
 - Canadian specimen images are Crown copyright: they may be used for local testing only, never bundled. US federal specimens (USCIS M-274) are public domain.
 - No synthetic document for the Canadian passport, IMM 1442 permit, CRA notice of assessment access code or SIN on its own; SIN is covered by unit tests only.
 
+## 24. United Arab Emirates and the second Gulf/Egypt review: open points (18 November)
+
+The research report for Saudi Arabia, the UAE and Egypt was thinner than the US/Canada one and gave few primary sources. Only what could be checked was implemented.
+
+- Emirates ID: the 784 number and its Luhn digit are well established; the card number's format (9 characters) and the exact back layout are not confirmed against an official specimen. The card number is hidden by its label.
+- UAE driving licences differ by emirate (Dubai RTA, Abu Dhabi …). Only the "License No." and "Traffic Code No." labels are covered; the licence number has no published format.
+- The report says the Egyptian ID's factory serial (`[A-Z]{2}\d{7}`, front bottom) can stay visible. MaskCopy keeps hiding it as a document number, like every other card number, until an official source says otherwise.
+- The report recommends hiding religion on the back of the Egyptian ID (special-category data under Law 151/2020). It is still left visible (issue 21); that is the owner's call.
+- Saudi National Address lines on bills (building number, 5-digit postcode, 4-digit additional number) are not detected yet; they do not appear on ID cards.
+- IBAN: the pattern reads groups of four; when another short word follows the IBAN on the same line, the match fails its check and the IBAN is left to its label ("IBAN"). No synthetic document has an IBAN yet (unit tests only).
+

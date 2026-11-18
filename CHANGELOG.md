@@ -4,11 +4,13 @@ All notable changes to MaskCopy are listed here. Versions follow [Semantic Versi
 
 ## [Unreleased]
 
-United States and Canada, from a field-by-field review of their identity documents.
+United States, Canada and the United Arab Emirates, from field-by-field reviews of their documents.
 
 - Canada: social insurance numbers (Luhn), Ontario health numbers with version code (Luhn), British Columbia personal health numbers (Mod 11), Quebec health insurance numbers (NAM) and Quebec driving licence numbers are recognised; the permanent resident card is supported (ID No / N° ID). French labels (N° de passeport, Numéro du permis, Numéro d'assurance maladie, NAS, UCI/IUC …) and French street addresses (RUE, BOUL., AVENUE, CHEMIN …) are found.
 - United States: Medicare numbers (MBI), Florida and Illinois licence numbers, the EAD "Card#" label; health cards and services cards are read as ID cards.
-- Six new synthetic documents (EAD, Medicare card, Quebec licence, Canadian PR card, Ontario health card, BC Services Card); 60/60 fully right, 153/153 sensitive fields hidden, 152/152 kept.
+- United Arab Emirates is supported (30 countries): passport, Emirates ID for citizens and residents (784 number with its Luhn digit; card number; the back's MRZ, whose first line has no filler), and driving licence (licence and traffic code numbers).
+- IBANs are recognised on any document (ISO 7064 MOD 97-10 and the country's length).
+- Eleven new synthetic documents (EAD, Medicare card, Quebec licence, Canadian PR card, Ontario health card, BC Services Card, UAE passport, Emirates ID front and back, UAE resident card, UAE licence); 65/65 fully right, 165/165 sensitive fields hidden, 166/166 kept.
 
 ## [1.1.0] - 2026-11-17
 

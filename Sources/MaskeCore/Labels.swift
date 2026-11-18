@@ -21,7 +21,8 @@ enum Labels {
         "NUMERO DE LA CARTE SANTE", "NUMERO D'ASSURANCE MALADIE", "UCI", "IUC", "CLIENT ID", "N° ID", "NO ID",
         // Middle East and North Africa
         "رقم الهوية", "رقم الهوية الوطنية", "رقم السجل المدني", "السجل المدني", "رقم الإقامة", "رقم الاقامة", "رقم الحدود",
-        "الرقم القومي", "رقم قومي", "الرقم القومى", "ID NUMBER", "IQAMA NO", "IQAMA NUMBER", "CIVIL REGISTRY", "BORDER NO",
+        "الرقم القومي", "رقم قومي", "الرقم القومى", "ID NUMBER", "IQAMA NO", "IQAMA NUMBER",
+        "TRAFFIC CODE NO", "TRAFFIC CODE", "TRAFFIC FILE NO", "T.C. NO", "TC NO", "رقم الملف المروري", "الرمز المروري", "IBAN", "CIVIL REGISTRY", "BORDER NO",
         // Asia
         "公民身份号码", "公民身份號碼", "身份证号", "身份證號", "身分證統一編號", "統一編號", "個人番号", "주민등록번호",
         "NRIC", "FIN", "NO. KP", "NO KP", "NO. K/P", "IDENTITY CARD NO", "I/C NO", "AADHAAR",

@@ -79,6 +79,7 @@ public enum Countries {
         // Middle East and North Africa
         c("SA", "SAU", .middleEast, [.passport, .idCard, .residencePermit, .drivingLicence]),
         c("EG", "EGY", .middleEast, [.passport, .idCard, .drivingLicence]),
+        c("AE", "ARE", .middleEast, [.passport, .idCard, .residencePermit, .drivingLicence]),
         // Other
         c("IN", "IND", .other, [.passport, .idCard, .drivingLicence]),
         c("BR", "BRA", .other, [.passport, .idCard, .drivingLicence]),
@@ -88,7 +89,7 @@ public enum Countries {
     /// Europe, North America, Oceania, East and Southeast Asia and the Middle East. Grows as each is tested.
     public static let supported: Set<String> = [
         "NL", "DE", "FR", "GB", "IT", "ES", "NO", "SE", "DK", "FI", "BE", "PL", "IE", "CH", "AT", "PT",
-        "US", "CA", "AU", "NZ", "CN", "HK", "TW", "JP", "KR", "SG", "MY", "SA", "EG",
+        "US", "CA", "AU", "NZ", "CN", "HK", "TW", "JP", "KR", "SG", "MY", "SA", "EG", "AE",
     ]
 
     public static let byCode: [String: Country] = Dictionary(uniqueKeysWithValues: all.map { ($0.code, $0) })
@@ -170,6 +171,7 @@ public enum Countries {
             "SA": ["المملكة العربية السعودية", "KINGDOM OF SAUDI ARABIA", "SAUDI ARABIA"],
             // Not the bare "EGYPT" or "مصر": Saudi iqamas print the holder's nationality.
             "EG": ["جمهورية مصر العربية", "ARAB REPUBLIC OF EGYPT"],
+            "AE": ["الإمارات العربية المتحدة", "دولة الإمارات العربية المتحدة", "UNITED ARAB EMIRATES"],
             "BR": ["REPUBLICA FEDERATIVA DO BRASIL", "BRASIL"],
         ]
         return table.flatMap { code, words in words.map { ($0.foldedUpper, code) } }.sorted { $0.0.count > $1.0.count }

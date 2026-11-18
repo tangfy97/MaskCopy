@@ -43,6 +43,16 @@ enum MRZReader {
         t.allSatisfy { ("A"..."Z").contains($0) || ("0"..."9").contains($0) || $0 == "<" }
     }
 
+    /// The first line of a TD1 card can be full, with no filler: the UAE prints the 15-digit
+    /// Emirates ID number in its optional data. Accept it when its document number checks.
+    static func isFullTD1FirstLine(_ text: String) -> Bool {
+        let c = Array(text)
+        guard c.count == 30, hasMRZAlphabet(text), "ACI".contains(c[0]),
+              c[2...4].allSatisfy({ ("A"..."Z").contains($0) || $0 == "<" }),
+              let check = c[14].wholeNumberValue else { return false }
+        return Checksum.mrzCheckDigit(c[5..<14]) == check
+    }
+
     private static func isDutchLicenceLine(_ text: String) -> Bool {
         text.count == 30 && (text.hasPrefix("D1NLD") || text.hasPrefix("D<NLD"))
             && hasMRZAlphabet(text)
@@ -89,7 +99,8 @@ enum MRZReader {
     static func find(in lines: [TextLine]) -> (MRZ?, [TextLine]) {
         let candidates = lines
             .map { ($0, normalize($0.text)) }
-            .filter { looksLikeMRZ($0.1) || ($0.0.box.midY > 0.65 && isDutchLicenceLine($0.1)) }
+            .filter { looksLikeMRZ($0.1) || ($0.0.box.midY > 0.5 && isFullTD1FirstLine($0.1))
+                || ($0.0.box.midY > 0.65 && isDutchLicenceLine($0.1)) }
             .sorted { $0.0.box.minY < $1.0.box.minY }
         guard !candidates.isEmpty else { return (nil, []) }
 
