@@ -120,7 +120,7 @@ public enum Countries {
             "PT": ["REPUBLICA PORTUGUESA", "CARTAO DE CIDADAO", "CARTA DE CONDUCAO"],
             "SE": ["SVERIGE", "KORKORT"],
             "NO": ["NORGE", "NOREG", "FØRERKORT", "FORERKORT"],
-            "DK": ["DANMARK", "KØREKORT", "KOREKORT"],
+            "DK": ["DANMARK", "KØREKORT", "KOREKORT", "OPHOLDSKORT", "OPHOLDSTILLADELSE", "UDLÆNDINGESTYRELSEN"],
             "FI": ["SUOMI", "AJOKORTTI"],
             "IS": ["ISLAND", "OKUSKIRTEINI"],
             "PL": ["RZECZPOSPOLITA POLSKA", "PRAWO JAZDY", "DOWOD OSOBISTY"],

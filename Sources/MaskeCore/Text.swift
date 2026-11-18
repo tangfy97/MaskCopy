@@ -70,7 +70,7 @@ struct MappedText {
 
     /// Cyrillic and Greek letters that OCR returns for Latin ones in numbers ("А123456(3)").
     static let homoglyphs: [Character: Character] = [
-        "А": "A", "В": "B", "Е": "E", "К": "K", "М": "M", "Н": "H", "О": "O", "Р": "P", "С": "C", "Т": "T", "Х": "X", "У": "Y",
+        "З": "3", "А": "A", "В": "B", "Е": "E", "К": "K", "М": "M", "Н": "H", "О": "O", "Р": "P", "С": "C", "Т": "T", "Х": "X", "У": "Y",
         "І": "I", "Ј": "J", "Ѕ": "S", "Α": "A", "Β": "B", "Ε": "E", "Ζ": "Z", "Η": "H", "Ι": "I", "Κ": "K", "Μ": "M", "Ν": "N",
         "Ο": "O", "Ρ": "P", "Τ": "T", "Υ": "Y", "Χ": "X",
     ]

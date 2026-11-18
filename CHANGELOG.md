@@ -9,6 +9,19 @@ United States, Canada, the United Arab Emirates, the United Kingdom, Germany, th
 - Canada: social insurance numbers (Luhn), Ontario health numbers with version code (Luhn), British Columbia personal health numbers (Mod 11), Quebec health insurance numbers (NAM) and Quebec driving licence numbers are recognised; the permanent resident card is supported (ID No / N° ID). French labels (N° de passeport, Numéro du permis, Numéro d'assurance maladie, NAS, UCI/IUC …) and French street addresses (RUE, BOUL., AVENUE, CHEMIN …) are found.
 - United States: Medicare numbers (MBI), Florida and Illinois licence numbers, the EAD "Card#" label; health cards and services cards are read as ID cards.
 - United Arab Emirates is supported (30 countries): passport, Emirates ID for citizens and residents (784 number with its Luhn digit; card number; the back's MRZ, whose first line has no filler), and driving licence (licence and traffic code numbers).
+- Review of official specimens of these countries:
+  - Machine-readable zones are now fully covered when text recognition splits a row in two or reads its fillers as other characters. The Chinese residence permit's MRZ is also covered when its second row has no filler.
+  - Also hidden now:
+    - German passport, ID card and residence permit numbers in the heading;
+    - the Spanish DNI's support number;
+    - UK residence document numbers ("UKF 0624163");
+    - document numbers printed twice on a card;
+    - the CAN on European passports;
+    - "PASS(ERSATZ)", "PERSON ID" and "N° de référence" values;
+    - the issue number after a UK licence number;
+    - the town and postcode lines below a street.
+  - A number printed in the MRZ is found elsewhere on the page despite O/0 and I/1 confusion.
+  - Employer-number exceptions no longer apply on identity documents.
 - IBANs are recognised on any document (ISO 7064 MOD 97-10 and the country's length).
 - United Kingdom and Germany, for payslips and letters: National Insurance numbers, NHS numbers (Mod 11), the German Steuer-ID (MOD 11,10), Rentenversicherungsnummer and Krankenversichertennummer, each with its check; labels for UTR, share codes, sort codes and account numbers, V-nummer, BSN/sofinr., polis- and rekeningnummer.
 - German and Dutch street addresses (Musterstraße 12a, Dorpsstraat 10A) and Dutch postcodes (1234 AB) are found without a label. Street addresses were never looked for when the country was unknown; fixed.
@@ -21,7 +34,7 @@ United States, Canada, the United Arab Emirates, the United Kingdom, Germany, th
 - Australia: tax file numbers (mod 11), Medicare card numbers (check digit, issue number and IRN), Centrelink CRNs on Australian documents; labels for BSB and account numbers. The Medicare card is read as an ID card.
 - Payment card numbers (16–19 digits, Luhn) on any document.
 - Employer numbers stay visible: ABN, ACN, TAN, GSTIN (mod 36), a company's or firm's PAN, and the Chinese unified social credit code (GB 32100-2015).
-- Twenty-one new synthetic documents (EAD, Medicare card, Quebec licence, Canadian PR card, Ontario health card, BC Services Card, UAE passport, Emirates ID front and back, UAE resident card, UAE licence, UK, German, Dutch, Spanish, French, Danish, Indian, Chinese and Australian payslips, Australian Medicare card); 75/75 fully right, 206/206 sensitive fields hidden, 201/201 kept.
+- Twenty-four new synthetic documents (EAD, Medicare card, Quebec licence, Canadian PR card, Ontario health card, BC Services Card, UAE passport, Emirates ID front and back, UAE resident card, UAE licence, UK, German, Dutch, Spanish, French, Danish, Indian, Chinese and Australian payslips, Australian Medicare card), and three from the specimen review (German and French residence permits, 2021 UK licence); 78/78 fully right, 215/215 sensitive fields hidden, 209/209 kept.
 
 ## [1.1.0] - 2026-11-17
 

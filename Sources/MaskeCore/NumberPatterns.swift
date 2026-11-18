@@ -57,6 +57,8 @@ extension NumberPattern {
         NumberPattern("IT codice fiscale", ["IT"], .strong, #"[A-Z]{6}[0-9LMNPQRSTUV]{2}[A-EHLMPRST][0-9LMNPQRSTUV]{2}[A-Z][0-9LMNPQRSTUV]{3}[A-Z]"#, Checksum.italianFiscalCode),
         NumberPattern("ES DNI", ["ES"], .strong, #"\d{8}-?[A-Z]"#, Checksum.spanishDNI),
         NumberPattern("ES NIE", ["ES"], .strong, #"[XYZ]-?\d{7}-?[A-Z]"#, Checksum.spanishDNI),
+        // The DNI's support number (NUM SOPORTE), the card's own number.
+        NumberPattern("ES DNI support number", ["ES"], .countryOnly, #"[A-Z]{3}\d{6}"#, kind: .documentNumber, { _ in true }),
         NumberPattern("ES Seguridad Social", ["ES"], .countryGated, #"\d{2}[ /-]?\d{8}[ /-]?\d{2}"#, numeric: true,
                       Checksum.spanishSocialSecurity),
         NumberPattern("FR NIR", ["FR"], .countryGated, #"[1-478] ?\d{2} ?\d{2} ?(?:\d{2}|2[AB]) ?\d{3} ?\d{3} ?\d{2}"#,
@@ -87,8 +89,12 @@ extension NumberPattern {
         NumberPattern("DE Steuer-ID", ["DE"], .countryGated, #"\d{2} ?\d{3} ?\d{3} ?\d{3}"#, numeric: true, Checksum.germanTaxID),
         NumberPattern("DE Rentenversicherungsnummer", ["DE"], .countryGated, #"\d{2} ?\d{6} ?[A-Z] ?\d{3}"#,
                       Checksum.germanPensionNumber),
+        // Passport and ID card numbers since 2010: no vowels, so never a word; letters and digits mixed.
+        NumberPattern("DE document number", ["DE"], .countryOnly, #"[CFGHJKLMNPRTVWXYZ][CFGHJKLMNPRTVWXYZ0-9]{8}"#,
+                      kind: .documentNumber, { s in s.filter(\.isNumber).count >= 2 && s.filter(\.isLetter).count >= 2 }),
         NumberPattern("DE Krankenversichertennummer", ["DE"], .countryGated, #"[A-Z]\d{9}"#, Checksum.germanHealthInsuranceNumber),
-        NumberPattern("GB driving licence", ["GB"], .strong, #"[A-Z9]{5}\d{6}[A-Z9]{2}\d[A-Z]{2}"#, kind: .documentNumber, { _ in true }),
+        NumberPattern("GB residence document", ["GB"], .countryGated, #"UK[A-Z] ?\d{7}"#, kind: .documentNumber, { _ in true }),
+        NumberPattern("GB driving licence", ["GB"], .strong, #"[A-Z9]{5}\d{6}[A-Z9]{2}\d[A-Z]{2}(?: \d{2})?"#, kind: .documentNumber, { _ in true }),
         NumberPattern("TR kimlik", ["TR"], .countryGated, #"[1-9]\d{10}"#, numeric: true, Checksum.turkishIdentityNumber),
         NumberPattern("UA УНЗР", ["UA"], .countryGated, #"\d{8}-\d{5}"#, Checksum.ukrainianRecordNumber),
         NumberPattern("MD IDNP", ["MD"], .countryGated, #"[02]\d{12}"#, numeric: true, Checksum.moldovanIDNP),

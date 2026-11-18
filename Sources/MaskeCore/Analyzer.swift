@@ -98,8 +98,10 @@ public struct Analyzer {
         page.findLabelledValues()
         if kind == .drivingLicence || kind == .unknown { page.findFieldCodes(numbered: numbered) }
         if kind != .passport { page.findStandaloneNumbers() }
+        page.findRepeatedCodes()
+        // European passports since about 2017 (the Netherlands, Germany, Spain) also print a CAN on the data page.
         if country?.region != .middleEast,
-           kind == .idCard || kind == .residencePermit || mrz?.format == .td1 || country?.region == .europe && kind == .unknown {
+           kind == .idCard || kind == .residencePermit || mrz?.format == .td1 || country?.region == .europe && (kind == .unknown || kind == .passport) {
             page.findCardAccessNumber()
         }
         if country?.code == "EG", kind == .idCard { page.findEgyptianIDAddress() }
@@ -347,7 +349,7 @@ struct Page {
     }
 
     private var textLines: [TextLine] {
-        lines.filter { l in !mrzLines.contains { $0.box == l.box } }
+        lines.filter { l in !mrzLines.contains { $0.box.intersectionArea(l.box) > l.box.area * 0.5 } }
     }
 
     /// For part of a line that runs to one end of it: how many words it has, and which end on the
@@ -444,14 +446,42 @@ struct Page {
     }
 
     mutating func findLiteral(_ value: String, kind: FindingKind, note: String) {
-        let needle = value.foldedUpper
+        // OCR confuses O and 0, I and 1 in the printed number; a long number may also have one other character misread.
+        func canonical(_ c: Character) -> Character { c == "O" || c == "Q" ? "0" : c == "I" ? "1" : c }
+        let needle = Array(value.foldedUpper).map(canonical)
+        let allowed = needle.count >= 8 ? 1 : 0
         for line in textLines {
             let v = MappedText(line.text, dropSpaces: true)
-            var start = v.value.startIndex
-            while let r = v.value.range(of: needle, range: start..<v.value.endIndex) {
-                if let o = v.originalRange(r) { addPart(kind, of: line, o, note: note) }
-                start = r.upperBound
+            let hay = Array(v.value).map(canonical)
+            var i = 0
+            while i + needle.count <= hay.count {
+                let misses = zip(hay[i..<(i + needle.count)], needle).filter { $0 != $1 }.count
+                if misses <= allowed {
+                    let lower = v.value.index(v.value.startIndex, offsetBy: i)
+                    let upper = v.value.index(lower, offsetBy: needle.count)
+                    if let o = v.originalRange(lower..<upper) { addPart(kind, of: line, o, note: note) }
+                    i += needle.count
+                } else {
+                    i += 1
+                }
             }
+        }
+    }
+
+    /// The document number is often printed twice (in the heading and beside the photo).
+    /// A code printed twice on a page, with digits in it, is taken for the document number.
+    mutating func findRepeatedCodes() {
+        let codes = textLines.compactMap { line -> (TextLine, String)? in
+            let t = String(MappedText(line.text, dropSpaces: true, latinize: true).value)
+            guard (7...12).contains(t.count), t.allSatisfy({ ("A"..."Z").contains($0) || $0.isASCII && $0.isNumber }),
+                  t.contains(where: \.isNumber) else { return nil }
+            let folded = MappedText(line.text, dropSpaces: false).value
+            if Self.date.firstMatch(in: folded, range: NSRange(folded.startIndex..., in: folded)) != nil { return nil }
+            return (line, t)
+        }
+        for (line, code) in codes where codes.contains(where: { $0.1 == code && $0.0.box != line.box }) {
+            if findings.contains(where: { $0.rect.intersectionArea(line.box) > 0.5 * line.box.area }) { continue }
+            add(.documentNumber, line.quad, note: "code printed twice")
         }
     }
 
@@ -492,6 +522,8 @@ struct Page {
             while stop > start, let c = line.text[..<stop].unicodeScalars.last, skip.contains(c) {
                 stop = line.text.unicodeScalars.index(before: stop)
             }
+            // A number ends before a following word ("C56WT9849 BIS 31 10 2024": BIS starts the expiry date).
+            if kind != .address, let word = Self.wordAfterNumber(in: line.text, start..<stop) { stop = word }
             let valueRange = start..<stop
             let value = line.text[valueRange]
             // An employer's company number after a generic "NIF" label stays visible.
@@ -499,7 +531,9 @@ struct Page {
             // A masked Aadhaar ("XXXX XXXX 1234"): UIDAI lets the last four digits be shown.
             if String(value).range(of: #"^[Xx]{4} ?[Xx]{4} ?\d{4}$"#, options: .regularExpression) != nil { return }
             // Stop at a second label on the same line ("Date of birth   Personal No.").
-            if looksLikeValue(String(value), kind) && !Labels.rules.contains(where: { $0.1.contains { String(value).foldedUpper.hasPrefix($0) } }) {
+            // A code with few digits ("PD9Y4521QQ" read in pieces) still counts when it is on the label's own line.
+            let code = kind != .address && value.contains(where: \.isNumber) && value.filter { $0.isLetter || $0.isNumber }.count >= 4
+            if (looksLikeValue(String(value), kind) || code) && !Labels.rules.contains(where: { $0.1.contains { String(value).foldedUpper.hasPrefix($0) } }) {
                 let q = line.quad(for: valueRange)
                 addPart(kind, of: line, valueRange, note: note)
                 if kind == .address { addContinuation(below: q.boundingRect, among: lines, note: note) }
@@ -567,6 +601,8 @@ struct Page {
     /// Each only on documents from its country or of unknown country: a Singapore NRIC (S1234567D) also
     /// passes the Spanish company check.
     func isCompanyNumber(_ s: String) -> Bool {
+        // Employer numbers are on payslips and letters; an identity document's numbers are the holder's.
+        guard kind == .unknown else { return false }
         let t = s.uppercased().filter { $0.isLetter || $0.isNumber }
         func from(_ code: String) -> Bool { country == nil || country == code }
         switch t.count {
@@ -576,6 +612,22 @@ struct Page {
         case 18: return from("CN") && t.prefix(17).contains(where: \.isLetter) && Checksum.chineseSocialCreditCode(t)
         default: return false
         }
+    }
+
+    /// Where a number on a label's line is followed by a word of three or more letters, the index of
+    /// that word, so the word and what follows it are not taken as part of the number.
+    static func wordAfterNumber(in text: String, _ range: Range<String.Index>) -> String.Index? {
+        var seenDigits = 0
+        for word in text[range].split(separator: " ") {
+            let letters = word.filter(\.isLetter).count
+            if seenDigits >= 3, letters >= 3, letters == word.filter({ $0.isLetter || $0.isNumber }).count {
+                var end = word.startIndex
+                while end > range.lowerBound, text[text.index(before: end)] == " " { end = text.index(before: end) }
+                return end
+            }
+            seenDigits += word.filter(\.isNumber).count
+        }
+        return nil
     }
 
     /// Numbers have digits; an address may not. This keeps a neighbouring label from being taken for the value.
@@ -668,7 +720,13 @@ struct Page {
     mutating func findCardAccessNumber() {
         for line in textLines {
             let t = line.text.filter { !$0.isWhitespace }
-            if t.count == 6, t.allSatisfy(\.isNumber) { add(.cardAccessNumber, line.quad, note: "6-digit CAN") }
+            guard t.count == 6, t.allSatisfy(\.isNumber) else { continue }
+            // A passport prints its dates as "06 10 85"; its CAN is one run of digits that is not a date.
+            if kind == .passport {
+                let d = t.compactMap(\.wholeNumberValue), day = d[0] * 10 + d[1], month = d[2] * 10 + d[3]
+                if line.text.trimmingCharacters(in: .whitespaces) != t || (1...31).contains(day) && (1...12).contains(month) { continue }
+            }
+            add(.cardAccessNumber, line.quad, note: "6-digit CAN")
         }
     }
 
@@ -715,7 +773,7 @@ struct Page {
     // MARK: Street addresses without a label
 
     static let date = try! NSRegularExpression(pattern:
-        #"^\s*(?:\d{1,2}[ ./-]*(?:[A-Z]{3,5}|\d{1,2})[ ./-]*\d{2,4}|\d{4}[ ./-]*\d{1,2}[ ./-]*\d{1,2})(?:\s+[MFX])?\s*$"#)
+        #"^\s*(?:(?:BIS|UNTIL|TO|VOM|AB|AU|DU|VALID|EXP|EXPIRES|ISSUED)\.?:? )?(?:\d{1,2}[ ./-]*(?:[A-Z]{3,5}|\d{1,2})[ ./-]*\d{2,4}|\d{4}[ ./-]*\d{1,2}[ ./-]*\d{1,2})(?:\s+[MFX])?\s*$"#)
 
     static let street = try! NSRegularExpression(pattern:
         #"^(?:BLK |BLOCK |NO\.? ?|LOT |UNIT )?\d{1,5}[A-Z]?[ ,/-]+(?:[A-Z0-9'.-]+ )*(?:ST|STREET|RD|ROAD|AVE|AVENUE|DR|DRIVE|LN|LANE|BLVD|WAY|CT|COURT|PL|PLACE|CRES|CRESCENT|HWY|TCE|TERRACE|PDE|PARADE|CL|CLOSE|SQ|GROVE|GR)\b|\b(?:JALAN|JLN|LORONG|TAMAN|PERSIARAN)\b|^\d{1,5}[A-Z]?(?: (?:BIS|TER|QUATER))?,? (?:RUE|BOUL|BOULEVARD|BOUL\.|BD|AV\.?|AVENUE|CH\.?|CHEMIN|RANG|ROUTE|RTE|MONTEE|COTE|IMPASSE|IMP\.|ALLEE|ALL\.|PROMENADE|PLACE|PL\.|QUAI|COURS|SQUARE) |^[A-Z][A-Z'.-]*(?: [A-Z][A-Z'.-]*)*(?:STRASSE|STR\.|STRAAT|WEG|LAAN|PLEIN|GRACHT|KADE|DIJK|SINGEL|ALLEE|PLATZ|RING|GASSE|DAMM) \d{1,5} ?[A-Z]?(?:[ -]\d{1,4})?(?: ?[A-Z]{1,3})?,?$|(?:省|市|自治区)\S*(?:路|街|道|巷|弄|村|镇)\S*\d+号|^(?:C/|CL\.|CALLE|AVDA\.?|AVENIDA|PZA\.?|PLAZA|PASEO|P[º°O]\.|CTRA\.?|CARRETERA|RONDA|TRAVESIA|CAMINO|RAMBLA|GRAN VIA) ?[A-Z][^,]*, ?(?:N[º°O]\.? ?)?(?:\d{1,4}|S/N)\b|^[A-ZÆØÅ][A-ZÆØÅ'.-]*(?: [A-ZÆØÅ][A-ZÆØÅ'.-]*)*(?:GADE|VEJ|ALLE|VAENGET|VÆNGET|PLADS|STRAEDE|STRÆDE|TORV|BAKKE|PARKEN|BOULEVARD) \d{1,4}[A-Z]?(?:,? ?(?:ST|KL|\d{1,2})\.?(?: ?(?:TV|TH|MF|\d{1,3})\.?)?)?$"#)
@@ -728,11 +786,18 @@ struct Page {
             let t = line.text.foldedUpper
             guard Self.street.firstMatch(in: t, range: NSRange(t.startIndex..., in: t)) != nil else { continue }
             add(.address, line.quad, note: "street address")
-            if let next = lineBelow(line.box, among: lines, maxGap: 1.7) {
-                let n = next.text.foldedUpper
-                if Self.postcodeLine.firstMatch(in: n, range: NSRange(n.startIndex..., in: n)) != nil {
-                    add(.address, next.quad, note: "street address (postcode)")
-                }
+            // The postcode line, directly below or below a town line ("EDINBURGH" above "EH1 9GP").
+            let isPostcode = { (l: TextLine) in
+                let n = l.text.foldedUpper
+                return Self.postcodeLine.firstMatch(in: n, range: NSRange(n.startIndex..., in: n)) != nil
+            }
+            guard let next = lineBelow(line.box, among: lines, maxGap: 1.7) else { continue }
+            if isPostcode(next) {
+                add(.address, next.quad, note: "street address (postcode)")
+            } else if let after = lineBelow(next.box, among: lines, maxGap: 1.7), isPostcode(after),
+                      next.text.allSatisfy({ $0.isLetter || $0 == " " || $0 == "-" || $0 == "'" }) {
+                add(.address, next.quad, note: "street address (town)")
+                add(.address, after.quad, note: "street address (postcode)")
             }
         }
     }

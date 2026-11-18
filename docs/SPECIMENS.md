@@ -69,3 +69,19 @@ Run `maske eval Fixtures/specimens Fixtures/specimen-focus.json`. Use this along
 - AAMVA's DL/ID card design standard (sample US and Canadian layouts, PDF417 contents).
 - Government pages with specimen images (e.g. Rijksoverheid for Dutch documents, gov.uk for the UK licence).
 - Photographing printed specimens with an iPhone at an angle, in ordinary light: the closest thing to real use.
+
+## Review of the 12 researched countries (18 November 2026)
+
+To repeat it, link every PRADO image of these countries into one folder and run `maske review` on that folder:
+
+```sh
+mkdir -p /tmp/sel
+for c in USA CAN GBR DEU NLD ESP FRA DNK IND CHN AUS; do
+  ln -sf "$PWD"/Fixtures/specimens/prado/$c-* /tmp/sel/
+done
+.build/debug/maske review /tmp/sel /tmp/rev
+```
+
+That is 121 images. PRADO has no Saudi, Emirati or Egyptian documents.
+
+What was fixed and what is still open: [KNOWN_ISSUES.md](KNOWN_ISSUES.md) issue 28. PRADO's own blurring of personal data limits what these images can test.

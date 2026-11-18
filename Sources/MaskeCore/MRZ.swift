@@ -31,7 +31,15 @@ enum MRZReader {
         for (a, b) in [("«", "<<"), ("‹", "<"), ("く", "<"), ("＜", "<"), ("〈", "<"), ("≪", "<<")] {
             t = t.replacingOccurrences(of: a, with: b)
         }
-        return t.filter { !$0.isWhitespace }
+        t = t.filter { !$0.isWhitespace }
+        // Among fillers, OCR reads stray marks ("^", "、"): a row with a filler run has only fillers there.
+        if t.contains("<<") {
+            let stray = t.filter { !(("A"..."Z").contains($0) || ("0"..."9").contains($0) || $0 == "<") }.count
+            if stray > 0, stray * 8 <= t.count {
+                t = String(t.map { ("A"..."Z").contains($0) || ("0"..."9").contains($0) ? $0 : "<" })
+            }
+        }
+        return t
     }
 
     static func looksLikeMRZ(_ t: String) -> Bool {
@@ -97,22 +105,69 @@ enum MRZReader {
 
     /// Picks the MRZ lines out of a page and reads them.
     static func find(in lines: [TextLine]) -> (MRZ?, [TextLine]) {
-        let candidates = lines
-            .map { ($0, normalize($0.text)) }
-            .filter { looksLikeMRZ($0.1) || ($0.0.box.midY > 0.5 && isFullTD1FirstLine($0.1))
-                || ($0.0.box.midY > 0.65 && isDutchLicenceLine($0.1)) }
-            .sorted { $0.0.box.minY < $1.0.box.minY }
-        guard !candidates.isEmpty else { return (nil, []) }
+        let rows = joinedRows(lines).map { ($0, normalize($0.text)) }
+        let strong = rows.filter { looksLikeMRZ($0.1) || ($0.0.box.midY > 0.5 && isFullTD1FirstLine($0.1))
+            || ($0.0.box.midY > 0.65 && isDutchLicenceLine($0.1)) }
+        // Rows that count only next to a clear one: a row with no filler at all (optional data running
+        // to the end), and a row OCR read only in part.
+        let weak = rows.filter { row in
+            guard !strong.contains(where: { $0.0.box == row.0.box }), row.0.box.midY > 0.6, hasMRZAlphabet(row.1) else { return false }
+            return (28...46).contains(row.1.count) && row.1.filter(\.isNumber).count >= 10
+                || row.1.count >= 12 && row.1.contains("<<")
+        }
+        let group = bottomRun(strong + weak)
+        if group.contains(where: { row in strong.contains { $0.0.box == row.0.box } }) {
+            return (parse(group.map(\.1)), group.map(\.0))
+        }
+        let fallback = bottomRun(strong)
+        guard !fallback.isEmpty else { return (nil, []) }
+        return (parse(fallback.map(\.1)), fallback.map(\.0))
+    }
 
-        // The MRZ is the bottom-most run of such lines that sit close together.
-        var group: [(TextLine, String)] = [candidates.last!]
-        for c in candidates.dropLast().reversed() {
+    /// The MRZ is the bottom-most run of candidate lines that sit close together.
+    private static func bottomRun(_ candidates: [(TextLine, String)]) -> [(TextLine, String)] {
+        let sorted = candidates.sorted { $0.0.box.minY < $1.0.box.minY }
+        guard let last = sorted.last else { return [] }
+        var group = [last]
+        for c in sorted.dropLast().reversed() {
             let top = group.first!.0
             let gap = top.box.minY - c.0.box.maxY
             if gap < top.box.height * 2.5 { group.insert(c, at: 0) } else { break }
         }
-        let texts = group.map(\.1)
-        return (parse(texts), group.map(\.0))
+        return group
+    }
+
+    /// OCR can split one MRZ row into pieces, usually across a long filler run it does not read.
+    /// Pieces on the same row in the lower part of the page are joined, the gap filled with fillers.
+    static func joinedRows(_ lines: [TextLine]) -> [TextLine] {
+        let pieces = lines.filter { line in
+            let t = normalize(line.text)
+            return line.box.midY > 0.4 && t.count >= 3 && hasMRZAlphabet(t) && t.contains("<")
+        }
+        var used = Set<Int>(), joined: [TextLine] = []
+        for (i, piece) in pieces.enumerated() where !used.contains(i) {
+            var row = [piece]
+            for (j, other) in pieces.enumerated() where j != i && !used.contains(j) {
+                let top = max(piece.box.minY, other.box.minY), bottom = min(piece.box.maxY, other.box.maxY)
+                if bottom - top > min(piece.box.height, other.box.height) * 0.5 {
+                    row.append(other)
+                    used.insert(j)
+                }
+            }
+            guard row.count > 1 else { continue }
+            used.insert(i)
+            row.sort { $0.box.minX < $1.box.minX }
+            var text = normalize(row[0].text)
+            for (left, right) in zip(row, row.dropFirst()) {
+                let width = left.box.width / CGFloat(max(normalize(left.text).count, 1))
+                let gap = max(0, Int(((right.box.minX - left.box.maxX) / width).rounded()))
+                text += String(repeating: "<", count: gap) + normalize(right.text)
+            }
+            let quad = Quad(tl: row.first!.quad.tl, tr: row.last!.quad.tr, br: row.last!.quad.br, bl: row.first!.quad.bl)
+            joined.append(TextLine(text: text, quad: quad, candidate: nil))
+        }
+        let joinedPieces = Set(used.map { pieces[$0].box.debugDescription })
+        return lines.filter { !joinedPieces.contains($0.box.debugDescription) } + joined
     }
 
     static func fit(_ s: String, _ n: Int) -> [Character] {

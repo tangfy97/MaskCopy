@@ -222,3 +222,35 @@ The research report for Saudi Arabia, the UAE and Egypt was thinner than the US/
 - An all-digit unified social credit code could also pass the resident ID check; it stays visible only after its label. Indian and Australian addresses are found only after a label, S/O-style prefix or a street-type word; Indian addresses on their own lines without these are not found.
 - The Aadhaar secure QR code and Chinese licence QR codes are hidden as barcodes, which needs a device (the Simulator finds no barcodes).
 
+
+## 28. PRADO review of the 12 researched countries: what is still wrong (18 November)
+
+`maske review` over 121 PRADO images (USA, CAN, GBR, DEU, NLD, ESP, FRA, DNK, IND, CHN, AUS; PRADO has no Saudi, Emirati or Egyptian documents) found and fixed:
+- MRZ rows left visible because OCR split them or read the fillers as other characters;
+- header document numbers;
+- a passport CAN;
+- labelled numbers;
+- a UK town and postcode;
+- the UK licence issue number.
+
+PRADO blurs most personal data before publishing, so these images test layout far more than values. Still open:
+
+- **Numbers printed vertically or perforated** along the edge of Canadian, US, Chinese and Macanese passport data pages are not read and stay visible. **Next:** read the page edges a second time, turned by a quarter.
+- **Ghost and secondary portraits:**
+  - Not covered on the Danish, British, Spanish and French passports, the Danish and French licences, and the German and Spanish ID cards. On French and Spanish passports this is the large faded portrait across the middle of the page.
+  - Nor is the date printed in the ghost-image window (Danish licence "050669", Spanish DNI "010115").
+  - Extends issue 20 to these countries.
+- **Damaged barcodes:** a barcode Vision cannot decode is not found, so not hidden. PRADO's grey blocks over the Quebec PDF417 and the Indian licence QR code cause it here; a worn or glared code on a real card would too.
+- **MRZ microprint** in the German ID card's kinegram strip (document number and name, very small) stays visible.
+- **Masks larger than their value:**
+  - On a French passport whose number OCR merges with the heading ("FRALIQUEFRA6ORF19755"), the mask covers that part of the heading.
+  - Extra boxes on the backs of some licences (German, British, French), and a phone number on the back of the old UK ID card.
+  - A large false portrait over the names and dates of the 2013 French licence (`FRA-F-FRA-FO-07001`).
+  - A portrait mask covering the names on the portrait-format Dutch W-document.
+- **Not found:**
+  - the Spanish 2011 residence permit's number (E + 8 digits) and street line;
+  - the 1997 Danish paper permit's number (H011524, after "Nr.");
+  - the Indian licence number where OCR joins a mark to its label ("FDL. No.");
+  - the vertical DOC. NR. on the Dutch W-document;
+  - the last two letters of the Quebec reference number when OCR reads them as a separate piece.
+- **Known look-alike:** the Spanish passport's printed "Id. No." differs from the number in its MRZ on the specimen, so it is not matched.

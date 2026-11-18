@@ -164,6 +164,28 @@ final class ChecksumTests: XCTestCase {
         XCTAssertEqual(td1?.checksumsValid, true)
         XCTAssertEqual(td1?.documentKind, .idCard)
 
+        // OCR as seen on small specimen scans: fillers read as "く" and "^", a row split in two
+        // across its filler run, and a TD3 second row with no filler at all.
+        func line(_ text: String, _ x: CGFloat, _ y: CGFloat, _ w: CGFloat, _ h: CGFloat = 0.05) -> TextLine {
+            TextLine(text: text, quad: Quad(tl: CGPoint(x: x, y: y), tr: CGPoint(x: x + w, y: y),
+                                            br: CGPoint(x: x + w, y: y + h), bl: CGPoint(x: x, y: y + h)), candidate: nil)
+        }
+        XCTAssertEqual(MRZReader.normalize("6408125<2010315Dくく^<"), "6408125<2010315D<<<<")
+        let split = MRZReader.find(in: [
+            line("IDDくくT220001293くくくくく", 0.05, 0.70, 0.56),
+            line("くくくくく", 0.79, 0.70, 0.14),
+            line("6408125<2010315Dくく<", 0.05, 0.78, 0.55),
+            line("くくく4", 0.81, 0.78, 0.12),
+            line("MUSTERMANNくくERIKAくくくくくくくくくくくくく", 0.05, 0.86, 0.88),
+        ])
+        XCTAssertEqual(split.1.count, 3)
+        XCTAssertEqual(split.1.first?.box.maxX ?? 0, 0.93, accuracy: 0.001)
+        let noFiller = MRZReader.find(in: [
+            line("R<CHNZHENGJIAN<<YANGBEN<<<<<<<<<<<<<<<<<<<<<", 0.03, 0.80, 0.93),
+            line("E000000008USA9006016F19022829110010000000075", 0.03, 0.87, 0.93),
+        ])
+        XCTAssertEqual(noFiller.1.count, 2)
+
         // A TD1 first line with no filler (the Emirates ID number fills the optional data).
         XCTAssertTrue(MRZReader.isFullTD1FirstLine("ILARE1234567897784199012345676"))
         XCTAssertFalse(MRZReader.isFullTD1FirstLine("ILARE1234567898784199012345676"))

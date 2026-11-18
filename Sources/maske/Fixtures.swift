@@ -256,6 +256,28 @@ enum Fixtures {
             .field("Fødselsnummer / Personal No.", fnr, 0.33, 0.46, .hide(.personalNumber))
             .field("Kortnummer / Card No.", "RP1234567", 0.66, 0.46, .hide(.documentNumber)))
 
+        // The German residence permit: the number in the heading (no label), a replacement passport's
+        // number in the remarks with its expiry after it.
+        docs.append(Doc("rp-deu-front", .residencePermit, "DE")
+            .t("BUNDESREPUBLIK DEUTSCHLAND", 0.33, 0.04, 22, .plain, font: "Helvetica-Bold")
+            .t("AUFENTHALTSTITEL", 0.33, 0.10, 26)
+            .t("L01XPVM8J", 0.72, 0.04, 30, .hide(.documentNumber), font: "Menlo")
+            .portrait(left)
+            .field("NAMEN / SURNAMES", "MUSTERMANN", 0.33, 0.20)
+            .field("ANMERKUNGEN / REMARKS", "ARTIKEL 50 EUV", 0.33, 0.36)
+            .t("PASS(ERSATZ) |C56WT9849", 0.33, 0.52, 26, .hide(.documentNumber), font: "Menlo")
+            .t("BIS 31 10 2024", 0.66, 0.52, 26, .keep, font: "Menlo"))
+        // The French residence permit prints its number, which has few digits, twice.
+        docs.append(Doc("rp-fra-front", .residencePermit, "FR")
+            .t("RÉPUBLIQUE FRANÇAISE", 0.33, 0.04, 22, .plain, font: "Helvetica-Bold")
+            .t("TITRE DE SÉJOUR", 0.33, 0.10, 26)
+            .t("3MBMONSFJ", 0.72, 0.04, 30, .hide(.documentNumber), font: "Menlo")
+            .t("3MBMONSFJ", 0.03, 0.15, 22, .hide(.documentNumber), font: "Menlo")
+            .portrait(CGRect(x: 0.03, y: 0.24, width: 0.27, height: 0.6))
+            .field("NOMS / SURNAMES", "TRAORE", 0.33, 0.22)
+            .field("NATIONALITÉ / NATIONALITY", "SEN", 0.33, 0.38)
+            .field("VALABLE JUSQU'AU / VALID UNTIL", "17/09/2030", 0.60, 0.38))
+
         // MARK: Asian identity cards
         docs.append(Doc("id-chn-front", .idCard, "CN", tint: (0.96, 0.95, 0.92))
             .t("中华人民共和国 居民身份证", 0.08, 0.04, 34, .plain, font: "Helvetica-Bold")
@@ -339,8 +361,22 @@ enum Fixtures {
         docs.append(euLicence("dl-fra", "FR", title: "PERMIS DE CONDUIRE  RÉPUBLIQUE FRANÇAISE", surname: "MARTIN", given: "CLAIRE",
                               birth: "02.05.1988 LYON", authority: "Préfet du Rhône", personal: nil, number: "12AB34567"))
         docs.append(euLicence("dl-gbr", "GB", title: "DRIVING LICENCE  UNITED KINGDOM", surname: "MORGAN", given: "SARAH MS",
-                              birth: "05.07.1985 UNITED KINGDOM", authority: "DVLA", personal: nil, number: "MORGA857055SM9IJ",
+                              birth: "05.07.1985 UNITED KINGDOM", authority: "DVLA", personal: nil, number: "MORGA857055SM9IJ 35",
                               address: "12 HIGH STREET, LONDON, SW1A 1AA"))
+        // The 2021 card: the address on three lines, town and postcode below the street, with no "8." read.
+        docs.append(Doc("dl-gbr-2021", .drivingLicence, "GB", tint: (0.95, 0.93, 0.97))
+            .t("UK DRIVING LICENCE", 0.32, 0.04, 30, .plain, font: "Helvetica-Bold")
+            .portrait(CGRect(x: 0.03, y: 0.2, width: 0.25, height: 0.5), .hide(.photo))
+            .t("1. MORGAN", 0.32, 0.16, 28, .keep)
+            .t("2. SARAH", 0.32, 0.23, 28, .keep)
+            .t("3. 11.03.1976 UNITED KINGDOM", 0.32, 0.30, 28)
+            .t("4a. 06.12.2021  4c. DVLA", 0.32, 0.37, 28)
+            .t("4b. 05.12.2031", 0.32, 0.44, 28)
+            .t("5. ", 0.32, 0.51, 28).t("MORGA753116SM9IJ 35", 0.37, 0.51, 28, .hide(.documentNumber))
+            .t("24 HIGH STREET", 0.37, 0.62, 28, .hide(.address))
+            .t("EDINBURGH", 0.37, 0.69, 28, .hide(.address))
+            .t("EH1 9GP", 0.37, 0.76, 28, .hide(.address))
+            .t("9. AM/A/B1/B", 0.32, 0.88, 28))
         docs.append(Doc("dl-nzl", .drivingLicence, "NZ", tint: (0.95, 0.96, 0.92))
             .t("NEW ZEALAND DRIVER LICENCE", 0.32, 0.04, 30, .plain, font: "Helvetica-Bold")
             .portrait(CGRect(x: 0.03, y: 0.2, width: 0.25, height: 0.62), .hide(.photo))
