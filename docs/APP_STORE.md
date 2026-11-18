@@ -178,3 +178,7 @@ App Store Connect, 9 November 2026: the 1.0.0 version page is complete and saved
 ## Build 14 release (1.1.0)
 
 Build 14 upload completed at 18:22 Amsterdam time on 17 November 2026 (Upload succeeded / EXPORT SUCCEEDED, Processing), for TestFlight. 1.0.0 is on the App Store, so this is version **1.1.0**: Saudi Arabia and Egypt, more US documents, the first-run/update tour and the dark-mode action-text fix. Archive: MaskCopy 1.1.0 (14), bundle `com.feiyangtang.Maske`, strict signature, no test or specimen resources, 1.4 MB. Checks before upload: core 24/24, 54/54 synthetic documents (144/144 hidden, 134/134 kept), Simulator UI 30/30 with 4 device-only skips, seeded photo import passed. Physical-device tests were not run. Ready to Test is not yet confirmed. To release it, create a 1.1.0 version page, add What's New and select build 14.
+
+## Build 15 (1.1.0)
+
+Uploaded 18:54 Amsterdam time, 17 November 2026 (Upload succeeded / EXPORT SUCCEEDED, Processing). The animated tour replaces build 14's drawings; the app is otherwise the same. Archive: 1.1.0 (15), strict signature, 1.9 MB, with the tour's three open-licence specimens (sources in NOTICE) and the globe data. Select build 15, not 14, when the 1.1.0 version page is made.
