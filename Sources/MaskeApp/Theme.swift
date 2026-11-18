@@ -422,9 +422,7 @@ struct Mark: View {
     }
 }
 
-// MARK: Tour artwork
-
-enum TourArt { case scan, masks, watermark, arabic, unitedStates }
+// MARK: Tour
 
 /// Marks a tour page about something this release added.
 struct NewBadge: View {
@@ -437,99 +435,5 @@ struct NewBadge: View {
             .padding(.vertical, 4)
             .background(Color.fjord, in: Capsule())
             .accessibilityIdentifier("new-badge")
-    }
-}
-
-/// Small drawings of a document, in the app's own visual language: paper card, grey print,
-/// and masks in the exact colour the shared copy uses.
-struct TourArtwork: View {
-    let art: TourArt
-
-    var body: some View {
-        switch art {
-        case .scan:
-            SourceGlyph(kind: .scan)
-                .frame(width: 72, height: 72)
-                .foregroundStyle(Color.onAccent)
-                .padding(36)
-                .background(Color.fjord, in: Circle())
-                .frame(height: 190)
-        case .masks:
-            card {
-                HStack(alignment: .top, spacing: 14) {
-                    maskBar(width: 62, height: 80)
-                    VStack(alignment: .leading, spacing: 9) {
-                        printLine(width: 90)
-                        printLine(width: 120)
-                        maskBar(width: 104)
-                        printLine(width: 70)
-                    }
-                }
-                maskBar(width: 214, height: 22)
-            }
-        case .watermark:
-            card {
-                HStack(alignment: .top, spacing: 14) {
-                    maskBar(width: 62, height: 80)
-                    VStack(alignment: .leading, spacing: 9) {
-                        printLine(width: 90); printLine(width: 120); printLine(width: 104); printLine(width: 70)
-                    }
-                }
-                printLine(width: 214)
-            }
-            .overlay {
-                Text("Copy for Hotel Nord")
-                    .font(.system(size: 19, weight: .medium))
-                    .foregroundStyle(Color(red: 0.74, green: 0.12, blue: 0.18).opacity(0.6))
-                    .rotationEffect(.degrees(-30))
-            }
-        case .arabic:
-            card {
-                Text(verbatim: "المملكة العربية السعودية")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color.ink)
-                row(label: "رقم الهوية", masked: true)
-                row(label: "الاسم", masked: false)
-                row(label: "تاريخ الانتهاء", value: "1450/01/01")
-            }
-            .environment(\.layoutDirection, .rightToLeft)
-        case .unitedStates:
-            card {
-                Text(verbatim: "PERMANENT RESIDENT")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color.ink)
-                row(label: "USCIS#", masked: true)
-                row(label: "Category", value: "IR1")
-                row(label: "Card Expires", value: "04/02/2034")
-            }
-        }
-    }
-
-    private func card<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 14) { content() }
-            .padding(20)
-            .frame(width: 270, height: 170, alignment: .topLeading)
-            .background(Color.card, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Color.hairline, lineWidth: 1))
-            .shadow(color: .black.opacity(0.08), radius: 12, y: 6)
-            .environment(\.colorScheme, .light) // a document is paper, also in dark mode
-            .frame(height: 190)
-    }
-
-    private func printLine(width: CGFloat) -> some View {
-        Capsule().fill(Color.hairline).frame(width: width, height: 9)
-    }
-
-    private func maskBar(width: CGFloat, height: CGFloat = 14) -> some View {
-        RoundedRectangle(cornerRadius: 2).fill(Color.mask).frame(width: width, height: height)
-    }
-
-    private func row(label: String, masked: Bool = false, value: String? = nil) -> some View {
-        HStack(spacing: 10) {
-            Text(verbatim: label).font(.system(size: 13)).foregroundStyle(Color.muted)
-            if masked { maskBar(width: 110, height: 15) }
-            else if let value { Text(verbatim: value).font(.system(size: 13, weight: .semibold)).foregroundStyle(Color.ink) }
-            else { printLine(width: 96) }
-        }
     }
 }

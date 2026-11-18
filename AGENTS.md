@@ -47,7 +47,8 @@ Sources/maske/              CLI: fixtures, eval, analyze, review, warp, angles, 
   Fixtures.swift            43 synthetic documents drawn on a "table", with exact ink bounds per field
   Warp.swift                Photo-like copies (tilt, rotation, 90°, 180°, steep) and overlays
 Tests/MaskeCoreTests/       Check digits with published examples, ICAO specimen MRZs
-scripts/                    build.sh, check.sh, device.sh, appstore.sh, icon.swift, fetch_specimens.py,
+Resources/Tour/             Tour assets: three official specimens + engine masks (`maske tour`), globe.json (scripts/globe.py)
+scripts/                    build.sh, check.sh, device.sh, appstore.sh, icon.swift, fetch_specimens.py, globe.py,
                             prado_receiver.py, prado_collect.js
 Design/AppIcon-1024.png     Rendered by scripts/icon.swift
 docs/                       DEVELOPMENT (engine), KNOWN_ISSUES, ROADMAP, DECISIONS, SPECIMENS, APP_STORE, user-journey (Chinese)
@@ -75,6 +76,7 @@ The CLI (`swift build`, then `.build/debug/maske …`):
 | `maske analyze <image>` | What the engine finds on one photo; `MASKE_DEBUG=1` prints how every mask was made |
 | `maske review <dir> <out>` | Mask every image in a folder, for looking through by eye; `report.txt` with one line per image |
 | `maske warp <dir> <out>` then `maske angles <out>` | Do masks land in the same place on tilted, turned copies? Writes overlays |
+| `maske tour <image> <stem>` | Straightened JPEG + the engine's masks as JSON for the tour, and `<stem>-check.png` to look at |
 | `maske ocr <image>` | Debug: Vision text recognition on the straightened image, in memory vs via PNG |
 
 Build 4 checks (8 Nov 2026): 14 unit tests; 43/43 synthetic documents, 121/121 sensitive fields at ≥98% coverage, 96/96 kept, mean precision 0.96 (worst 0.75). On 24 selected angle fixtures the Mac covered 84/84 fields and preserved 63/63; the Simulator still missed the photo and MRZ on the 90° Chinese passport (81/84). Seven annotated official specimens passed 28/28 sensitive regions and 15/15 preserved regions. These checks do not establish pixel-perfect masking on every photograph. See KNOWN_ISSUES.

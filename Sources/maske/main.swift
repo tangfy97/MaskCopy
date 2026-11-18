@@ -13,6 +13,8 @@ maske review <dir> <out>      straighten and mask every image in <dir>, for look
 maske warp <dir> <out>        photograph-like copies: tilted, turned, on a table
 maske angles <warped dir> [expected.json]
                               compare tilted masks against fixture boxes or the original's masks
+maske tour <image> <out stem> write the straightened document (≤900 px JPEG) and the engine's masks
+                              (JSON) for the app's tour, plus <stem>-check.png with the masks painted
 """
 
 /// Share of the field covered by active masks, sampled in the field's own frame.
@@ -37,6 +39,18 @@ guard let command = args.first, let path = args.dropFirst().first else {
 let url = URL(fileURLWithPath: path)
 
 switch command {
+case "tour":
+    guard let image = Fixtures.load(url), let stem = args.dropFirst(2).first else { print(usage); exit(2) }
+    let (doc, a) = try Analyzer().analyze(photo: image)
+    guard let plain = Renderer.render(pages: [(doc.image, [])], watermark: nil, maxWidth: 900),
+          let masked = Renderer.render(pages: [(doc.image, a.findings)], watermark: nil, maxWidth: 900) else { exit(1) }
+    Warp.writeJPEG(plain, to: URL(fileURLWithPath: stem + ".jpg"), quality: 0.8)
+    Fixtures.write(masked, to: URL(fileURLWithPath: stem + "-check.png"))
+    let enc = JSONEncoder()
+    enc.outputFormatting = [.prettyPrinted, .sortedKeys]
+    try enc.encode(a.findings.filter(\.isOn)).write(to: URL(fileURLWithPath: stem + ".json"))
+    print("\(a.findings.count) masks, \(plain.width)×\(plain.height) → \(stem).jpg/.json")
+
 case "fixtures":
     try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
     var all: [Expected] = []
