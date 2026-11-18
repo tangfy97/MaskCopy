@@ -3,7 +3,7 @@ final class MaskEditorUITests: XCTestCase {
     func testMovingMaskDirectlyOnReview() {
         let app = XCUIApplication()
         app.launchArguments = ["-MaskeFixture", SyntheticFixture.passportPath]
-        app.launch()
+        app.launchWithoutTour()
         let photo = app.buttons["mask-photo"].firstMatch
         XCTAssertTrue(photo.waitForExistence(timeout: 60))
         photo.tap()
@@ -31,7 +31,7 @@ final class MaskEditorUITests: XCTestCase {
     func testAdjustZoomSaveAndCancel() {
         let app = XCUIApplication()
         app.launchArguments = ["-MaskeFixture", SyntheticFixture.passportPath, "-MaskeRecipient", "Hotel Nord"]
-        app.launch()
+        app.launchWithoutTour()
         let photo = app.buttons["Photo"].firstMatch
         XCTAssertTrue(photo.waitForExistence(timeout: 60))
         photo.tap()

@@ -11,6 +11,8 @@ struct MaskCopyApp: App {
 
 struct RootView: View {
     @StateObject private var session = Session()
+    @AppStorage(Tour.seenKey) private var tourSeen = 0
+    @State private var tour: [Tour.Page] = []
 
     var body: some View {
         NavigationStack(path: $session.path) {
@@ -38,6 +40,17 @@ struct RootView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text("Choose another photo or file.")
+        }
+        .fullScreenCover(isPresented: Binding(get: { !tour.isEmpty }, set: { if !$0 { tour = [] } })) {
+            TourView(pages: tour) {
+                tourSeen = Tour.current
+                tour = []
+            }
+        }
+        .onAppear {
+            guard tourSeen < Tour.current else { return }
+            tour = Tour.pages(seen: tourSeen)
+            if tour.isEmpty { tourSeen = Tour.current }
         }
         #if DEBUG
         .task { DebugLaunch.run(session) }

@@ -1,7 +1,7 @@
 import Foundation
 
 public enum Region: String, CaseIterable, Sendable {
-    case europe, northAmerica, oceania, eastAsia, southeastAsia, other
+    case europe, northAmerica, oceania, eastAsia, southeastAsia, middleEast, other
 }
 
 public struct Country: Identifiable, Hashable, Sendable {
@@ -61,7 +61,7 @@ public enum Countries {
         c("TR", "TUR", .europe, europeDocs), c("GE", "GEO", .europe, europeDocs), c("AM", "ARM", .europe, europeDocs),
         c("AZ", "AZE", .europe, europeDocs),
         // North America
-        c("US", "USA", .northAmerica, [.passport, .idCard, .drivingLicence]),
+        c("US", "USA", .northAmerica, [.passport, .idCard, .residencePermit, .drivingLicence]),
         c("CA", "CAN", .northAmerica, [.passport, .idCard, .drivingLicence]),
         c("MX", "MEX", .northAmerica, [.passport, .idCard, .drivingLicence]),
         // Oceania
@@ -76,16 +76,19 @@ public enum Countries {
         // Southeast Asia
         c("SG", "SGP", .southeastAsia, [.passport, .idCard, .drivingLicence]),
         c("MY", "MYS", .southeastAsia, [.passport, .idCard, .drivingLicence]),
+        // Middle East and North Africa
+        c("SA", "SAU", .middleEast, [.passport, .idCard, .residencePermit, .drivingLicence]),
+        c("EG", "EGY", .middleEast, [.passport, .idCard, .drivingLicence]),
         // Other
         c("IN", "IND", .other, [.passport, .idCard, .drivingLicence]),
         c("BR", "BRA", .other, [.passport, .idCard, .drivingLicence]),
     ]
 
     /// The first supported countries: the most common documents among people who move between
-    /// Europe, North America, Oceania and East and Southeast Asia. Grows as each is tested.
+    /// Europe, North America, Oceania, East and Southeast Asia and the Middle East. Grows as each is tested.
     public static let supported: Set<String> = [
         "NL", "DE", "FR", "GB", "IT", "ES", "NO", "SE", "DK", "FI", "BE", "PL", "IE", "CH", "AT", "PT",
-        "US", "CA", "AU", "NZ", "CN", "HK", "TW", "JP", "KR", "SG", "MY",
+        "US", "CA", "AU", "NZ", "CN", "HK", "TW", "JP", "KR", "SG", "MY", "SA", "EG",
     ]
 
     public static let byCode: [String: Country] = Dictionary(uniqueKeysWithValues: all.map { ($0.code, $0) })
@@ -164,12 +167,22 @@ public enum Countries {
             "SG": ["REPUBLIC OF SINGAPORE", "SINGAPORE"],
             "MY": ["KAD PENGENALAN", "MYKAD", "MALAYSIA"],
             "IN": ["INDIA", "भारत"],
+            "SA": ["المملكة العربية السعودية", "KINGDOM OF SAUDI ARABIA", "SAUDI ARABIA"],
+            // Not the bare "EGYPT" or "مصر": Saudi iqamas print the holder's nationality.
+            "EG": ["جمهورية مصر العربية", "ARAB REPUBLIC OF EGYPT"],
             "BR": ["REPUBLICA FEDERATIVA DO BRASIL", "BRASIL"],
         ]
-        return table.flatMap { code, words in words.map { ($0, code) } }.sorted { $0.0.count > $1.0.count }
+        return table.flatMap { code, words in words.map { ($0.foldedUpper, code) } }.sorted { $0.0.count > $1.0.count }
     }()
 
-    static let documentKeywords: [(String, DocumentKind)] = [
+    static let documentKeywords: [(String, DocumentKind)] = ([
+        // Before "PASSPORT" and "IDENTITY CARD", which they contain or sit beside.
+        ("PASSPORT CARD", .idCard), ("هوية مقيم", .residencePermit), ("RESIDENT IDENTITY", .residencePermit),
+        ("IQAMA", .residencePermit), ("إقامة", .residencePermit), ("PERMANENT RESIDENT", .residencePermit),
+        ("EMPLOYMENT AUTHORIZATION", .residencePermit), ("رخصة قيادة", .drivingLicence), ("رخصة القيادة", .drivingLicence),
+        ("DRIVING LICENSE", .drivingLicence), ("جواز سفر", .passport), ("جواز السفر", .passport),
+        ("بطاقة تحقيق الشخصية", .idCard), ("بطاقة الهوية الوطنية", .idCard), ("الهوية الوطنية", .idCard),
+        ("NATIONAL IDENTITY CARD", .idCard), ("IDENTIFICATION CARD", .idCard),
         ("RESIDENCE PERMIT", .residencePermit), ("VERBLIJFSDOCUMENT", .residencePermit), ("VERBLIJFSVERGUNNING", .residencePermit),
         ("OPPHOLDSKORT", .residencePermit), ("OPPHOLDSTILLATELSE", .residencePermit), ("AUFENTHALTSTITEL", .residencePermit),
         ("TITRE DE SEJOUR", .residencePermit), ("PERMESSO DI SOGGIORNO", .residencePermit), ("UPPEHALLSTILLSTAND", .residencePermit),
@@ -189,5 +202,5 @@ public enum Countries {
         ("PERSONALAUSWEIS", .idCard), ("IDENTITETSKORT", .idCard), ("CARTA DI IDENTITA", .idCard), ("DOCUMENTO NACIONAL", .idCard),
         ("居民身份证", .idCard), ("身份證", .idCard), ("身分證", .idCard), ("주민등록증", .idCard), ("個人番号カード", .idCard), ("KAD PENGENALAN", .idCard),
         ("MYKAD", .idCard), ("NRIC", .idCard), ("ID CARD", .idCard), ("CARTAO DE CIDADAO", .idCard), ("DOWOD OSOBISTY", .idCard),
-    ]
+    ] as [(String, DocumentKind)]).map { ($0.0.foldedUpper, $0.1) }
 }

@@ -42,6 +42,7 @@ struct ActionBar<Content: View>: View {
                 .primaryAction()
                 .controlSize(.large)
                 .tint(.fjord)
+                .foregroundStyle(Color.onAccent) // the dark-mode accent is pale; white text would vanish
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
@@ -383,6 +384,7 @@ extension Region {
         case .oceania: "Australia and New Zealand"
         case .eastAsia: "East Asia"
         case .southeastAsia: "Southeast Asia"
+        case .middleEast: "Middle East and North Africa"
         case .other: "More"
         }
     }
@@ -417,5 +419,21 @@ struct Mark: View {
         }
         .frame(width: size, height: size)
         .accessibilityHidden(true)
+    }
+}
+
+// MARK: Tour
+
+/// Marks a tour page about something this release added.
+struct NewBadge: View {
+    var body: some View {
+        Text("New")
+            .font(.caption.weight(.bold))
+            .textCase(.uppercase)
+            .foregroundStyle(Color.onAccent)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(Color.fjord, in: Capsule())
+            .accessibilityIdentifier("new-badge")
     }
 }

@@ -15,7 +15,11 @@ enum Labels {
         "IDENTIFICACAO CIVIL", "PPS", "AHV", "AVS", "SZEMELYI AZONOSITO", "KIMLIK NO", "T.C. KIMLIK", "УНЗР", "ЗАПИС №",
         "IDNP", "NUMRI PERSONAL", "LICHNY NOMER", "ИДЕНТИФИКАЦИОННЫЙ НОМЕР", "PERSONLIG ID",
         // Americas
-        "CURP", "CPF",
+        "CURP", "CPF", "USCIS#", "USCIS #", "USCIS NO", "USCIS NUMBER", "A#", "A #", "A-NUMBER", "A NUMBER", "ALIEN NUMBER",
+        "ALIEN REGISTRATION", "ALIEN NO",
+        // Middle East and North Africa
+        "رقم الهوية", "رقم الهوية الوطنية", "رقم السجل المدني", "السجل المدني", "رقم الإقامة", "رقم الاقامة", "رقم الحدود",
+        "الرقم القومي", "رقم قومي", "الرقم القومى", "ID NUMBER", "IQAMA NO", "IQAMA NUMBER", "CIVIL REGISTRY", "BORDER NO",
         // Asia
         "公民身份号码", "公民身份號碼", "身份证号", "身份證號", "身分證統一編號", "統一編號", "個人番号", "주민등록번호",
         "NRIC", "FIN", "NO. KP", "NO KP", "NO. K/P", "IDENTITY CARD NO", "I/C NO", "AADHAAR",
@@ -27,20 +31,31 @@ enum Labels {
         "NUMERO DOCUMENTO", "NUM SOPORTE", "NUMERO DE SOPORTE", "CARD NO", "CARD NUMBER", "LICENCE NO", "LICENSE NO",
         "LICENCE NUMBER", "LICENSE NUMBER", "LIC NO", "LIC#", "DL NO", "DLN", "DL#", "ID#", "DD", "KARTNUMMER", "KORTNUMMER",
         "护照号", "护照号码", "護照號碼", "证号", "證號", "档案编号", "番号", "免許証番号", "旅券番号", "면허번호", "여권번호",
-        "NO. PASPORT", "NO. LESEN", "CARD ACCESS",
+        "NO. PASPORT", "NO. LESEN", "CARD ACCESS", "PASSPORT CARD NO", "INVENTORY CONTROL", "ICN",
+        "رقم الجواز", "رقم جواز السفر", "رقم الرخصة", "رقم رخصة القيادة", "رقم البطاقة", "رقم المصنع", "DRIVING LICENSE NO",
     ]
 
     static let address: [String] = [
         "ADDRESS", "RESIDENTIAL ADDRESS", "ADRES", "ADRESSE", "ADRESA", "ADRESAS", "ANSCHRIFT", "WOHNORT", "INDIRIZZO",
         "RESIDENZA", "住居地", "DIRECCION", "DOMICILIO", "MORADA", "OSOITE", "BOSTEDSADRESSE", "BOPÆL", "ADRESS", "LAKCIM",
         "ADRES ZAMIESZKANIA", "MIEJSCE ZAMIESZKANIA", "ΔΙΕΥΘΥΝΣΗ", "АДРЕС", "АДРЕСА", "住址", "住所", "주소", "ALAMAT",
+        "العنوان", "عنوان", "محل الإقامة", "محل الاقامة", "جهة الإقامة",
     ]
 
     static let cardAccessNumber: [String] = ["CAN"]
 
-    static var rules: [(FindingKind, [String])] {
-        [(.personalNumber, personalNumber), (.documentNumber, documentNumber), (.address, address), (.cardAccessNumber, cardAccessNumber)]
-    }
+    /// Names of fields that are not hidden. An address that runs over several lines stops at one.
+    static let otherFields: [String] = [
+        "وحدة مرور", "تاريخ", "الاسم", "الجنسية", "المهنة", "جهة العمل", "صاحب العمل", "فصيلة الدم", "الديانة", "الحالة الاجتماعية",
+    ].map(\.foldedUpper)
+
+    static let rules: [(FindingKind, [String])] = {
+        // Folded like the text they are matched against (Arabic hamza forms lose their hamza).
+        let table: [(FindingKind, [String])] = [
+            (.personalNumber, personalNumber), (.documentNumber, documentNumber), (.address, address), (.cardAccessNumber, cardAccessNumber),
+        ]
+        return table.map { ($0.0, $0.1.map(\.foldedUpper)) }
+    }()
 
     /// Field numbers used by the EU driving licence (Directive 2006/126/EC), ISO/IEC 18013-1 and AAMVA.
     static let fieldCodes: [String: FindingKind] = [

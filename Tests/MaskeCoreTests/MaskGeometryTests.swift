@@ -104,7 +104,8 @@ final class MaskGeometryTests: XCTestCase {
         }
         let white = try page(1), black = try page(0)
         let masks = [Finding(kind: .photo, rect: CGRect(x: 0, y: 0, width: 1, height: 1))]
-        let mark = Watermark(recipient: "Hotel Nord", purpose: "Check-in only", date: Date(timeIntervalSince1970: 0))
+        // Mid-January 1970: still 1970 in every time zone (epoch 0 is 31 Dec 1969 west of UTC).
+        let mark = Watermark(recipient: "Hotel Nord", purpose: "Check-in only", date: Date(timeIntervalSince1970: 15 * 86_400))
         for watermark in [nil, mark] {
             let a = try XCTUnwrap(Renderer.render(pages: [(white, masks)], watermark: watermark))
             let b = try XCTUnwrap(Renderer.render(pages: [(black, masks)], watermark: watermark))

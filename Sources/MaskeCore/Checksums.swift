@@ -282,6 +282,10 @@ public enum Checksum {
         return area != 0 && area != 666 && area < 900 && !(d[3] == 0 && d[4] == 0) && !d[5...8].allSatisfy { $0 == 0 }
     }
 
+    /// United States, alien registration number (A-number) as printed on permanent resident
+    /// and employment authorization cards: nine digits, "000-000-001".
+    public static func usAlienNumber(_ s: String) -> Bool { digits(s).count == 9 }
+
     /// Mexico, CURP.
     public static func mexicanCURP(_ s: String) -> Bool {
         let c = Array(s.uppercased())
@@ -293,6 +297,28 @@ public enum Checksum {
             sum += v * (18 - i)
         }
         return c[17].wholeNumberValue == (10 - sum % 10) % 10
+    }
+
+    // MARK: Middle East and North Africa
+
+    /// Saudi Arabia, national identity number (citizens, starting 1) and iqama number
+    /// (residents, starting 2): ten digits with a Luhn check digit.
+    public static func saudiIdentityNumber(_ s: String) -> Bool {
+        let d = digits(s)
+        return d.count == 10 && (d[0] == 1 || d[0] == 2) && luhn(d)
+    }
+
+    /// Egypt, national number (الرقم القومي): century (2 = 1900s, 3 = 2000s), birth date
+    /// YYMMDD, governorate of birth, a sequence whose last digit gives the sex, and a check
+    /// digit. The check-digit algorithm is not published, so the date and governorate are checked.
+    public static func egyptianNationalNumber(_ s: String) -> Bool {
+        let d = digits(s)
+        guard d.count == 14, d[0] == 2 || d[0] == 3 else { return false }
+        let month = d[3] * 10 + d[4], day = d[5] * 10 + d[6]
+        let governorate = d[7] * 10 + d[8]
+        let governorates: Set<Int> = [1, 2, 3, 4, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+                                      31, 32, 33, 34, 35, 88]
+        return (1...12).contains(month) && (1...31).contains(day) && governorates.contains(governorate)
     }
 
     /// Brazil, CPF.

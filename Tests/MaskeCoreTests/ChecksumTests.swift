@@ -32,6 +32,19 @@ final class ChecksumTests: XCTestCase {
         XCTAssertFalse(Checksum.singaporeNRIC("S1234567A"))
     }
 
+    func testMiddleEast() {
+        // Made-up numbers built with the published Luhn rule.
+        XCTAssertTrue(Checksum.saudiIdentityNumber("1012345672"))
+        XCTAssertTrue(Checksum.saudiIdentityNumber("2123456788"))
+        XCTAssertFalse(Checksum.saudiIdentityNumber("2123456786"))
+        XCTAssertFalse(Checksum.saudiIdentityNumber("3123456782"))
+        XCTAssertTrue(Checksum.egyptianNationalNumber("29001010112345"))
+        XCTAssertTrue(Checksum.egyptianNationalNumber("30512250212345"))
+        XCTAssertFalse(Checksum.egyptianNationalNumber("29013010112345")) // month 13
+        XCTAssertFalse(Checksum.egyptianNationalNumber("29001010512345")) // no governorate 05
+        XCTAssertFalse(Checksum.egyptianNationalNumber("19001010112345"))
+    }
+
     func testMRZ() {
         // ICAO 9303 specimen passport.
         let mrz = MRZReader.parse([

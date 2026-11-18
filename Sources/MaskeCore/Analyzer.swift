@@ -80,6 +80,8 @@ public struct Analyzer {
             ? Self.keywordCountry(lines.filter { $0.box.midY < 0.3 }.map { $0.text.foldedUpper }) : nil
         let country = mrz.flatMap { Countries.country(mrzCode: $0.issuingState) }
             ?? licenceHeading ?? Self.keywordCountry(folded) ?? Self.strongPatternCountry(page)
+        // The back of the Egyptian national ID has no title; its national number names the country.
+        if kind == .unknown, country?.code == "EG" { kind = .idCard }
         page.country = country?.code
         page.kind = kind
 
@@ -96,9 +98,11 @@ public struct Analyzer {
         page.findLabelledValues()
         if kind == .drivingLicence || kind == .unknown { page.findFieldCodes(numbered: numbered) }
         if kind != .passport { page.findStandaloneNumbers() }
-        if kind == .idCard || kind == .residencePermit || mrz?.format == .td1 || country?.region == .europe && kind == .unknown {
+        if country?.region != .middleEast,
+           kind == .idCard || kind == .residencePermit || mrz?.format == .td1 || country?.region == .europe && kind == .unknown {
             page.findCardAccessNumber()
         }
+        if country?.code == "EG", kind == .idCard { page.findEgyptianIDAddress() }
         if let code = country?.code, ["US", "CA", "AU", "NZ", "GB", "IE", "SG", "MY"].contains(code) || country == nil {
             page.findStreetAddresses()
         }
@@ -213,15 +217,18 @@ public struct Analyzer {
               Self.keywordKind(lines.map { $0.text.foldedUpper }) == .passport
                 || original.1.contains(where: { MRZReader.normalize($0.text).count >= 40 }) else { return original }
         let top = image.height * 5 / 8
-        guard let bottom = image.cropping(to: CGRect(x: 0, y: top, width: image.width, height: image.height - top)) else { return original }
+        guard let crop = image.cropping(to: CGRect(x: 0, y: top, width: image.width, height: image.height - top)) else { return original }
         let request = VNRecognizeTextRequest()
         request.recognitionLevel = .accurate
         request.usesLanguageCorrection = false
         request.recognitionLanguages = ["en-US"]
+        // Small scans (about 600 px wide) leave MRZ characters too small for Vision to find.
+        // Normalized coordinates are unchanged by enlarging the crop.
+        let bottom = crop.width < 1600 ? (Self.enlarged(crop, to: 2000) ?? crop) : crop
         try? perform(request, on: bottom)
         let recovered = Self.lines(from: request.results ?? []).map { line in
             let quad = line.quad.mapped { point in
-                CGPoint(x: point.x, y: (CGFloat(top) + point.y * CGFloat(bottom.height)) / CGFloat(image.height))
+                CGPoint(x: point.x, y: (CGFloat(top) + point.y * CGFloat(crop.height)) / CGFloat(image.height))
             }
             return TextLine(text: line.text, quad: quad, candidate: nil)
         }
@@ -249,6 +256,16 @@ public struct Analyzer {
         lines.append(contentsOf: result.1)
         if Page.debug { print("  · MRZ retry: found \(result.1.count) rows") }
         return result
+    }
+
+    static func enlarged(_ image: CGImage, to width: Int) -> CGImage? {
+        let height = Int((CGFloat(image.height) * CGFloat(width) / CGFloat(max(image.width, 1))).rounded())
+        guard height > 0, let ctx = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
+                                              space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                                              bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue) else { return nil }
+        ctx.interpolationQuality = .high
+        ctx.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+        return ctx.makeImage()
     }
 
     // MARK: Classification
@@ -331,13 +348,15 @@ struct Page {
         lines.filter { l in !mrzLines.contains { $0.box == l.box } }
     }
 
-    /// For part of a line that runs to one end of it: how many words it has, and which end.
-    /// The ink fit then drops anything (a label) that Vision's box took in from the other side.
+    /// For part of a line that runs to one end of it: how many words it has, and which end on the
+    /// page (`fromEnd`: the right). The ink fit then drops anything (a label) that Vision's box took
+    /// in from the other side. On a right-to-left (Arabic) line the end of the text is on the left.
     func words(_ range: Range<String.Index>, in line: TextLine) -> (count: Int, fromEnd: Bool)? {
         let n = line.text[range].split(whereSeparator: \.isWhitespace).count
         let atStart = range.lowerBound == line.text.startIndex, atEnd = range.upperBound == line.text.endIndex
-        if atEnd && !atStart { return (n, true) }
-        if atStart && !atEnd { return (n, false) }
+        let rtl = line.text.isRightToLeft
+        if atEnd && !atStart { return (n, !rtl) }
+        if atStart && !atEnd { return (n, rtl) }
         return nil
     }
 
@@ -350,11 +369,12 @@ struct Page {
         if let w, let luma {
             // Where the part starts (or ends) as a share of the line, from how wide its characters are.
             let total = line.text.reduce(0) { $0 + InkFit.advance($1) }
-            let before = line.text[..<range.lowerBound].reduce(0) { $0 + InkFit.advance($1) }
             let inside = line.text[range].reduce(0) { $0 + InkFit.advance($1) }
-            let cut = line.cutPoint(at: w.fromEnd ? range.lowerBound : range.upperBound)
+            let cut = line.cutPoint(at: range.lowerBound == line.text.startIndex ? range.upperBound : range.lowerBound)
+            // The part is at one end of the line on the page, so it starts (or ends) where the
+            // rest of the line's characters end.
             if total > 0, let part = InkFit.fitPart(of: line.quad, in: luma,
-                                                  boundary: w.fromEnd ? before / total : (before + inside) / total,
+                                                  boundary: w.fromEnd ? 1 - inside / total : inside / total,
                                                   cut: cut, keepEnd: w.fromEnd) {
                 // Only if its width is about what its characters need.
                 let expected = inside / total * line.box.width
@@ -437,23 +457,38 @@ struct Page {
         let lines = textLines
         for (index, line) in lines.enumerated() {
             let v = MappedText(line.text, dropSpaces: false)
+            var matches: [(range: Range<String.Index>, kind: FindingKind, label: String)] = []
             for (kind, labels) in Labels.rules {
                 for label in labels where label != "FIN" || country == nil || country == "SG" {
                     for r in tokenRanges(of: label, in: v.value) {
-                        guard let o = v.originalRange(r) else { continue }
-                        addValue(after: o, in: line, index: index, among: lines, kind: kind, note: "label \(label)")
+                        if let o = v.originalRange(r) { matches.append((o, kind, label)) }
                     }
                 }
+            }
+            // A label inside a longer one ("رقم الهوية" in "رقم الهوية الوطنية") is the longer one.
+            let all = matches
+            matches.removeAll { m in all.contains { $0.range != m.range && $0.range.lowerBound <= m.range.lowerBound && $0.range.upperBound >= m.range.upperBound } }
+            for m in matches {
+                // A value ends where the next label on the line begins ("ID No. 2123456788 رقم الهوية").
+                let end = matches.map(\.range.lowerBound).filter { $0 >= m.range.upperBound }.min()
+                addValue(after: m.range, in: line, index: index, among: lines, kind: m.kind, note: "label \(m.label)", end: end)
             }
         }
     }
 
-    /// The value of a label: the rest of its line, or the text to its right, or the line below.
-    mutating func addValue(after label: Range<String.Index>, in line: TextLine, index: Int, among lines: [TextLine], kind: FindingKind, note: String) {
-        let rest = line.text[label.upperBound...]
+    /// The value of a label: the rest of its line, or the text beside it (to the right, or to the
+    /// left of an Arabic label), or the line below.
+    mutating func addValue(after label: Range<String.Index>, in line: TextLine, index: Int, among lines: [TextLine], kind: FindingKind, note: String,
+                           end: String.Index? = nil) {
+        let lineEnd = end ?? line.text.endIndex
+        let rest = line.text[label.upperBound..<lineEnd]
         let skip = CharacterSet(charactersIn: " .:/#№：-").union(.whitespaces)
         if let start = rest.unicodeScalars.firstIndex(where: { !skip.contains($0) }) {
-            let valueRange = start..<line.text.endIndex
+            var stop = lineEnd
+            while stop > start, let c = line.text[..<stop].unicodeScalars.last, skip.contains(c) {
+                stop = line.text.unicodeScalars.index(before: stop)
+            }
+            let valueRange = start..<stop
             let value = line.text[valueRange]
             // Stop at a second label on the same line ("Date of birth   Personal No.").
             if looksLikeValue(String(value), kind) && !Labels.rules.contains(where: { $0.1.contains { String(value).foldedUpper.hasPrefix($0) } }) {
@@ -484,9 +519,16 @@ struct Page {
                 return
             }
         }
-        // To the right on the same line.
-        if let right = lines.filter({ abs($0.box.midY - labelBox.midY) < labelBox.height * 0.6 && $0.box.minX >= labelBox.maxX - 0.005 && $0.box.minX - labelBox.maxX < 0.3 && looksLikeValue($0.text, kind) })
-            .min(by: { $0.box.minX < $1.box.minX }) {
+        // Beside it on the same line: to the right, or to the left of an Arabic label.
+        let beside: TextLine?
+        if String(line.text[label]).containsArabic {
+            beside = lines.filter({ abs($0.box.midY - labelBox.midY) < labelBox.height * 0.6 && $0.box.maxX <= labelBox.minX + 0.005 && labelBox.minX - $0.box.maxX < 0.3 && looksLikeValue($0.text, kind) })
+                .max(by: { $0.box.maxX < $1.box.maxX })
+        } else {
+            beside = lines.filter({ abs($0.box.midY - labelBox.midY) < labelBox.height * 0.6 && $0.box.minX >= labelBox.maxX - 0.005 && $0.box.minX - labelBox.maxX < 0.3 && looksLikeValue($0.text, kind) })
+                .min(by: { $0.box.minX < $1.box.minX })
+        }
+        if let right = beside {
             add(kind, right.quad, note: note)
             if kind == .address { addContinuation(below: right.box, among: lines, note: note) }
             return
@@ -520,7 +562,11 @@ struct Page {
         for _ in 0..<2 {
             guard let next = lineBelow(current, among: lines, maxGap: maxGap) else { return }
             let folded = next.text.foldedUpper
-            if Analyzer.fieldCode(of: folded) != nil || Labels.rules.contains(where: { $0.1.contains { folded.hasPrefix($0) } }) { return }
+            if Analyzer.fieldCode(of: folded) != nil || Labels.rules.contains(where: { $0.1.contains { folded.hasPrefix($0) } })
+                || Labels.otherFields.contains(where: { folded.hasPrefix($0) }) { return }
+            // Another field: a full date ("2030/01/01", "08/31/2030").
+            let digits = MappedText(next.text, dropSpaces: false).value
+            if digits.range(of: #"\d{4}[./-]\d{1,2}[./-]\d{1,2}|\d{1,2}[./-]\d{1,2}[./-]\d{4}"#, options: .regularExpression) != nil { return }
             add(.address, next.quad, note: note + " (continued)")
             current = next.box
         }
@@ -563,9 +609,12 @@ struct Page {
         for line in textLines {
             let t = String(MappedText(line.text, dropSpaces: true, latinize: true).value)
             guard (6...14).contains(t.count), t.allSatisfy({ ("A"..."Z").contains($0) || $0.isASCII && $0.isNumber }) else { continue }
-            let folded = line.text.foldedUpper
+            // Dates, also in Arabic-Indic digits and with the holder's sex after them ("17 AUG 1958 F").
+            let folded = MappedText(line.text, dropSpaces: false).value
             if Self.date.firstMatch(in: folded, range: NSRange(folded.startIndex..., in: folded)) != nil { continue }
             let digits = t.filter(\.isNumber).count, letters = t.count - digits
+            // A number another rule already masks (the Egyptian national number) is not a second finding.
+            if findings.contains(where: { $0.rect.intersectionArea(line.box) > 0.5 * line.box.area }) { continue }
             if letters == 0 && digits >= 7 || letters >= 1 && digits >= 3 && letters <= digits + 2 {
                 add(.documentNumber, line.quad, note: "unlabelled number")
             }
@@ -582,10 +631,50 @@ struct Page {
         }
     }
 
+    // MARK: Egyptian national ID
+
+    /// The front of the Egyptian national ID prints the address without a label: under the
+    /// heading, the name on two lines, then the address on the lines below it, above the
+    /// national number.
+    mutating func findEgyptianIDAddress() {
+        let lines = textLines
+        // The national number, or a long run of digits where OCR dropped some of them.
+        let numberPattern = try! NSRegularExpression(pattern: #"\d{10,}"#)
+        guard let number = lines.filter({ !MappedText($0.text, dropSpaces: true).matches(numberPattern).isEmpty })
+            .max(by: { $0.box.midY < $1.box.midY }) else { return }
+        let headings = ["جمهورية مصر العربية", "بطاقة تحقيق الشخصية", "تحقيق الشخصية", "ARAB REPUBLIC OF EGYPT"].map(\.foldedUpper)
+        let isHeading = { (l: TextLine) in headings.contains { l.text.foldedUpper.contains($0) } }
+        let headingBottom = lines.filter(isHeading).map(\.box.maxY).max() ?? 0
+        // The stack of Arabic lines directly above the number, in the number's column.
+        var stack: [TextLine] = []
+        var current = number.box
+        while let next = lines.filter({ l in
+            l.text.containsArabic && !isHeading(l) && l.box.minY >= headingBottom - 0.005
+                && l.box.maxY <= current.minY + current.height * 0.3
+                && current.minY - l.box.maxY < max(l.box.height, current.height) * (stack.isEmpty ? 6 : 2.2)
+                && l.box.maxX > number.box.minX && !stack.contains { $0.box == l.box }
+        }).max(by: { $0.box.maxY < $1.box.maxY }) {
+            stack.insert(next, at: 0)
+            current = next.box
+        }
+        log("EG ID body lines: \(stack.map(\.text))")
+        let address: ArraySlice<TextLine>
+        if headingBottom > 0 {
+            // The name sits just under the heading and the address in the lower part of the space
+            // down to the number, so a name line OCR misses doesn't move the address up.
+            let span = number.box.minY - headingBottom
+            address = stack.filter { ($0.box.midY - headingBottom) / span > 0.4 }[...]
+        } else {
+            // Without the heading: the first two lines are the name; anything below them is the address.
+            address = stack.dropFirst(2)
+        }
+        for line in address { add(.address, line.quad, note: "EG ID address") }
+    }
+
     // MARK: Street addresses without a label
 
     static let date = try! NSRegularExpression(pattern:
-        #"^\s*(?:\d{1,2}[ ./-]*(?:[A-Z]{3,5}|\d{1,2})[ ./-]*\d{2,4}|\d{4}[ ./-]*\d{1,2}[ ./-]*\d{1,2})\s*$"#)
+        #"^\s*(?:\d{1,2}[ ./-]*(?:[A-Z]{3,5}|\d{1,2})[ ./-]*\d{2,4}|\d{4}[ ./-]*\d{1,2}[ ./-]*\d{1,2})(?:\s+[MFX])?\s*$"#)
 
     static let street = try! NSRegularExpression(pattern:
         #"^(?:BLK |BLOCK |NO\.? ?|LOT |UNIT )?\d{1,5}[A-Z]?[ ,/-]+(?:[A-Z0-9'.-]+ )*(?:ST|STREET|RD|ROAD|AVE|AVENUE|DR|DRIVE|LN|LANE|BLVD|WAY|CT|COURT|PL|PLACE|CRES|CRESCENT|HWY|TCE|TERRACE|PDE|PARADE|CL|CLOSE|SQ|GROVE|GR)\b|\b(?:JALAN|JLN|LORONG|TAMAN|PERSIARAN)\b"#)

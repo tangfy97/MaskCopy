@@ -281,11 +281,14 @@ enum InkFit {
         if ProcessInfo.processInfo.environment["MASKE_DEBUG"] != nil {
             print("    cut: ink \(ink.left)...\(ink.right) boundary \(boundary) target \(Int(target)) runs \(runs)")
         }
-        var best: (index: Int, distance: CGFloat)?
+        var best: (index: Int, score: CGFloat, distance: CGFloat)?
         for i in 0..<(runs.count - 1) {
             let centre = CGFloat(runs[i].1 + runs[i + 1].0) / 2
-            let d = abs(centre - target)
-            if best == nil || d < best!.distance { best = (i, d) }
+            // A label is followed by a word space; a gap narrower than that is more likely
+            // between two characters of the value ("١٢"), so it counts as a little further away.
+            let narrow = CGFloat(runs[i + 1].0 - runs[i].1) * ink.step < 0.25 * ink.h
+            let d = abs(centre - target), score = d + (narrow ? 0.5 * ink.h / ink.step : 0)
+            if best == nil || score < best!.score { best = (i, score, d) }
         }
         guard let best, best.distance * ink.step <= max(1.2 * ink.h, 0.08 * CGFloat(ink.right - ink.left) * ink.step) else { return nil }
         if ProcessInfo.processInfo.environment["MASKE_DEBUG"] != nil {
@@ -315,6 +318,7 @@ enum InkFit {
         guard let s = ch.unicodeScalars.first?.value else { return 0.6 }
         if (0x3040...0x30FF).contains(s) || (0x4E00...0x9FFF).contains(s) || (0xAC00...0xD7AF).contains(s) || (0xFF00...0xFFEF).contains(s) { return 1.0 }
         if ch.isWhitespace { return 0.3 }
+        if String(ch).containsArabic { return 0.5 }
         if ch.isUppercase || ch.isNumber { return 0.65 }
         if ch.isLowercase { return 0.52 }
         return 0.32
