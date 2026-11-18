@@ -22,6 +22,7 @@ MaskCopy is a native iPhone app (SwiftUI, iOS 18+) for sharing a copy of a passp
 6. Follow the TangSpark house standards (from the owner's other apps in `~/Documents`, e.g. Rydd, Kvikkshot, Glimt, Spolo): the standard doc set (README, CHANGELOG, PRIVACY, SECURITY, CONTRIBUTING, CODE_OF_CONDUCT, LICENSE, NOTICE), XcodeGen, `scripts/`, plain English docs, standard system controls, no custom styling beyond `Theme.swift`.
 7. Work step by step. The owner prefers a working prototype now and documented problems over fixing everything at once: record open problems in [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md) rather than leaving them in a conversation.
 8. Make the UI self-explanatory. The owner strongly dislikes explanation paragraphs: use direct manipulation, familiar controls and short labels; keep instructional text to the minimum.
+9. **Open core: MaskCopy Pro is private.** Pro code, its tests, prices and business plans live only in the private repository `../MaskCopyPro` (not on GitHub's public side). This repository may refer to Pro only through `Sources/MaskeApp/ProSeam.swift` and the conditional include in `project.yml`. Detectors that decide what is hidden always go in the open engine. Run `scripts/pro.sh off` before committing; `scripts/check.sh` and `.githooks/pre-commit` (enable with `git config core.hooksPath .githooks`) refuse a project generated with Pro. See [docs/OPEN_CORE.md](docs/OPEN_CORE.md).
 
 ## Repository map
 
@@ -48,7 +49,7 @@ Sources/maske/              CLI: fixtures, eval, analyze, review, warp, angles, 
   Warp.swift                Photo-like copies (tilt, rotation, 90°, 180°, steep) and overlays
 Tests/MaskeCoreTests/       Check digits with published examples, ICAO specimen MRZs
 Resources/Tour/             Tour assets: three official specimens + engine masks (`maske tour`), globe.json (scripts/globe.py)
-scripts/                    build.sh, check.sh, device.sh, appstore.sh, icon.swift, fetch_specimens.py, globe.py,
+scripts/                    build.sh, check.sh, device.sh, appstore.sh (includes ../MaskCopyPro when present), pro.sh (on/off), icon.swift, fetch_specimens.py, globe.py,
                             prado_receiver.py, prado_collect.js
 Design/AppIcon-1024.png     Rendered by scripts/icon.swift
 docs/                       DEVELOPMENT (engine), KNOWN_ISSUES, ROADMAP, DECISIONS, SPECIMENS, APP_STORE, user-journey (Chinese)

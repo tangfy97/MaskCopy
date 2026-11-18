@@ -18,7 +18,17 @@ team=${TEAM_ID:-X933P26489}
 out=build/appstore
 rm -rf "$out" && mkdir -p "$out"
 
-echo "==> Archiving Maske $version ($build)"
+# App Store builds include MaskCopy Pro when the private repository sits next to this one. The public
+# project is restored afterwards, whatever happens (docs/OPEN_CORE.md).
+if [[ -f ../MaskCopyPro/project.pro.yml ]]; then
+  export MASKCOPY_PRO=true
+  edition="with MaskCopy Pro"
+else
+  edition="free app only (../MaskCopyPro not found)"
+fi
+trap 'env -u MASKCOPY_PRO xcodegen generate --quiet' EXIT
+
+echo "==> Archiving Maske $version ($build), $edition"
 xcodegen generate --quiet
 xcodebuild -project Maske.xcodeproj -scheme Maske -configuration Release \
   -derivedDataPath build/DerivedData -destination 'generic/platform=iOS' \

@@ -1,0 +1,12 @@
+#!/bin/zsh
+# Keeps MaskCopy Pro, which is private, out of this public repository. Enable once per clone:
+#   git config core.hooksPath .githooks
+if git diff --cached --name-only | grep -qi "maskcopypro"; then
+    echo "Refusing to commit: a MaskCopy Pro path is staged. Pro code belongs in the private repository."
+    exit 1
+fi
+if git cat-file -e :Maske.xcodeproj/project.pbxproj 2>/dev/null \
+   && git show :Maske.xcodeproj/project.pbxproj | grep -qE "MaskCopyPro|-DMASKCOPY_PRO"; then
+    echo "Refusing to commit: Maske.xcodeproj was generated with MaskCopy Pro. Run scripts/pro.sh off first."
+    exit 1
+fi

@@ -51,6 +51,10 @@ In the simulator, which has no camera, launch with `-MaskeFixture /path/to/front
 | [docs/AUDIT.md](docs/AUDIT.md) | Rendered interface findings, fixes and verification limits |
 | [docs/user-journey.md](docs/user-journey.md) | The user journey (in Chinese) |
 
+## Open core
+
+Recognition, masking, rendering and the free app are open source here. MaskCopy Pro, an optional purchase with paid workflows, is built from a separate private repository and included only in App Store builds. This repository alone builds the complete free app. Details: [docs/OPEN_CORE.md](docs/OPEN_CORE.md).
+
 ## License
 
 Copyright © 2026 TangSpark. Released under the [Apache License 2.0](LICENSE). Contributions: [CONTRIBUTING.md](CONTRIBUTING.md). Security: [SECURITY.md](SECURITY.md).

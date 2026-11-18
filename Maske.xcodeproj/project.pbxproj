@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0049D22D69106021FAB733E3 /* ProSeam.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13C6BC05B2EDEBA6537EA7CC /* ProSeam.swift */; };
 		048D218AC0F6600363744E08 /* AnalysisCancellation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AF3D1653F5568428CBA67F1 /* AnalysisCancellation.swift */; };
 		0998FDEBF0626664C9352C75 /* MaskEditorUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78F729484B3006C05C146C5A /* MaskEditorUITests.swift */; };
 		0A0C670506DD0A0402988659 /* TourView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5C560F600F23A6D0FFB9F34 /* TourView.swift */; };
@@ -91,6 +92,7 @@
 		0AC0BACA8DEF680653F17218 /* ImportingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportingTests.swift; sourceTree = "<group>"; };
 		0B34BA5D28224147AA0D1811 /* Portraits.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Portraits.swift; sourceTree = "<group>"; };
 		13A69B0238E42D019895765C /* DocumentViewport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentViewport.swift; sourceTree = "<group>"; };
+		13C6BC05B2EDEBA6537EA7CC /* ProSeam.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProSeam.swift; sourceTree = "<group>"; };
 		1B7B996F6718F2CFC6EB8CFE /* specimen-focus.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "specimen-focus.json"; sourceTree = "<group>"; };
 		26E0F0BAB385BFAF381F6FD4 /* NOR-F-NOR-FO-08002-front.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "NOR-F-NOR-FO-08002-front.jpg"; sourceTree = "<group>"; };
 		2711B531E3AEDDA106E26A9A /* SyntheticFixture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntheticFixture.swift; sourceTree = "<group>"; };
@@ -290,6 +292,7 @@
 				F5EB8B3859559C90CC3E7498 /* MaskeApp.swift */,
 				37B542DC651FAED01390CF98 /* MaskEditorView.swift */,
 				BF91427A531473EBFD0A7778 /* PageSelectionView.swift */,
+				13C6BC05B2EDEBA6537EA7CC /* ProSeam.swift */,
 				082B5E48B442BD50BC7ABAD5 /* ReviewView.swift */,
 				8366745B1FCCBCF5AF035B2B /* Session.swift */,
 				D1D46FFAE03D181A5E1D9CE2 /* ShareView.swift */,
@@ -483,6 +486,7 @@
 				3C25B56E6DF89A094B69D7F8 /* NumberPatterns.swift in Sources */,
 				7E9623FA864CD215EB98F200 /* PageSelectionView.swift in Sources */,
 				CFD3F7E84FD655FDE6CC4FA3 /* Portraits.swift in Sources */,
+				0049D22D69106021FAB733E3 /* ProSeam.swift in Sources */,
 				DFF4A451C4BDEA35DBF81ABA /* Rectifier.swift in Sources */,
 				2909A06690152CE4FB880F6C /* Renderer.swift in Sources */,
 				60232038FA47B65248BD2459 /* ReviewView.swift in Sources */,
