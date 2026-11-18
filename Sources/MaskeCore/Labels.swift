@@ -18,7 +18,12 @@ enum Labels {
         "STEUER-IDNR", "IDNR", "IDENTIFIKATIONSNUMMER", "STEUERLICHE IDENTIFIKATIONSNUMMER", "SV-NUMMER", "SV-NR",
         "SOZIALVERSICHERUNGSNUMMER", "RV-NUMMER", "RENTENVERSICHERUNGSNUMMER", "VERSICHERTENNUMMER", "VERSICHERTEN-NR",
         "KRANKENVERSICHERTENNUMMER", "KV-NR", "KONTONUMMER", "V-NUMMER", "V-NR", "VREEMDELINGENNUMMER", "BSN/SOFINR",
-        "SOFINUMMER", "SOFI-NR", "POLISNUMMER", "ZORGVERZEKERINGSNUMMER", "REKENINGNUMMER", "LICHNY NOMER", "ИДЕНТИФИКАЦИОННЫЙ НОМЕР", "PERSONLIG ID",
+        "SOFINUMMER", "SOFI-NR", "POLISNUMMER", "ZORGVERZEKERINGSNUMMER", "REKENINGNUMMER", "NUSS", "N.A.F.", "AFILIACION",
+        "NUM. AFILIACION", "CIP", "CIPA", "CIP-SNS", "NUHSA", "TIS", "TARJETA SANITARIA", "CODIGO SNS", "CUENTA BANCARIA",
+        "N° SS", "N° SECU", "NIR", "NUMERO DE SECURITE SOCIALE", "N° DE SECURITE SOCIALE", "N° FISCAL", "NUMERO FISCAL",
+        "IDENTIFIANT FISCAL", "N° ALLOCATAIRE", "NUMERO D'ALLOCATAIRE", "NUMERO ALLOCATAIRE", "N° ETRANGER",
+        "NUMERO ETRANGER", "AGDREF", "NEPH", "REG.NR", "REG. NR", "KONTONR", "KONTO NR", "KONTO", "REG./KONTO",
+        "LICHNY NOMER", "ИДЕНТИФИКАЦИОННЫЙ НОМЕР", "PERSONLIG ID",
         // Americas
         "CURP", "CPF", "USCIS#", "USCIS #", "USCIS NO", "USCIS NUMBER", "A#", "A #", "A-NUMBER", "A NUMBER", "ALIEN NUMBER",
         "ALIEN REGISTRATION", "ALIEN NO", "MEDICARE NUMBER", "MEDICARE NO", "SIN NO", "NAS",
@@ -27,7 +32,8 @@ enum Labels {
         // Middle East and North Africa
         "رقم الهوية", "رقم الهوية الوطنية", "رقم السجل المدني", "السجل المدني", "رقم الإقامة", "رقم الاقامة", "رقم الحدود",
         "الرقم القومي", "رقم قومي", "الرقم القومى", "ID NUMBER", "IQAMA NO", "IQAMA NUMBER",
-        "TRAFFIC CODE NO", "TRAFFIC CODE", "TRAFFIC FILE NO", "T.C. NO", "TC NO", "رقم الملف المروري", "الرمز المروري", "IBAN", "CIVIL REGISTRY", "BORDER NO",
+        "TRAFFIC CODE NO", "TRAFFIC CODE", "TRAFFIC FILE NO", "T.C. NO", "TC NO", "رقم الملف المروري", "الرمز المروري",
+        "IBAN", "CIVIL REGISTRY", "BORDER NO",
         // Asia
         "公民身份号码", "公民身份號碼", "身份证号", "身份證號", "身分證統一編號", "統一編號", "個人番号", "주민등록번호",
         "NRIC", "FIN", "NO. KP", "NO KP", "NO. K/P", "IDENTITY CARD NO", "I/C NO", "AADHAAR",
@@ -35,7 +41,8 @@ enum Labels {
 
     static let documentNumber: [String] = [
         "DOCUMENT NO", "DOCUMENT NUMBER", "DOC NO", "DOCUMENTNUMMER", "DOKUMENTNUMMER", "DOKUMENTNR", "PASSPORT NO",
-        "PASSPORT NUMBER", "PASPOORTNUMMER", "PASSNUMMER", "PASSNR", "NUMERO DU DOCUMENT", "N° DU DOCUMENT", "NUMERO DE DOCUMENTO",
+        "PASSPORT NUMBER", "PASPOORTNUMMER", "PASSNUMMER", "PASSNR", "NUMERO DU DOCUMENT", "N° DU DOCUMENT",
+        "NUMERO DE DOCUMENTO",
         "NUMERO DOCUMENTO", "NUM SOPORTE", "NUMERO DE SOPORTE", "CARD NO", "CARD NUMBER", "LICENCE NO", "LICENSE NO",
         "LICENCE NUMBER", "LICENSE NUMBER", "LIC NO", "LIC#", "DL NO", "DLN", "DL#", "ID#", "DD", "KARTNUMMER", "KORTNUMMER",
         "护照号", "护照号码", "護照號碼", "证号", "證號", "档案编号", "番号", "免許証番号", "旅券番号", "면허번호", "여권번호",
@@ -57,11 +64,14 @@ enum Labels {
     static let keptNumbers: [String] = [
         "KVK", "KAMER VAN KOOPHANDEL", "TAX CODE", "STEUERKLASSE", "STKL", "COMPANY NO", "COMPANY NUMBER",
         "COMPANY REG", "HANDELSREGISTER", "HRB", "BTW", "VAT NO", "VAT REG", "UST-IDNR",
+        "CIF", "C.I.F.", "CCC", "C.C.C.", "CODIGO CUENTA COTIZACION", "SIREN", "SIRET", "N° SIRET", "URSSAF", "CODE APE",
+        "APE ", "CODE NAF", "CVR", "SE-NR",
     ]
 
     /// Names of fields that are not hidden. An address that runs over several lines stops at one.
     static let otherFields: [String] = [
-        "وحدة مرور", "تاريخ", "الاسم", "الجنسية", "المهنة", "جهة العمل", "صاحب العمل", "فصيلة الدم", "الديانة", "الحالة الاجتماعية",
+        "وحدة مرور", "تاريخ", "الاسم", "الجنسية", "المهنة", "جهة العمل", "صاحب العمل", "فصيلة الدم", "الديانة",
+        "الحالة الاجتماعية",
     ].map(\.foldedUpper)
 
     static let rules: [(FindingKind, [String])] = {

@@ -205,3 +205,11 @@ The research report for Saudi Arabia, the UAE and Egypt was thinner than the US/
 - German church tax (KiSt, "rk", "ev") on payslips reveals religion; it is left visible for now, like religion on the Egyptian ID (issue 24). The owner decides.
 - The synthetic payslips are card-sized with a few lines. Real payslips are A4 with dozens of lines, tables and transaction rows; workflows for them belong to Pro and need their own fixtures.
 
+## 26. Spain, France and Denmark: open points (18 November)
+
+- No authority publishes worked examples for the Spanish Seguridad Social number or the French NIR; both checks follow the published rule and were tested on constructed numbers. The company NIF rule is confirmed on the AEAT's own NIF (Q2826000H).
+- Label-only, no published check: Spanish regional health card codes (CIP, CIPA, NUHSA, TIS: a different format in every community), the TIE support number (also in its MRZ), the French numéro fiscal (the report's mod 523 is unverified), carte Vitale serial, CAF number, AGDREF number, the French and Danish licence numbers (field 5), Danish reg.nr./konto.
+- The Danish yellow health card has no number of its own; its CPR is found. The doctor's name, address and phone on the card are not masked yet.
+- A line that is only a postcode and town ("28013 Madrid", "75002 PARIS") is also counted as an unlabelled number; it is masked as the address anyway.
+- Faroe Islands P-tal (DDMMYY-XXX) and Spanish CCC on its own line, without its label, are not handled. A bare 8-digit Danish number is never masked without a label: CVR, licence and phone numbers all have that shape.
+

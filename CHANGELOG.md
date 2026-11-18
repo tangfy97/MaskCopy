@@ -4,7 +4,7 @@ All notable changes to MaskCopy are listed here. Versions follow [Semantic Versi
 
 ## [Unreleased]
 
-United States, Canada, the United Arab Emirates, the United Kingdom, Germany and the Netherlands, from field-by-field reviews of their documents.
+United States, Canada, the United Arab Emirates, the United Kingdom, Germany, the Netherlands, Spain, France and Denmark, from field-by-field reviews of their documents.
 
 - Canada: social insurance numbers (Luhn), Ontario health numbers with version code (Luhn), British Columbia personal health numbers (Mod 11), Quebec health insurance numbers (NAM) and Quebec driving licence numbers are recognised; the permanent resident card is supported (ID No / N° ID). French labels (N° de passeport, Numéro du permis, Numéro d'assurance maladie, NAS, UCI/IUC …) and French street addresses (RUE, BOUL., AVENUE, CHEMIN …) are found.
 - United States: Medicare numbers (MBI), Florida and Illinois licence numbers, the EAD "Card#" label; health cards and services cards are read as ID cards.
@@ -13,7 +13,10 @@ United States, Canada, the United Arab Emirates, the United Kingdom, Germany and
 - United Kingdom and Germany, for payslips and letters: National Insurance numbers, NHS numbers (Mod 11), the German Steuer-ID (MOD 11,10), Rentenversicherungsnummer and Krankenversichertennummer, each with its check; labels for UTR, share codes, sort codes and account numbers, V-nummer, BSN/sofinr., polis- and rekeningnummer.
 - German and Dutch street addresses (Musterstraße 12a, Dorpsstraat 10A) and Dutch postcodes (1234 AB) are found without a label. Street addresses were never looked for when the country was unknown; fixed.
 - Company registration numbers, tax codes and tax classes (KvK, Tax Code, Steuerklasse …) stay visible. Malta ID and New Zealand licence numbers, which have no check digit, are looked for only on documents from those countries (a UK tax code "1257L" was masked as a Maltese number).
-- Fourteen new synthetic documents (EAD, Medicare card, Quebec licence, Canadian PR card, Ontario health card, BC Services Card, UAE passport, Emirates ID front and back, UAE resident card, UAE licence, UK, German and Dutch payslips); 68/68 fully right, 179/179 sensitive fields hidden, 177/177 kept.
+- Spain, France and Denmark, for payslips and letters: the Spanish Seguridad Social number (NUSS/NAF, mod 97) and the French NIR (key 97 − n mod 97, Corsica 2A/2B, also when OCR reads 2A as 24); labels for regional health card codes (CIP, CIPA, NUHSA, TIS), numéro fiscal, CAF allocataire, numéro étranger/AGDREF, NEPH and Danish reg.nr./konto.
+- Spanish (C/ Mayor, 12, 3º B), French (12 bis rue …, bd, quai) and Danish (Nørregade 12, 2. tv.; 1165 København K) addresses are found without a label.
+- Employer numbers stay visible: the Spanish company NIF/CIF (checked with the AEAT rule, also after a "NIF" label), CCC, SIREN/SIRET, code APE/NAF, URSSAF and CVR. A number right after such a label is never taken for a personal one (a SIREN is also a valid Canadian SIN).
+- Seventeen new synthetic documents (EAD, Medicare card, Quebec licence, Canadian PR card, Ontario health card, BC Services Card, UAE passport, Emirates ID front and back, UAE resident card, UAE licence, UK, German, Dutch, Spanish, French and Danish payslips); 71/71 fully right, 192/192 sensitive fields hidden, 188/188 kept.
 
 ## [1.1.0] - 2026-11-17
 

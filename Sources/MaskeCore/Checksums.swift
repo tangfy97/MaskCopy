@@ -101,6 +101,53 @@ public enum Checksum {
         return t.last == Array("TRWAGMYFPDXBNJZSQVHLCKE")[n % 23]
     }
 
+    /// Spain, Seguridad Social affiliation number (NUSS/NAF): province, eight digits, two check digits
+    /// (mod 97 of the province and number; numbers below 10 000 000 are read as province × 10⁷ + number).
+    public static func spanishSocialSecurity(_ s: String) -> Bool {
+        let d = digits(s)
+        guard d.count == 12 else { return false }
+        let province = d[0] * 10 + d[1]
+        guard (1...53).contains(province) || province == 66 else { return false }
+        let body = d[2..<10].reduce(0) { $0 * 10 + $1 }
+        let value = body < 10_000_000 ? body + province * 10_000_000 : province * 100_000_000 + body
+        return value % 97 == d[10] * 10 + d[11]
+    }
+
+    /// Spain, NIF of a company or other legal entity (formerly CIF), from the AEAT's composition rules.
+    /// Used only to keep an employer's number visible.
+    public static func spanishCompanyNIF(_ s: String) -> Bool {
+        let c = Array(s.uppercased().filter { $0.isLetter || $0.isNumber })
+        guard c.count == 9, "ABCDEFGHJNPQRSUVW".contains(c[0]) else { return false }
+        let d = c[1..<8].compactMap { $0.isASCII ? $0.wholeNumberValue : nil }
+        guard d.count == 7 else { return false }
+        let a = d[1] + d[3] + d[5]
+        let b = [0, 2, 4, 6].reduce(0) { let x = 2 * d[$1]; return $0 + x / 10 + x % 10 }
+        let control = (10 - (a + b) % 10) % 10
+        let digit = Character(String(control)), letter = Array("JABCDEFGHI")[control]
+        if "ABEH".contains(c[0]) { return c[8] == digit }
+        if "NPQRSW".contains(c[0]) { return c[8] == letter }
+        return c[8] == digit || c[8] == letter
+    }
+
+    /// France, NIR (numéro de sécurité sociale): 13 characters and a key 97 − (number mod 97). Corsica's
+    /// departments 2A and 2B count as 19 and 18. Vision reads "2A"/"2B" as "24"/"28" now and then, so those
+    /// are tried as Corsica too: hiding a look-alike is better than missing the number.
+    public static func frenchNIR(_ s: String) -> Bool {
+        let t = s.uppercased().filter { $0.isLetter || $0.isNumber }
+        guard t.count == 15, let key = Int(t.suffix(2)) else { return false }
+        let head = String(t.prefix(13))
+        var readings = [head.replacingOccurrences(of: "2A", with: "19").replacingOccurrences(of: "2B", with: "18")]
+        let dept = head.dropFirst(5).prefix(2)
+        if dept == "24" || dept == "28" {
+            let i = head.index(head.startIndex, offsetBy: 5)
+            readings.append(head.replacingCharacters(in: i..<head.index(i, offsetBy: 2), with: dept == "24" ? "19" : "18"))
+        }
+        return readings.contains { r in
+            guard r.allSatisfy(\.isNumber), let n = Int(r) else { return false }
+            return 97 - n % 97 == key
+        }
+    }
+
     /// Portugal, NIF.
     public static func portugueseNIF(_ s: String) -> Bool {
         let d = digits(s)

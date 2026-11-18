@@ -66,6 +66,25 @@ final class ChecksumTests: XCTestCase {
         XCTAssertFalse(Checksum.egyptianNationalNumber("19001010112345"))
     }
 
+    func testSpainFranceAndDenmark() {
+        // The AEAT's own NIF (Agencia Estatal de Administración Tributaria) is a published company NIF.
+        XCTAssertTrue(Checksum.spanishCompanyNIF("Q2826000H"))
+        XCTAssertFalse(Checksum.spanishCompanyNIF("Q28260008"), "Q entities take a letter")
+        XCTAssertTrue(Checksum.spanishCompanyNIF("B12345674"))
+        XCTAssertFalse(Checksum.spanishCompanyNIF("B12345675"))
+        XCTAssertFalse(Checksum.spanishCompanyNIF("12345678Z"), "a person's DNI is not a company NIF")
+        // Seguridad Social: both readings of the mod 97 rule (number above and below 10 000 000).
+        XCTAssertTrue(Checksum.spanishSocialSecurity("28/12345678/40"))
+        XCTAssertTrue(Checksum.spanishSocialSecurity("08 01234567 74"))
+        XCTAssertFalse(Checksum.spanishSocialSecurity("28/12345678/41"))
+        XCTAssertFalse(Checksum.spanishSocialSecurity("99/12345678/40"), "no province 99")
+        // NIR: key 97 − n mod 97, Corsica 2A → 19, and 2A read by OCR as 24.
+        XCTAssertTrue(Checksum.frenchNIR("1 85 05 75 112 233 44"))
+        XCTAssertFalse(Checksum.frenchNIR("1 85 05 75 112 233 45"))
+        XCTAssertTrue(Checksum.frenchNIR("2 90 01 2A 004 012 02"))
+        XCTAssertTrue(Checksum.frenchNIR("2 90 01 24 004 012 02"))
+    }
+
     func testUnitedKingdomAndGermany() {
         XCTAssertTrue(Checksum.britishNationalInsurance("AB 12 34 56 C"))
         XCTAssertFalse(Checksum.britishNationalInsurance("GB 12 34 56 C"))
