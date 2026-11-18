@@ -28,7 +28,7 @@ Lunar's official redesign and Home screenshot informed immediate task access and
 
 ## Document information
 
-Documents starts with four native rows: Passport (photo page), National ID card, Residence permit and Driving licence (front and back). Each type opens its matching country profiles. Countries offers a searchable alphabetical list and a per-country list of full document names. Remove emoji flags, regional sections and abbreviated ID/Residence/Licence strings. Keep only a brief photos/PDF import label and review reminder. These are recognition profiles, not a claim that every historical document version has been validated.
+Documents (18 November) opens with "Hidden automatically": the Hide screen's switch items in the same order with the same symbols. Below it, four native rows: Passport (photo page), National ID card, Residence permit and Driving licence (front and back). Each type shows its country count and opens its matching country profiles; "All countries" follows in its own section. Countries offers a searchable alphabetical list and a per-country list of full document names. Remove emoji flags, regional sections and abbreviated ID/Residence/Licence strings. Keep only a brief photos/PDF import label and review reminder. These are recognition profiles, not a claim that every historical document version has been validated.
 
 ## Editing and export
 
