@@ -53,6 +53,8 @@ struct SupportedView: View {
                 .accessibilityIdentifier("document-countries")
             } header: { Text("Countries") }
             footer: { Text("Review every mask before sharing.") }
+
+            ProSection()
         }
         .scrollContentBackground(.hidden)
         .background(Color.paper.ignoresSafeArea())

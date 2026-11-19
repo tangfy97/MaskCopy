@@ -128,10 +128,17 @@ struct ReviewView: View {
         } description: {
             Text("MaskCopy works with passports, ID cards, residence permits and driving licences.")
         } actions: {
-            Button("Choose another") { session.finish() }
-                .primaryAction()
-                .tint(.fjord)
-                .foregroundStyle(Color.onAccent)
+            ProUnlockButton()
+            if ProAccess.canUnlock {
+                Button("Choose another") { session.finish() }
+                    .secondaryAction()
+                    .tint(.fjord)
+            } else {
+                Button("Choose another") { session.finish() }
+                    .primaryAction()
+                    .tint(.fjord)
+                    .foregroundStyle(Color.onAccent)
+            }
         }
         .accessibilityIdentifier("other-document")
     }

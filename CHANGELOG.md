@@ -26,6 +26,7 @@ United States, Canada, the United Arab Emirates, the United Kingdom, Germany, th
 - The Save button on the copy screen shows its text again (it was white on light glass).
 - The Documents page (the info button) reads top to bottom: what is hidden automatically (the same items, order and symbols as the switches on the Hide screen), then the four document types with the sides to capture and how many countries each covers, then all countries.
 - The free app copies official identity documents only. A payslip, bank statement, bill or tax letter is refused ("Not an identity document"); those are for MaskCopy Pro. Only clear evidence counts, so a badly read identity document is never refused. The engine still finds every mask on them.
+- MaskCopy Pro can be bought in the App Store build: "Unlock with Pro" on a refused document and a MaskCopy Pro row on the Documents page, with Restore Purchases. Apple handles the purchase; MaskCopy keeps no account.
 - IBANs are recognised on any document (ISO 7064 MOD 97-10 and the country's length).
 - United Kingdom and Germany, for payslips and letters: National Insurance numbers, NHS numbers (Mod 11), the German Steuer-ID (MOD 11,10), Rentenversicherungsnummer and Krankenversichertennummer, each with its check; labels for UTR, share codes, sort codes and account numbers, V-nummer, BSN/sofinr., polis- and rekeningnummer.
 - German and Dutch street addresses (Musterstraße 12a, Dorpsstraat 10A) and Dutch postcodes (1234 AB) are found without a label. Street addresses were never looked for when the country was unknown; fixed.

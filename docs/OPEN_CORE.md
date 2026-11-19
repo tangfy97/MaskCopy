@@ -22,7 +22,9 @@ permits and driving licences. The engine marks a page as another document (`Page
 only on positive evidence: a payslip, bank statement, bill or tax title, or a tall page with an
 account or card number and nothing of an identity document. An identity document that is read badly
 is never refused. The free app refuses other documents (`ProAccess.otherDocuments` in ProSeam.swift).
-Pro unlocks them; until Pro can be bought, the refusal does not mention it.
+Pro unlocks them. In App Store builds the refusal offers "Unlock with Pro", and the Documents page
+has a MaskCopy Pro row with the purchase and Restore Purchases (seams `ProUnlockButton` and
+`ProSection`). `ProAccess` is observable, so a purchase or refund changes the screen at once.
 
 ## How the App Store build includes Pro
 
@@ -49,5 +51,4 @@ Without the private repository, this repository builds and runs the complete fre
 
 The purchase goes through Apple's StoreKit. Apple verifies the transaction on the device.
 MaskCopy has no server and no account, and it never sees payment details. Pro features stay
-offline like the rest of the app. PRIVACY.md is updated in the release that first ships a Pro
-feature.
+offline like the rest of the app. PRIVACY.md describes this.

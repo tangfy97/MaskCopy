@@ -268,3 +268,12 @@ Not verified:
 - **Photographed real payslips, statements and bills.** Only synthetic ones were tested.
 - **Documents that slip through and get masked.** A payslip or bill with no recognised title and no IBAN or card number is not refused; for example, a letter, a contract or a medical record. These are processed like an unrecognised identity document.
 - **Title words in some languages.** The list covers English, German, Dutch, Spanish, French, Danish, Norwegian, Swedish and Chinese. Titles in other languages are refused only when they also show an account or card number.
+
+## 30. The Pro purchase has been tested only against the local StoreKit file
+
+The purchase, restore, purchase elsewhere and refund paths pass against `MaskCopyPro.storekit` (unit tests), and the UI test unlocks a refused payslip with it on the Simulator.
+
+Not verified:
+- **App Store Connect.** The in-app purchase `com.feiyangtang.Maske.pro` must exist (and the Paid Apps Agreement be active) before a TestFlight or App Store build can load the product. Until then the purchase row shows a spinner.
+- **Sandbox purchase on a real iPhone,** Ask to Buy and Family Sharing.
+- **No connection.** If the product never loads (offline, App Store unreachable), the purchase row keeps spinning; there is no retry message. Restore Purchases still works once the connection returns.

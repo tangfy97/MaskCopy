@@ -75,7 +75,7 @@ final class Session: ObservableObject {
     var country: Country? { pages.compactMap(\.country).first }
 
     /// The free app copies identity documents only; other documents need Pro.
-    var refusesOtherDocument: Bool { !ProAccess.otherDocuments && pages.contains(where: \.isOtherDocument) }
+    var refusesOtherDocument: Bool { !ProAccess.shared.otherDocuments && pages.contains(where: \.isOtherDocument) }
 
     var kindsPresent: [FindingKind] {
         let present = Set(pages.flatMap(\.findings).map(\.kind))
