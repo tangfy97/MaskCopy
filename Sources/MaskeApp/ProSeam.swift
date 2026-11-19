@@ -17,3 +17,15 @@ extension View {
         #endif
     }
 }
+
+/// What Pro unlocks that the free app refuses. Payslips, bank statements, bills and other documents
+/// that are not identity documents are Pro; their masks are still found by the open engine.
+enum ProAccess {
+    @MainActor static var otherDocuments: Bool {
+        #if MASKCOPY_PRO
+        ProFeatures.otherDocuments
+        #else
+        false
+        #endif
+    }
+}

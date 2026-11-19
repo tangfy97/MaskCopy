@@ -23,6 +23,8 @@ struct ReviewView: View {
                     .padding(20)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if session.refusesOtherDocument {
+                otherDocument
             } else {
                 content
             }
@@ -34,7 +36,7 @@ struct ReviewView: View {
         .toolbar {
             if session.analyzing {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { session.finish() } }
-            } else {
+            } else if !session.refusesOtherDocument {
                 ToolbarItem(placement: .topBarTrailing) {
                     if session.pages.count == 1 {
                         Button("Add box", systemImage: "plus.rectangle.on.rectangle") { addToPage = session.pages.first?.id }
@@ -118,6 +120,20 @@ struct ReviewView: View {
                     .foregroundStyle(Color.muted)
             }
         }
+    }
+
+    private var otherDocument: some View {
+        ContentUnavailableView {
+            Label("Not an identity document", systemImage: "doc.text")
+        } description: {
+            Text("MaskCopy works with passports, ID cards, residence permits and driving licences.")
+        } actions: {
+            Button("Choose another") { session.finish() }
+                .primaryAction()
+                .tint(.fjord)
+                .foregroundStyle(Color.onAccent)
+        }
+        .accessibilityIdentifier("other-document")
     }
 
     private var nothingFound: some View {

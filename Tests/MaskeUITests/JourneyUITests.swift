@@ -23,6 +23,20 @@ final class JourneyUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Your copy"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["Share copy"].isEnabled)
     }
+    func testFreeAppRefusesOtherDocuments() throws {
+        #if !targetEnvironment(simulator)
+        throw XCTSkip("Uses a fixture path on the Mac")
+        #endif
+        let app = XCUIApplication()
+        app.launchArguments = ["-MaskeFixture", SyntheticFixture.payslipPath]
+        app.launchWithoutTour()
+        XCTAssertTrue(app.otherElements["other-document"].firstMatch.waitForExistence(timeout: 60)
+                      || app.staticTexts["Not an identity document"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["Continue"].exists)
+        capture("Other document", app: app)
+        app.buttons["Choose another"].tap()
+        XCTAssertTrue(app.buttons["Choose photos"].waitForExistence(timeout: 5))
+    }
     func testHomeAndDocuments() {
         let app = XCUIApplication()
         app.launchWithoutTour()

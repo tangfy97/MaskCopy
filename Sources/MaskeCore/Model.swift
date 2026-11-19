@@ -59,6 +59,9 @@ public struct PageAnalysis: Sendable {
     public var findings: [Finding]
     /// Recognized text, for the CLI.
     public var lines: [String]
+    /// Clearly not an identity document: a payslip, bank statement, bill or tax letter. The free app
+    /// handles identity documents only; the masks are found either way.
+    public var isOtherDocument = false
 }
 
 extension CGRect {

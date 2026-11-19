@@ -10,6 +10,11 @@ enum SyntheticFixture {
         "MaskCopyFixtures/passport-nor.png"
         #endif
     }
+
+    /// A synthetic payslip: not an identity document, so the free app refuses it.
+    static var payslipPath: String {
+        URL(fileURLWithPath: passportPath).deletingLastPathComponent().appendingPathComponent("payslip-deu.png").path
+    }
 }
 
 extension XCUIApplication {

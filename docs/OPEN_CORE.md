@@ -17,6 +17,13 @@ proprietary and lives in a separate, private repository.
 A detector that finds something sensitive always goes in the open engine, so anyone can check what
 MaskCopy hides. Pro only adds ways of using it.
 
+**The free app copies official identity documents only:** passports, national ID cards, residence
+permits and driving licences. The engine marks a page as another document (`PageAnalysis.isOtherDocument`)
+only on positive evidence: a payslip, bank statement, bill or tax title, or a tall page with an
+account or card number and nothing of an identity document. An identity document that is read badly
+is never refused. The free app refuses other documents (`ProAccess.otherDocuments` in ProSeam.swift).
+Pro unlocks them; until Pro can be bought, the refusal does not mention it.
+
 ## How the App Store build includes Pro
 
 - `project.yml` includes `../MaskCopyPro/project.pro.yml` only when the environment variable

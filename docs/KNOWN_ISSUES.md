@@ -254,3 +254,17 @@ PRADO blurs most personal data before publishing, so these images test layout fa
   - the vertical DOC. NR. on the Dutch W-document;
   - the last two letters of the Quebec reference number when OCR reads them as a separate piece.
 - **Known look-alike:** the Spanish passport's printed "Id. No." differs from the number in its MRZ on the specimen, so it is not matched.
+
+## 29. Refusing other documents in the free app: what is not verified (18 November)
+
+The free app refuses a page only when the engine finds clear evidence that it is not an identity document (`PageAnalysis.isOtherDocument`, OPEN_CORE).
+
+What was checked:
+- All 9 synthetic payslips are refused.
+- No synthetic identity document is refused (69).
+- None of the 897 downloaded images is refused (PRADO, Commons, store). This includes the 292 that were not recognised as any document type.
+
+Not verified:
+- **Photographed real payslips, statements and bills.** Only synthetic ones were tested.
+- **Documents that slip through and get masked.** A payslip or bill with no recognised title and no IBAN or card number is not refused; for example, a letter, a contract or a medical record. These are processed like an unrecognised identity document.
+- **Title words in some languages.** The list covers English, German, Dutch, Spanish, French, Danish, Norwegian, Swedish and Chinese. Titles in other languages are refused only when they also show an account or card number.

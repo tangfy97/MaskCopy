@@ -82,7 +82,7 @@ case "eval":
     let out = url.appendingPathComponent("out")
     try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
 
-    var hidden = 0, toHide = 0, kept = 0, toKeep = 0, docsOK = 0, kindsOK = 0, countriesOK = 0
+    var hidden = 0, toHide = 0, kept = 0, toKeep = 0, docsOK = 0, kindsOK = 0, countriesOK = 0, othersOK = 0
     var precisions: [Double] = []
     var loosest: [(String, Double)] = []
     var problems: [String] = []
@@ -129,6 +129,10 @@ case "eval":
             if coverage(Quad(b.rect), a.findings) <= 0.1 { kept += 1 } else { ok = false; problems.append("\(e.name): hidden by mistake “\(b.text)”") }
         }
         if a.kind.rawValue == e.kind { kindsOK += 1 } else { problems.append("\(e.name): kind \(a.kind.rawValue), expected \(e.kind)") }
+        // Payslips are the only other documents among the fixtures; every identity document must pass.
+        if a.isOtherDocument == e.name.hasPrefix("payslip") { othersOK += 1 } else {
+            ok = false; problems.append("\(e.name): \(a.isOtherDocument ? "taken for another document" : "not taken for another document")")
+        }
         if (a.country?.code ?? "") == e.country { countriesOK += 1 } else { problems.append("\(e.name): country \(a.country?.code ?? "?"), expected \(e.country)") }
         if ok { docsOK += 1 }
         // Expected ink (green outlines) against the masks (red), on the original image.
@@ -152,6 +156,7 @@ case "eval":
     for (n, p) in loosest.sorted(by: { $0.1 < $1.1 }).prefix(8) { print(String(format: "  %.2f  %@", p, n as NSString)) }
     print("Sensitive fields hidden: \(hidden)/\(toHide)   Fields kept visible: \(kept)/\(toKeep)")
     print("Document kind right: \(kindsOK)/\(expected.count)   Country right: \(countriesOK)/\(expected.count)")
+    print("Identity or other document right: \(othersOK)/\(expected.count)")
     exit(docsOK == expected.count ? 0 : 1)
 
 case "ocr":
@@ -192,6 +197,7 @@ case "review":
                           "\(a.kind.rawValue)/\(a.country?.code ?? "?")" as NSString,
                           (a.mrz.map { $0.checksumsValid ? "ok" : "bad" } ?? "-") as NSString,
                           (doc.fillsFrame ? "yes" : "no") as NSString, doc.quarterTurns, kinds as NSString)
+            + (a.isOtherDocument ? "  OTHER" : "")
         print(line)
         report.append(line)
     }
