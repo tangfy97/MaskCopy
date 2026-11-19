@@ -176,6 +176,17 @@ MaskCopy is free for identity documents. MaskCopy Pro is an optional in-app purc
 • More documents from the United States and Canada
 • A short tour of what MaskCopy covers
 
+**Screenshots (1.1.0)**: six 1206 × 2622 opaque PNGs in [appstore/screenshots/en](appstore/screenshots/en), replacing the 1.0.0 set. Captured on the iPhone 18 Pro Simulator by `StoreShotUITests` in the private repository (`TEST_RUNNER_MASKCOPY_STORESHOTS=<folder> xcodebuild test … -only-testing:MaskeUITests/StoreShotUITests`, status bar overridden to 9:41), then `scripts/storeshot.swift` for the headline. Screens 1–2 use the Dutch 2021 passport specimen (RvIG), shown unaltered; the Simulator's masks on it are complete level rectangles with no hand edits. Screens 3–4 use synthetic bank statements and payslips.
+
+| File | Headline | Subline |
+|---|---|---|
+| 1-hide.png | Share your ID, not all of it | Numbers, photo and MRZ are found and covered. You check every box. |
+| 2-copy.png | A copy for one recipient | Who it's for, why and when, written across it. |
+| 3-statement.png | Bank statements too | Transactions hidden, salary kept. With MaskCopy Pro. |
+| 4-pack.png | One PDF for the whole application | Passport, payslips and statements, with a checklist. Pro. |
+| 5-pro.png | MaskCopy Pro | One purchase, shared with your family. |
+| 6-documents.png | 30 countries | Passports, ID cards, residence permits and driving licences. |
+
 **In-app purchase**: add MaskCopy Pro to the version page before submitting (the first in-app purchase must go with a version). Its App Store Connect details are in the private repository.
 
 ### English (U.K.)
