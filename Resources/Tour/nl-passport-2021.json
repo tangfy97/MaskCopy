@@ -1,0 +1,66 @@
+[
+  {
+    "id" : "8AA7217C-76EF-447A-9E16-E53159C9A402",
+    "isOn" : true,
+    "kind" : "machineReadableZone",
+    "note" : "MRZ td3",
+    "rect" : [
+      [
+        0.041277598834238385,
+        0.801465058800583
+      ],
+      [
+        0.9076439132953523,
+        0.1283291683014186
+      ]
+    ]
+  },
+  {
+    "id" : "42230377-0B3C-471B-AC7F-9EB9A4784A83",
+    "isOn" : true,
+    "kind" : "documentNumber",
+    "note" : "document number from MRZ, label DOCUMENT NO, label DOCUMENTNUMMER",
+    "rect" : [
+      [
+        0.7334639876084108,
+        0.13414362357716622
+      ],
+      [
+        0.12854759424155637,
+        0.03826500245008907
+      ]
+    ]
+  },
+  {
+    "id" : "FB5E5E7B-0088-4FCD-B9C8-E71D63C6417F",
+    "isOn" : true,
+    "kind" : "photo",
+    "note" : "borderless portrait bounds",
+    "rect" : [
+      [
+        0.020159939639308122,
+        0.12834100207686422
+      ],
+      [
+        0.30360749851936275,
+        0.5194807691425085
+      ]
+    ]
+  },
+  {
+    "id" : "357B4B33-11F3-4001-8303-CB81D989C8FF",
+    "isOn" : true,
+    "kind" : "photo",
+    "note" : "borderless portrait bounds",
+    "rect" : [
+      [
+        0.6354950229147055,
+        0.3518914047774517
+      ],
+      [
+        0.11738598840182224,
+        0.1975383859493987
+      ]
+    ]
+  }
+]

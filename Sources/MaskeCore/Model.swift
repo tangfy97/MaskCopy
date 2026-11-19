@@ -12,11 +12,13 @@ public enum FindingKind: String, Codable, CaseIterable, Sendable {
     case barcode
     case address
     case cardAccessNumber
+    /// Transaction rows on a bank statement: who was paid or paid you, and how much (the date stays).
+    case transaction
     case custom
 
     /// Order in the review list.
     public static let displayOrder: [FindingKind] = [
-        .photo, .personalNumber, .accountNumber, .documentNumber, .cardAccessNumber, .address, .machineReadableZone, .barcode, .custom,
+        .photo, .personalNumber, .accountNumber, .documentNumber, .cardAccessNumber, .address, .machineReadableZone, .barcode, .transaction, .custom,
     ]
 }
 

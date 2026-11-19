@@ -186,11 +186,16 @@ public enum Renderer {
 
     /// A single-page PDF containing only the same flattened JPEG pixels as image export.
     /// No text objects, annotations, source image, metadata dictionary or recoverable mask layer.
-    public static func pdfData(_ image: CGImage) -> Data? {
-        guard !Task.isCancelled, let jpeg = jpegData(image) else { return nil }
-        let width = 612
-        let height = max(1, Int((Double(image.height) / Double(image.width) * Double(width)).rounded()))
-        let commands = Data("q\n\(width) 0 0 \(height) 0 0 cm\n/Copy Do\nQ\n".utf8)
+    public static func pdfData(_ image: CGImage) -> Data? { pdfData([image]) }
+
+    /// One page per flattened copy (several documents in one file), each only its JPEG pixels.
+    public static func pdfData(_ images: [CGImage]) -> Data? {
+        guard !images.isEmpty else { return nil }
+        var jpegs: [Data] = []
+        for image in images {
+            guard !Task.isCancelled, let jpeg = jpegData(image) else { return nil }
+            jpegs.append(jpeg)
+        }
         var data = Data("%PDF-1.4\n".utf8)
         data.append(contentsOf: [0x25, 0xE2, 0xE3, 0xCF, 0xD3, 0x0A])
         var offsets = [0]
@@ -200,17 +205,25 @@ public enum Renderer {
             data.append(body)
             data.append(Data("\nendobj\n".utf8))
         }
+        // Objects: 1 catalog, 2 pages, then per page: page, image, contents.
+        let pageIDs = images.indices.map { 3 + $0 * 3 }
         object(Data("<< /Type /Catalog /Pages 2 0 R >>".utf8))
-        object(Data("<< /Type /Pages /Kids [3 0 R] /Count 1 >>".utf8))
-        object(Data("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 \(width) \(height)] /Resources << /XObject << /Copy 4 0 R >> >> /Contents 5 0 R >>".utf8))
-        var pixels = Data("<< /Type /XObject /Subtype /Image /Width \(image.width) /Height \(image.height) /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length \(jpeg.count) >>\nstream\n".utf8)
-        pixels.append(jpeg)
-        pixels.append(Data("\nendstream".utf8))
-        object(pixels)
-        var content = Data("<< /Length \(commands.count) >>\nstream\n".utf8)
-        content.append(commands)
-        content.append(Data("endstream".utf8))
-        object(content)
+        object(Data("<< /Type /Pages /Kids [\(pageIDs.map { "\($0) 0 R" }.joined(separator: " "))] /Count \(images.count) >>".utf8))
+        for (i, image) in images.enumerated() {
+            let id = pageIDs[i]
+            let width = 612
+            let height = max(1, Int((Double(image.height) / Double(image.width) * Double(width)).rounded()))
+            let commands = Data("q\n\(width) 0 0 \(height) 0 0 cm\n/Copy Do\nQ\n".utf8)
+            object(Data("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 \(width) \(height)] /Resources << /XObject << /Copy \(id + 1) 0 R >> >> /Contents \(id + 2) 0 R >>".utf8))
+            var pixels = Data("<< /Type /XObject /Subtype /Image /Width \(image.width) /Height \(image.height) /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length \(jpegs[i].count) >>\nstream\n".utf8)
+            pixels.append(jpegs[i])
+            pixels.append(Data("\nendstream".utf8))
+            object(pixels)
+            var content = Data("<< /Length \(commands.count) >>\nstream\n".utf8)
+            content.append(commands)
+            content.append(Data("endstream".utf8))
+            object(content)
+        }
         let xref = data.count
         data.append(Data("xref\n0 \(offsets.count)\n0000000000 65535 f \n".utf8))
         for offset in offsets.dropFirst() {

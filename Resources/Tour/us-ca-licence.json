@@ -1,0 +1,82 @@
+[
+  {
+    "id": "FC18237E-4FAF-4A54-919F-2E4EE3458218",
+    "isOn": true,
+    "kind": "documentNumber",
+    "note": "label DD",
+    "rect": [
+      [
+        0.466387093932343,
+        0.8637590098566171
+      ],
+      [
+        0.2854896978620548,
+        0.04913130668808652
+      ]
+    ]
+  },
+  {
+    "id": "015D5114-B08C-42AE-8AAD-18EF8F69DC1D",
+    "isOn": true,
+    "kind": "documentNumber",
+    "note": "AAMVA DL",
+    "rect": [
+      [
+        0.3702829582496793,
+        0.21345261491155082
+      ],
+      [
+        0.19772436201993504,
+        0.0773160379963636
+      ]
+    ]
+  },
+  {
+    "id": "7C0926CD-2E6B-4BEF-8AF7-C2941C685CB6",
+    "isOn": true,
+    "kind": "photo",
+    "note": "borderless portrait bounds (extended by hand to the portrait edge)",
+    "rect": [
+      [
+        0.029521659720169836,
+        0.19546850847909178
+      ],
+      [
+        0.30856347551643526,
+        0.5895314915209082
+      ]
+    ]
+  },
+  {
+    "id": "5901E6BF-52E9-4C6E-9EB7-D1C31EAF0B68",
+    "isOn": true,
+    "kind": "photo",
+    "note": "borderless portrait bounds",
+    "rect": [
+      [
+        0.5913366775953226,
+        0.5390682464508475
+      ],
+      [
+        0.14276963907753648,
+        0.25093313832634057
+      ]
+    ]
+  },
+  {
+    "id": "7BAF7AED-92C7-45B7-BFD1-DE4B718C9624",
+    "isOn": true,
+    "kind": "address",
+    "note": "street address, two lines merged (added by hand for the tour)",
+    "rect": [
+      [
+        0.303,
+        0.474
+      ],
+      [
+        0.289,
+        0.09599999999999997
+      ]
+    ]
+  }
+]

@@ -12,6 +12,11 @@ enum SyntheticFixture {
     }
 
     /// A synthetic payslip: not an identity document, so the free app refuses it.
+    /// A synthetic bank statement with transaction rows and a salary row.
+    static var statementPath: String {
+        URL(fileURLWithPath: passportPath).deletingLastPathComponent().appendingPathComponent("statement-gbr.png").path
+    }
+
     static var payslipPath: String {
         URL(fileURLWithPath: passportPath).deletingLastPathComponent().appendingPathComponent("payslip-deu.png").path
     }

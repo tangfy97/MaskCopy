@@ -1,69 +1,97 @@
 import SwiftUI
 
-/// The info page, read top to bottom: what MaskCopy hides, which documents (with the sides to
-/// capture), then the countries for each. Full document names throughout, no flags or abbreviations.
+/// The info page, in three levels: Pro (App Store builds), the four identity documents as tiles, then
+/// the countries. What each document has hidden is one level down, on that document's page.
 struct SupportedView: View {
     static let kinds: [DocumentKind] = [.passport, .idCard, .residencePermit, .drivingLicence]
-    /// The same items, order and symbols as the switches on the Hide screen.
-    /// Account numbers belong to Pro's documents, so they are listed once Pro is unlocked.
-    private var hidden: [FindingKind] {
-        FindingKind.displayOrder.filter { $0 != .custom && ($0 != .accountNumber || ProAccess.shared.otherDocuments) }
-    }
+    @Environment(\.dynamicTypeSize) private var textSize
 
-    private func count(_ kind: DocumentKind?) -> Int {
+    static func count(_ kind: DocumentKind?) -> Int {
         Countries.all.filter { $0.isSupported && (kind.map($0.documents.contains) ?? true) }.count
     }
 
+    private var columns: [GridItem] {
+        Array(repeating: GridItem(.flexible(), spacing: 12), count: textSize.isAccessibilitySize ? 1 : 2)
+    }
+
     var body: some View {
-        List {
-            Section {
-                ForEach(hidden, id: \.self) { kind in
-                    Label {
-                        Text(kind.title).foregroundStyle(Color.ink)
-                    } icon: {
-                        Image(systemName: kind.symbol).foregroundStyle(Color.fjord)
-                    }
-                    .listRowBackground(Color.card)
-                }
-            } header: { Text("Hidden automatically") }
+        ScrollView {
+            VStack(alignment: .leading, spacing: 28) {
+                ProSection()
 
-            Section {
-                ForEach(Self.kinds, id: \.self) { kind in
-                    NavigationLink {
-                        DocumentCountriesView(kind: kind)
-                    } label: {
-                        LabeledContent {
-                            Text(count(kind), format: .number).monospacedDigit().foregroundStyle(Color.muted)
-                        } label: { DocumentTypeLabel(kind: kind) }
-                    }
-                    .listRowBackground(Color.card)
-                }
-            } header: { Text("Identity documents") }
-
-            ProSection()
-
-            Section {
-                NavigationLink {
-                    DocumentCountriesView()
-                } label: {
-                    LabeledContent {
-                        Text(count(nil), format: .number).monospacedDigit().foregroundStyle(Color.muted)
-                    } label: {
-                        Label { Text("All countries").foregroundStyle(Color.ink) } icon: {
-                            Image(systemName: "globe").foregroundStyle(Color.fjord)
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Identity documents").font(.headline).foregroundStyle(Color.ink)
+                    LazyVGrid(columns: columns, spacing: 12) {
+                        ForEach(Self.kinds, id: \.self) { kind in
+                            NavigationLink {
+                                DocumentCountriesView(kind: kind)
+                            } label: {
+                                DocumentTile(kind: kind, count: Self.count(kind))
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("document-\(kind.rawValue)")
                         }
                     }
                 }
-                .listRowBackground(Color.card)
-                .accessibilityIdentifier("document-countries")
-            } header: { Text("Countries") }
-            footer: { Text("Review every mask before sharing.") }
 
+                NavigationLink {
+                    DocumentCountriesView()
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "globe").font(.title3).foregroundStyle(Color.fjord)
+                        Text("\(Self.count(nil)) countries").foregroundStyle(Color.ink)
+                        Spacer()
+                        Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(Color.muted)
+                    }
+                    .padding(16)
+                    .contentGroup()
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("document-countries")
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
         }
-        .scrollContentBackground(.hidden)
         .background(Color.paper.ignoresSafeArea())
         .navigationTitle("Documents")
         .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+/// One identity document: its symbol, its name and the number of countries.
+private struct DocumentTile: View {
+    let kind: DocumentKind
+    let count: Int
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .top) {
+                Image(systemName: kind.documentSymbol).font(.title2).foregroundStyle(Color.fjord)
+                Spacer()
+                Text(count, format: .number).monospacedDigit().foregroundStyle(Color.muted)
+            }
+            Text(kind.documentName).font(.body.weight(.medium)).foregroundStyle(Color.ink)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, minHeight: 104, alignment: .topLeading)
+        .contentGroup()
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
+    }
+}
+
+extension DocumentKind {
+    /// What MaskCopy looks for on this kind of document, in the Hide screen's order.
+    var hiddenKinds: [FindingKind] {
+        switch self {
+        case .passport: [.photo, .personalNumber, .documentNumber, .cardAccessNumber, .machineReadableZone]
+        case .idCard, .residencePermit:
+            [.photo, .personalNumber, .documentNumber, .cardAccessNumber, .address, .machineReadableZone, .barcode]
+        case .drivingLicence: [.photo, .personalNumber, .documentNumber, .address, .barcode]
+        case .unknown: FindingKind.displayOrder.filter { ![.custom, .accountNumber, .transaction].contains($0) }
+        }
     }
 }
 
@@ -80,11 +108,21 @@ private struct DocumentCountriesView: View {
 
     var body: some View {
         List {
-            ForEach(countries) { country in
-                NavigationLink(country.name()) {
-                    CountryDocumentsView(country: country)
+            if let kind, query.isEmpty {
+                Section {
+                    HiddenSymbols(kinds: kind.hiddenKinds)
+                        .listRowBackground(Color.card)
+                } header: { Text("Hidden automatically") }
+            }
+            Section {
+                ForEach(countries) { country in
+                    NavigationLink(country.name()) {
+                        CountryDocumentsView(country: country)
+                    }
+                    .listRowBackground(Color.card)
                 }
-                .listRowBackground(Color.card)
+            } header: {
+                if kind != nil && query.isEmpty { Text("\(countries.count) countries") }
             }
         }
         .overlay {
@@ -113,5 +151,35 @@ private struct CountryDocumentsView: View {
         .background(Color.paper.ignoresSafeArea())
         .navigationTitle(country.name())
         .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+/// What is hidden, as a wrapping set of symbol-and-name chips.
+private struct HiddenSymbols: View {
+    let kinds: [FindingKind]
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            grid(columns: 2)
+            grid(columns: 1)
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func grid(columns: Int) -> some View {
+        Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 12) {
+            ForEach(Array(stride(from: 0, to: kinds.count, by: columns)), id: \.self) { start in
+                GridRow {
+                    ForEach(kinds[start..<min(start + columns, kinds.count)], id: \.self) { kind in
+                        Label {
+                            Text(kind.title).foregroundStyle(Color.ink).fixedSize()
+                        } icon: {
+                            Image(systemName: kind.symbol).foregroundStyle(Color.fjord)
+                        }
+                        .font(.subheadline)
+                    }
+                }
+            }
+        }
     }
 }

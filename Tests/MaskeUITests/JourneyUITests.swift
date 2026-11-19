@@ -45,22 +45,19 @@ final class JourneyUITests: XCTestCase {
         app.buttons["Documents"].tap()
         XCTAssertTrue(app.navigationBars["Documents"].waitForExistence(timeout: 5))
         capture("Documents", app: app)
+        for name in ["Passport", "National ID card", "Residence permit", "Driving licence"] {
+            XCTAssertTrue(app.staticTexts[name].firstMatch.exists, name)
+        }
+        app.buttons["document-passport"].tap()
+        XCTAssertTrue(app.staticTexts["Hidden automatically"].firstMatch.waitForExistence(timeout: 5)
+                      || app.staticTexts["HIDDEN AUTOMATICALLY"].firstMatch.exists, app.debugDescription)
         for name in ["Photo", "Document number", "Machine-readable zone"] {
             XCTAssertTrue(app.staticTexts[name].firstMatch.exists, name)
         }
-        for name in ["Passport", "National ID card", "Residence permit", "Driving licence"] {
-            let label = app.staticTexts[name].firstMatch
-            for _ in 0..<8 {
-                if label.isHittable { break }
-                app.collectionViews.firstMatch.swipeUp()
-            }
-            XCTAssertTrue(label.isHittable, name)
-        }
+        capture("Passport", app: app)
+        app.navigationBars.buttons.firstMatch.tap()
         let countries = app.buttons["document-countries"]
-        for _ in 0..<8 {
-            if countries.isHittable { break }
-            app.collectionViews.firstMatch.swipeUp()
-        }
+        XCTAssertTrue(countries.waitForExistence(timeout: 5))
         countries.tap()
         let search = app.searchFields["Search countries"]
         search.tap()

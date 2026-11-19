@@ -280,3 +280,18 @@ Not verified:
 ## 31. Payslips: a postcode read as a document number
 
 On the synthetic German payslip the postcode line ("10115 Berlin") is also found as an "unlabelled number" (document number), on top of its address mask. Nothing is left visible, but the Hide screen lists a Document number that is not one. **Next:** skip unlabelled numbers that an address finding already covers.
+
+## 32. New official specimens: what the engine misses
+
+Run with `maske tour` on 19 November 2026. Shown flat and unaltered, the engine:
+- does not mask secondary (ghost) portraits on the US 2021 and Norwegian 2026 passports, nor the Norwegian laser-perforated portrait, whose digits are part of the national ID number;
+- does not mask document numbers laser-perforated vertically along the page edge (US, Norway);
+- on the Chinese 2018 passport, stretches the secondary portrait over the end of the dates beside it and stops the main portrait short of its lower edge; on the California licence the main portrait also stops short.
+The tour's masks were corrected by hand (noted in each mask's note). **Next:** detect secondary portraits and perforated vertical numbers, then regenerate the tour masks without hand edits.
+
+## 33. Pro features not verified on a device
+
+- **12 pages per document**: memory with twelve full-resolution pages has not been measured on an iPhone.
+- **Packs**: copies are held in memory; a pack of many multi-page documents has not been measured.
+- **Register reminders**: notification permission and delivery have not been tried on a device. Face ID was skipped in UI tests (`-MaskeSkipAuth`, Debug only).
+- **Transactions**: checked on two synthetic statements only. Real statements with columns split by Vision into separate lines, dates without a year in other formats, or wrapped descriptions may leave parts visible.

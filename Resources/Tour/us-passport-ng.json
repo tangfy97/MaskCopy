@@ -1,0 +1,82 @@
+[
+  {
+    "id": "14DDA150-2A28-4335-B6EF-A081D51E9207",
+    "isOn": true,
+    "kind": "machineReadableZone",
+    "note": "MRZ td3",
+    "rect": [
+      [
+        0.03927950545751266,
+        0.791220443137943
+      ],
+      [
+        0.9163819480637974,
+        0.14172760195449752
+      ]
+    ]
+  },
+  {
+    "id": "5161167C-9684-4397-9948-8F69AF097005",
+    "isOn": true,
+    "kind": "documentNumber",
+    "note": "document number from MRZ",
+    "rect": [
+      [
+        0.6523829785883798,
+        0.1582180450751879
+      ],
+      [
+        0.18761626139817633,
+        0.061168635875402805
+      ]
+    ]
+  },
+  {
+    "id": "1325F178-91AD-494B-BD6F-4A5B40E0C941",
+    "isOn": true,
+    "kind": "photo",
+    "note": "borderless portrait bounds",
+    "rect": [
+      [
+        0.039019106690870956,
+        0.2917000333451687
+      ],
+      [
+        0.21411702127659576,
+        0.46476691729323316
+      ]
+    ]
+  },
+  {
+    "id": "BF4BADB4-A563-4931-AA08-66EDB58B1A88",
+    "isOn": true,
+    "kind": "photo",
+    "note": "secondary portrait (added by hand for the tour)",
+    "rect": [
+      [
+        0.806,
+        0.612
+      ],
+      [
+        0.07799999999999996,
+        0.136
+      ]
+    ]
+  },
+  {
+    "id": "6C0C3462-396E-4773-8252-D978A47460B0",
+    "isOn": true,
+    "kind": "documentNumber",
+    "note": "perforated document number (added by hand for the tour)",
+    "rect": [
+      [
+        0.903,
+        0.14
+      ],
+      [
+        0.05699999999999994,
+        0.605
+      ]
+    ]
+  }
+]

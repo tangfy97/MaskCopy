@@ -160,6 +160,7 @@ struct ReadyCopyView: View {
             .accessibilityLabel("Move watermark")
             .disabled(preparing || session.pages.isEmpty)
             .padding(.bottom, 12)
+            ProCopyActions().padding(.bottom, 12)
         }
         .background(Color.paper.ignoresSafeArea())
         .navigationTitle("Your copy")
@@ -192,10 +193,14 @@ struct ReadyCopyView: View {
                 if copy.save {
                     SaveCopySheet(file: copy.url, onSaved: {
                         saved = true
+                        ProEvents.copyExported(session: session)
                         UINotificationFeedbackGenerator().notificationOccurred(.success)
                     }, onFinish: { output = nil })
                 }
-                else { ActivitySheet(file: copy.url, onFinish: { output = nil }) }
+                else { ActivitySheet(file: copy.url, onFinish: { completed in
+                    if completed { ProEvents.copyExported(session: session) }
+                    output = nil
+                }) }
             }
             .presentationDetents(copy.save || textSize.isAccessibilitySize ? [.large] : [.medium, .large])
             .privacyShield()
@@ -299,7 +304,7 @@ struct ReadyCopyView: View {
     }
 }
 
-private struct SaveCopySheet: UIViewControllerRepresentable {
+struct SaveCopySheet: UIViewControllerRepresentable {
     let file: URL
     let onSaved: () -> Void
     let onFinish: () -> Void
@@ -325,13 +330,14 @@ private struct SaveCopySheet: UIViewControllerRepresentable {
     }
 }
 
-private struct ActivitySheet: UIViewControllerRepresentable {
+struct ActivitySheet: UIViewControllerRepresentable {
     let file: URL
-    let onFinish: () -> Void
+    /// Whether the file was actually sent somewhere.
+    let onFinish: (Bool) -> Void
     func makeUIViewController(context: Context) -> UIActivityViewController {
         let controller = UIActivityViewController(activityItems: [file], applicationActivities: nil)
-        controller.completionWithItemsHandler = { _, _, _, _ in
-            Task { @MainActor in onFinish() }
+        controller.completionWithItemsHandler = { _, completed, _, _ in
+            Task { @MainActor in onFinish(completed) }
         }
         return controller
     }

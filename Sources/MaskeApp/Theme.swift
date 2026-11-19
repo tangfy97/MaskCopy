@@ -286,6 +286,7 @@ extension FindingKind {
         case .barcode: "Barcode"
         case .address: "Address"
         case .cardAccessNumber: "Card access number"
+        case .transaction: "Transactions"
         case .custom: "Your boxes"
         }
     }
@@ -300,6 +301,7 @@ extension FindingKind {
         case .barcode: "barcode"
         case .address: "house"
         case .cardAccessNumber: "wave.3.right"
+        case .transaction: "list.bullet.rectangle"
         case .custom: "rectangle.dashed"
         }
     }

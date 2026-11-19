@@ -40,16 +40,27 @@ let url = URL(fileURLWithPath: path)
 
 switch command {
 case "tour":
+    // The specimen stays exactly as published (no straightening); masks are mapped back onto it and
+    // drawn as level rectangles, slightly grown so nothing the engine covered shows.
     guard let image = Fixtures.load(url), let stem = args.dropFirst(2).first else { print(usage); exit(2) }
     let (doc, a) = try Analyzer().analyze(photo: image)
-    guard let plain = Renderer.render(pages: [(doc.image, [])], watermark: nil, maxWidth: 900),
-          let masked = Renderer.render(pages: [(doc.image, a.findings)], watermark: nil, maxWidth: 900) else { exit(1) }
-    Warp.writeJPEG(plain, to: URL(fileURLWithPath: stem + ".jpg"), quality: 0.8)
+    let toSource = doc.toSource
+    let pad = 0.004
+    let masks = a.findings.filter(\.isOn).map { f -> Finding in
+        let r = toSource.apply(f.shape).boundingRect.insetBy(dx: -pad, dy: -pad)
+            .intersection(CGRect(x: 0, y: 0, width: 1, height: 1))
+        return Finding(id: f.id, kind: f.kind, rect: r, quad: nil, note: f.note)
+    }
+    let scale = min(1, 1200 / CGFloat(image.width))
+    guard let plain = Renderer.render(pages: [(image, [])], watermark: nil, maxWidth: Int(CGFloat(image.width) * scale)),
+          let masked = Renderer.render(pages: [(image, masks)], watermark: nil, maxWidth: Int(CGFloat(image.width) * scale)) else { exit(1) }
+    Warp.writeJPEG(plain, to: URL(fileURLWithPath: stem + ".jpg"), quality: 0.82)
     Fixtures.write(masked, to: URL(fileURLWithPath: stem + "-check.png"))
     let enc = JSONEncoder()
     enc.outputFormatting = [.prettyPrinted, .sortedKeys]
-    try enc.encode(a.findings.filter(\.isOn)).write(to: URL(fileURLWithPath: stem + ".json"))
-    print("\(a.findings.count) masks, \(plain.width)×\(plain.height) → \(stem).jpg/.json")
+    try enc.encode(masks).write(to: URL(fileURLWithPath: stem + ".json"))
+    print("\(masks.count) masks, \(plain.width)×\(plain.height) → \(stem).jpg/.json")
+    for m in masks { print(String(format: "  %-20@ %.3f %.3f %.3f %.3f  %@", m.kind.rawValue as NSString, m.rect.minX, m.rect.minY, m.rect.width, m.rect.height, m.note as NSString)) }
 
 case "fixtures":
     try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
@@ -130,7 +141,7 @@ case "eval":
         }
         if a.kind.rawValue == e.kind { kindsOK += 1 } else { problems.append("\(e.name): kind \(a.kind.rawValue), expected \(e.kind)") }
         // Payslips are the only other documents among the fixtures; every identity document must pass.
-        if a.isOtherDocument == e.name.hasPrefix("payslip") { othersOK += 1 } else {
+        if a.isOtherDocument == (e.name.hasPrefix("payslip") || e.name.hasPrefix("statement")) { othersOK += 1 } else {
             ok = false; problems.append("\(e.name): \(a.isOtherDocument ? "taken for another document" : "not taken for another document")")
         }
         if (a.country?.code ?? "") == e.country { countriesOK += 1 } else { problems.append("\(e.name): country \(a.country?.code ?? "?"), expected \(e.country)") }

@@ -1,0 +1,114 @@
+[
+  {
+    "id": "2052EE6C-0591-4704-8C77-2D7201A5816A",
+    "isOn": true,
+    "kind": "machineReadableZone",
+    "note": "MRZ td3",
+    "rect": [
+      [
+        0.0365107786982988,
+        0.8041829297294638
+      ],
+      [
+        0.8986200935758439,
+        0.12562548502633542
+      ]
+    ]
+  },
+  {
+    "id": "691793E0-247C-4842-805D-8582B11D8B15",
+    "isOn": true,
+    "kind": "documentNumber",
+    "note": "document number from MRZ, label PASSPORT NUMBER",
+    "rect": [
+      [
+        0.6804476604581798,
+        0.12276659537310378
+      ],
+      [
+        0.1453713888773106,
+        0.04119057794184236
+      ]
+    ]
+  },
+  {
+    "id": "E7E32B66-C85D-445F-91E3-89C95222F219",
+    "isOn": true,
+    "kind": "cardAccessNumber",
+    "note": "label CAN, 6-digit CAN",
+    "rect": [
+      [
+        0.681830539114691,
+        0.6399767511396971
+      ],
+      [
+        0.09117666393539214,
+        0.040052615739220365
+      ]
+    ]
+  },
+  {
+    "id": "6330ED81-6369-4F58-B0FA-75B80E15618F",
+    "isOn": true,
+    "kind": "photo",
+    "note": "borderless portrait bounds",
+    "rect": [
+      [
+        0.02740031679461911,
+        0.19634210940202074
+      ],
+      [
+        0.2821401523421329,
+        0.5295577707191306
+      ]
+    ]
+  },
+  {
+    "id": "C725FED7-0AB1-4769-8EA9-78D7E70706FC",
+    "isOn": true,
+    "kind": "photo",
+    "note": "multiple laser image (added by hand for the tour)",
+    "rect": [
+      [
+        0.825,
+        0.33
+      ],
+      [
+        0.08400000000000007,
+        0.14999999999999997
+      ]
+    ]
+  },
+  {
+    "id": "E32ED1D4-C6B1-4AC3-B922-E3E010B59210",
+    "isOn": true,
+    "kind": "photo",
+    "note": "laser perforated portrait (added by hand for the tour)",
+    "rect": [
+      [
+        0.814,
+        0.533
+      ],
+      [
+        0.14400000000000002,
+        0.16699999999999993
+      ]
+    ]
+  },
+  {
+    "id": "F53F6939-7731-46D0-AB82-339D131FF687",
+    "isOn": true,
+    "kind": "documentNumber",
+    "note": "perforated document number (added by hand for the tour)",
+    "rect": [
+      [
+        0.903,
+        0.11
+      ],
+      [
+        0.05699999999999994,
+        0.68
+      ]
+    ]
+  }
+]

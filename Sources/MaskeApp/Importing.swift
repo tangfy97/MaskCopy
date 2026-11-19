@@ -20,7 +20,8 @@ extension UIImage {
 }
 
 enum Importing {
-    static let maximumPages = 4
+    /// 4 in the free app; Pro raises it (see `ProLimits`).
+    static var maximumPages: Int { ProLimits.maximumPages }
 
     /// Longer documents require explicit selection, never a shortened successful import.
     static func images(fromPDF url: URL) -> [CGImage] {

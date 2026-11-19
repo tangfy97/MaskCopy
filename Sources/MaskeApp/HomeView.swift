@@ -60,6 +60,9 @@ struct HomeView: View {
                     Button("Cancel") { fileTask?.cancel(); openingFile = false }
                 }
             }
+            if ProAccess.canUnlock {
+                ToolbarItem(placement: .topBarLeading) { ProHomeToolbar() }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink(value: Session.Step.supported) {
                     Label("Documents", systemImage: "info.circle")

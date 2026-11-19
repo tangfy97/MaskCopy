@@ -1,0 +1,66 @@
+[
+  {
+    "id": "6ABF6C0C-06E9-494C-9E98-B578ECCD5222",
+    "isOn": true,
+    "kind": "machineReadableZone",
+    "note": "MRZ td3",
+    "rect": [
+      [
+        0.017693961590160918,
+        0.8348198757676901
+      ],
+      [
+        0.9295351815487145,
+        0.13253416147440322
+      ]
+    ]
+  },
+  {
+    "id": "95036A3E-0BDD-4A1C-A4B4-41C32335CA21",
+    "isOn": true,
+    "kind": "documentNumber",
+    "note": "document number from MRZ",
+    "rect": [
+      [
+        0.6596074942254816,
+        0.13016149063794
+      ],
+      [
+        0.2254840085287847,
+        0.0670062111801242
+      ]
+    ]
+  },
+  {
+    "id": "CEEC9B56-1044-40EA-9377-941FC5447A84",
+    "isOn": true,
+    "kind": "photo",
+    "note": "face, portrait edge (extended by hand to the portrait edge)",
+    "rect": [
+      [
+        0.01716581555710392,
+        0.23044499029101934
+      ],
+      [
+        0.25048842872260013,
+        0.48155500970898063
+      ]
+    ]
+  },
+  {
+    "id": "105BC5E5-1C8B-43A8-A5E2-A7B2E23BEB89",
+    "isOn": true,
+    "kind": "photo",
+    "note": "borderless portrait bounds (trimmed by hand off the dates)",
+    "rect": [
+      [
+        0.8,
+        0.21269779860455057
+      ],
+      [
+        0.15865969935909452,
+        0.30011286073886095
+      ]
+    ]
+  }
+]

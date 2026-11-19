@@ -1,3 +1,4 @@
+import os
 import SwiftUI
 
 // MaskCopy is open core. Recognition, masking, rendering and the free app are in this repository.
@@ -77,6 +78,33 @@ struct ProTourScene: View {
     }
 }
 
+/// Pro's actions on the finished copy (add it to a pack). Nothing without Pro.
+struct ProCopyActions: View {
+    var body: some View {
+        #if MASKCOPY_PRO
+        ProCopyActionsView()
+        #endif
+    }
+}
+
+/// Pro's button at the top left of Home (the copy register). Nothing without Pro.
+struct ProHomeToolbar: View {
+    var body: some View {
+        #if MASKCOPY_PRO
+        ProRegisterButton()
+        #endif
+    }
+}
+
+/// Told when a copy has been saved or shared, so Pro can note it in its on-device register.
+enum ProEvents {
+    @MainActor static func copyExported(session: Session) {
+        #if MASKCOPY_PRO
+        ProRegister.shared.record(session: session)
+        #endif
+    }
+}
+
 /// What Pro unlocks that the free app refuses. Payslips, bank statements, bills and other documents
 /// that are not identity documents are Pro; their masks are still found by the open engine.
 /// Observable, so screens update the moment a purchase or refund lands.
@@ -84,6 +112,9 @@ struct ProTourScene: View {
 final class ProAccess {
     static let shared = ProAccess()
     var otherDocuments = false
+    /// Recipient and purpose a new document starts with (a Pro pack in progress); empty otherwise.
+    var defaultRecipient = ""
+    var defaultPurpose = ""
     /// Whether this build can sell Pro at all (it can't without the private tree).
     nonisolated static var canUnlock: Bool {
         #if MASKCOPY_PRO
@@ -93,4 +124,12 @@ final class ProAccess {
         #endif
     }
     private init() {}
+}
+
+/// Limits Pro raises. Read off the main thread while importing, so kept behind a lock.
+enum ProLimits {
+    static let freePages = 4
+    private static let pages = OSAllocatedUnfairLock(initialState: freePages)
+    static var maximumPages: Int { pages.withLock { $0 } }
+    static func setMaximumPages(_ count: Int) { pages.withLock { $0 = count } }
 }

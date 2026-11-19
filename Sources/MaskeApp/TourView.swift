@@ -23,11 +23,12 @@ enum Tour {
         [
             Page(id: "masks", scene: .masks, title: Text("Covers what they don’t need"),
                  detail: Text("You check every mask before sharing")),
+        ] + ProTour.pages + [
             Page(id: "watermark", scene: .watermark, title: Text("Mark who it’s for"),
                  detail: Text("Saved as a flat JPG or PDF")),
             Page(id: "globe", scene: .globe, title: Text("\(Countries.supported.count) countries"),
                  detail: Text("Full list: \(Image(systemName: "info.circle")) on the first screen")),
-        ] + ProTour.pages
+        ]
     }
 
     /// The whole tour after installing and after every update that raises `current`.
@@ -128,9 +129,11 @@ private struct Specimen: Identifiable {
 
     var aspect: CGFloat { image.size.width / max(image.size.height, 1) }
 
-    /// US passport (US Department of State, public domain), Chinese resident identity card
-    /// (Ministry of Public Security sample, CC0) and Dutch passport (RvIG, CC0).
-    static let all: [Specimen] = ["us-passport", "cn-id", "nl-passport"].compactMap(load)
+    /// Current official specimens (see NOTICE): United States passport (2021 Next Generation), Norwegian
+    /// passport (2026), Chinese passport (2018), California driver licence and Dutch passport (2021),
+    /// shown flat and unaltered. The Dutch one comes last: the watermark scene uses it.
+    static let all: [Specimen] = ["us-passport-ng", "no-passport-2026", "cn-passport-2018", "us-ca-licence", "nl-passport-2021"]
+        .compactMap(load)
 
     private static let order: [FindingKind] = [.photo, .documentNumber, .personalNumber, .address, .machineReadableZone]
 
@@ -186,7 +189,7 @@ private struct SpecimenCard: View {
     }
 }
 
-/// Each specimen arrives at an angle, settles flat as the scan straightens it, then its masks are painted in.
+/// Each specimen fades in flat and unaltered, then its masks are painted in as level rectangles.
 private struct SpecimenScene: View {
     let active: Bool
     @State private var index = 0
@@ -200,9 +203,7 @@ private struct SpecimenScene: View {
         ZStack {
             if specimens.indices.contains(index) {
                 SpecimenCard(specimen: specimens[index], shown: reduceMotion ? .max : shown)
-                    .rotation3DEffect(.degrees(settled ? 0 : 24), axis: (x: 1, y: -0.3, z: 0.1), perspective: 0.5)
-                    .rotationEffect(.degrees(settled ? 0 : -5))
-                    .scaleEffect(settled ? 1 : 0.9)
+                    .offset(y: settled ? 0 : 12)
                     .opacity(settled ? 1 : 0)
                     .id(specimens[index].id)
             }
@@ -217,8 +218,8 @@ private struct SpecimenScene: View {
                     reset.disablesAnimations = true
                     withTransaction(reset) { index = i; shown = 0; settled = false }
                     guard await hold(0.05) else { return }
-                    withAnimation(.spring(duration: 0.8, bounce: 0.18)) { settled = true }
-                    guard await hold(0.9) else { return }
+                    withAnimation(.easeOut(duration: 0.5)) { settled = true }
+                    guard await hold(0.7) else { return }
                     for m in specimens[i].masks.indices {
                         withAnimation(.spring(duration: 0.42, bounce: 0.12)) { shown = m + 1 }
                         guard await hold(0.38) else { return }

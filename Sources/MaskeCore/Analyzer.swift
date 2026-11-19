@@ -154,6 +154,11 @@ public struct Analyzer {
         // The PDF417 on the back of North American licences and ID cards (AAMVA).
         if kind == .unknown, barcodes.contains(where: { $0.1?.contains("ANSI ") == true }) { kind = .drivingLicence }
 
+        // 7. On a bank statement, every transaction row except income (salary, wages, benefits).
+        if Self.otherDocument(kind: kind, mrz: mrz, folded: folded, aspect: aspect, findings: page.findings) == .bankStatement {
+            page.findTransactions()
+        }
+
         var result = PageAnalysis(kind: kind, country: country, mrz: mrz, findings: page.merged(), lines: lines.map { String(format: "%@  [%.3f %.3f %.3f %.3f]", $0.text, $0.box.minX, $0.box.minY, $0.box.width, $0.box.height) })
         result.otherDocument = Self.otherDocument(kind: kind, mrz: mrz, folded: folded, aspect: aspect, findings: result.findings)
         return result
@@ -823,6 +828,47 @@ struct Page {
         #"^(?:BLK |BLOCK |NO\.? ?|LOT |UNIT )?\d{1,5}[A-Z]?[ ,/-]+(?:[A-Z0-9'.-]+ )*(?:ST|STREET|RD|ROAD|AVE|AVENUE|DR|DRIVE|LN|LANE|BLVD|WAY|CT|COURT|PL|PLACE|CRES|CRESCENT|HWY|TCE|TERRACE|PDE|PARADE|CL|CLOSE|SQ|GROVE|GR)\b|\b(?:JALAN|JLN|LORONG|TAMAN|PERSIARAN)\b|^\d{1,5}[A-Z]?(?: (?:BIS|TER|QUATER))?,? (?:RUE|BOUL|BOULEVARD|BOUL\.|BD|AV\.?|AVENUE|CH\.?|CHEMIN|RANG|ROUTE|RTE|MONTEE|COTE|IMPASSE|IMP\.|ALLEE|ALL\.|PROMENADE|PLACE|PL\.|QUAI|COURS|SQUARE) |^[A-Z][A-Z'.-]*(?: [A-Z][A-Z'.-]*)*(?:STRASSE|STR\.|STRAAT|WEG|LAAN|PLEIN|GRACHT|KADE|DIJK|SINGEL|ALLEE|PLATZ|RING|GASSE|DAMM) \d{1,5} ?[A-Z]?(?:[ -]\d{1,4})?(?: ?[A-Z]{1,3})?,?$|(?:省|市|自治区)\S*(?:路|街|道|巷|弄|村|镇)\S*\d+号|^(?:C/|CL\.|CALLE|AVDA\.?|AVENIDA|PZA\.?|PLAZA|PASEO|P[º°O]\.|CTRA\.?|CARRETERA|RONDA|TRAVESIA|CAMINO|RAMBLA|GRAN VIA) ?[A-Z][^,]*, ?(?:N[º°O]\.? ?)?(?:\d{1,4}|S/N)\b|^[A-ZÆØÅ][A-ZÆØÅ'.-]*(?: [A-ZÆØÅ][A-ZÆØÅ'.-]*)*(?:GADE|VEJ|ALLE|VAENGET|VÆNGET|PLADS|STRAEDE|STRÆDE|TORV|BAKKE|PARKEN|BOULEVARD) \d{1,4}[A-Z]?(?:,? ?(?:ST|KL|\d{1,2})\.?(?: ?(?:TV|TH|MF|\d{1,3})\.?)?)?$"#)
     static let postcodeLine = try! NSRegularExpression(pattern:
         #"^\d{4,6} [A-ZÆØÅ]{3,}|^\d{4} ?[A-Z]{2} [A-Z]{2,}|\b(?:[A-Z]{2,3} \d{4,5}(?:-\d{4})?|\d{4,6})$|\b[A-Z]\d[A-Z] ?\d[A-Z]\d$|\b[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}$"#)
+
+    /// A date at the start of a row: 03/02, 03.02.2026, 2026-02-03, 3 Feb, 03 FEB 26.
+    static let transactionDate = try! NSRegularExpression(pattern:
+        #"^\s*(?:\d{1,2}[./-]\d{1,2}(?:[./-]\d{2,4})?\.?|\d{4}-\d{2}-\d{2}|\d{1,2}\.? ?(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC|MRZ|MAI|OKT|DEZ|MEI|MAA|ENE|ABR|AGO|DIC|JANV|FEVR|AVR|JUIL|SEPT|DES|DIC)[A-Z]*\.?(?: ?\d{2,4})?)(?=\s)"#)
+    /// An amount: digits with two decimals (1,204.80 / 1.204,80 / -45.20).
+    static let amount = try! NSRegularExpression(pattern: #"[-+−]?\s?\d{1,3}(?:[.,  ]\d{3})*[.,]\d{2}(?!\d)"#)
+    /// Income a tenant or employer wants to see, kept visible.
+    static let incomeWords = ["SALARY", "WAGES", "PAYROLL", "GEHALT", "LOHN", "SALARIS", "LOON", "SALAIRE", "NOMINA", "LONN",
+                              "LØNN", "LØN", "PENSION", "BENEFIT", "工资", "薪"].map(\.foldedUpper)
+
+    /// Rows of a bank statement that start with a date and carry an amount: everything after the date
+    /// is covered (counterparty, reference, amount, balance), except income rows.
+    mutating func findTransactions() {
+        let body = textLines.filter { !$0.text.isEmpty }
+        var used = Set<Int>()
+        for (i, line) in body.enumerated() where !used.contains(i) {
+            let ns = line.text as NSString
+            guard let date = Self.transactionDate.firstMatch(in: line.text.foldedUpper, range: NSRange(location: 0, length: (line.text.foldedUpper as NSString).length)),
+                  date.range.length > 0, date.range.length < ns.length else { continue }
+            // The row: this line and any line beside it at the same height.
+            let h = line.box.height
+            let row = body.indices.filter { j in
+                j != i && !used.contains(j) && abs(body[j].box.midY - line.box.midY) < h * 0.5 && body[j].box.minX > line.box.minX
+            }
+            let rowText = ([line.text] + row.map { body[$0].text }).joined(separator: " ")
+            guard Self.amount.firstMatch(in: rowText, range: NSRange(location: 0, length: (rowText as NSString).length)) != nil else { continue }
+            used.insert(i)
+            row.forEach { used.insert($0) }
+            let folded = rowText.foldedUpper
+            if Self.incomeWords.contains(where: folded.contains) { log("income row kept: \(rowText)"); continue }
+            // A payee's street ("RENT 14 PARK ROAD") is part of the transaction, not the holder's address.
+            let band = line.box.insetBy(dx: -1, dy: 0)
+            findings.removeAll { $0.kind == .address && $0.rect.intersectionArea(band) > 0.5 * $0.rect.area }
+            if let start = Range(NSRange(location: date.range.upperBound, length: ns.length - date.range.upperBound), in: line.text) {
+                var r = start
+                while r.lowerBound < r.upperBound, line.text[r.lowerBound].isWhitespace { r = line.text.index(after: r.lowerBound)..<r.upperBound }
+                if !r.isEmpty { addPart(.transaction, of: line, r, note: "transaction") }
+            }
+            for j in row { add(.transaction, body[j].quad, note: "transaction (column)", words: nil) }
+        }
+    }
 
     mutating func findStreetAddresses() {
         let lines = textLines

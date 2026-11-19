@@ -207,8 +207,9 @@ final class Session: ObservableObject {
         totalPages = 0
         importFailed = false
         pages = []
-        recipient = ""
-        purpose = ""
+        // A pack (Pro) carries its recipient and purpose into the next document.
+        recipient = ProAccess.shared.defaultRecipient
+        purpose = ProAccess.shared.defaultPurpose
         Exporter.clearLater()
     }
 
@@ -236,14 +237,19 @@ enum Exporter {
     /// Only an explicit Save or Share action writes a file. Each attempt owns its directory,
     /// so cancelling an old attempt cannot remove a newer copy.
     static func writeCopy(_ image: CGImage, recipient: String, format: Format = .jpg) -> URL? {
-        guard !Task.isCancelled else { return nil }
-        let encoded = format == .jpg ? Renderer.jpegData(image) : Renderer.pdfData(image)
+        writeCopy([image], recipient: recipient, format: format)
+    }
+
+    /// Several flattened copies: one PDF page each (JPG takes only the first).
+    static func writeCopy(_ images: [CGImage], recipient: String, format: Format) -> URL? {
+        guard !Task.isCancelled, let image = images.first else { return nil }
+        let encoded = format == .jpg ? Renderer.jpegData(image) : Renderer.pdfData(images)
         guard let data = encoded else { return nil }
         let folder = directory.appendingPathComponent(UUID().uuidString, isDirectory: true)
         let f = DateFormatter()
         f.dateFormat = "yyyy-MM-dd"
         let who = String(recipient.components(separatedBy: CharacterSet.alphanumerics.inverted).filter { !$0.isEmpty }.joined(separator: " ").prefix(48))
-        let url = folder.appendingPathComponent("ID copy for \(who.isEmpty ? "recipient" : who) \(f.string(from: Date())).\(format.rawValue)")
+        let url = folder.appendingPathComponent("Copy for \(who.isEmpty ? "recipient" : who) \(f.string(from: Date())).\(format.rawValue)")
         guard !Task.isCancelled else { return nil }
         let written = io.sync { () -> Bool in
             do {
