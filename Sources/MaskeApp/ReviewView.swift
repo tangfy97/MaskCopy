@@ -24,7 +24,7 @@ struct ReviewView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if session.refusesOtherDocument {
-                otherDocument
+                if ProAccess.canUnlock { ProRefusal { session.finish() } } else { otherDocument }
             } else {
                 content
             }
@@ -34,6 +34,15 @@ struct ReviewView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(session.analyzing)
         .toolbar {
+            if ProAccess.canUnlock && !session.analyzing && !session.refusesOtherDocument
+                && session.pages.contains(where: \.isOtherDocument) {
+                ToolbarItem(placement: .principal) {
+                    HStack(spacing: 6) {
+                        Text("Hide details").font(.headline)
+                        ProTitleBadge(isProDocument: true)
+                    }
+                }
+            }
             if session.analyzing {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { session.finish() } }
             } else if !session.refusesOtherDocument {
@@ -93,7 +102,17 @@ struct ReviewView: View {
         }
     }
 
-    private var header: some View {
+    @ViewBuilder private var header: some View {
+        if let other = session.otherDocument {
+            Label { Text(other.title) } icon: { Image(systemName: other.symbol) }
+                .font(.subheadline)
+                .foregroundStyle(Color.muted)
+        } else {
+            identityHeader
+        }
+    }
+
+    private var identityHeader: some View {
         VStack(alignment: .leading, spacing: 4) {
             Group {
                 if textSize.isAccessibilitySize {
@@ -128,17 +147,10 @@ struct ReviewView: View {
         } description: {
             Text("MaskCopy works with passports, ID cards, residence permits and driving licences.")
         } actions: {
-            ProUnlockButton()
-            if ProAccess.canUnlock {
-                Button("Choose another") { session.finish() }
-                    .secondaryAction()
-                    .tint(.fjord)
-            } else {
-                Button("Choose another") { session.finish() }
-                    .primaryAction()
-                    .tint(.fjord)
-                    .foregroundStyle(Color.onAccent)
-            }
+            Button("Choose another") { session.finish() }
+                .primaryAction()
+                .tint(.fjord)
+                .foregroundStyle(Color.onAccent)
         }
         .accessibilityIdentifier("other-document")
     }

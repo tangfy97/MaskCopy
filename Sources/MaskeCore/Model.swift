@@ -5,6 +5,8 @@ import Foundation
 public enum FindingKind: String, Codable, CaseIterable, Sendable {
     case photo
     case personalNumber
+    /// Bank accounts and payment cards (IBAN, card numbers, labelled account numbers).
+    case accountNumber
     case documentNumber
     case machineReadableZone
     case barcode
@@ -14,7 +16,7 @@ public enum FindingKind: String, Codable, CaseIterable, Sendable {
 
     /// Order in the review list.
     public static let displayOrder: [FindingKind] = [
-        .photo, .personalNumber, .documentNumber, .cardAccessNumber, .address, .machineReadableZone, .barcode, .custom,
+        .photo, .personalNumber, .accountNumber, .documentNumber, .cardAccessNumber, .address, .machineReadableZone, .barcode, .custom,
     ]
 }
 
@@ -61,7 +63,14 @@ public struct PageAnalysis: Sendable {
     public var lines: [String]
     /// Clearly not an identity document: a payslip, bank statement, bill or tax letter. The free app
     /// handles identity documents only; the masks are found either way.
-    public var isOtherDocument = false
+    public var otherDocument: OtherDocumentKind?
+    public var isOtherDocument: Bool { otherDocument != nil }
+}
+
+/// What a page that is not an identity document is, from its title; `.financial` when only an account
+/// or card number on a tall page gave it away.
+public enum OtherDocumentKind: String, Codable, Sendable {
+    case payslip, bankStatement, bill, tax, financial
 }
 
 extension CGRect {

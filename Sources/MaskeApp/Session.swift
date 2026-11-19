@@ -11,7 +11,8 @@ final class Session: ObservableObject {
         let kind: DocumentKind
         let country: Country?
         /// A payslip, bank statement or bill rather than an identity document.
-        var isOtherDocument = false
+        var otherDocument: OtherDocumentKind?
+        var isOtherDocument: Bool { otherDocument != nil }
         var findings: [Finding] { didSet { revision = UUID() } }
         var watermarkPosition = CGPoint(x: 0.5, y: 0.5) { didSet { revision = UUID() } }
         private(set) var revision = UUID()
@@ -73,6 +74,7 @@ final class Session: ObservableObject {
 
     var kind: DocumentKind { pages.map(\.kind).first { $0 != .unknown } ?? .unknown }
     var country: Country? { pages.compactMap(\.country).first }
+    var otherDocument: OtherDocumentKind? { pages.lazy.compactMap(\.otherDocument).first }
 
     /// The free app copies identity documents only; other documents need Pro.
     var refusesOtherDocument: Bool { !ProAccess.shared.otherDocuments && pages.contains(where: \.isOtherDocument) }
@@ -131,7 +133,7 @@ final class Session: ObservableObject {
             let results = await work.value
             guard !work.isCancelled, generation == ticket else { return }
             pages = results.map { image, a in
-                Page(image: image, kind: a?.kind ?? .unknown, country: a?.country, isOtherDocument: a?.isOtherDocument ?? false,
+                Page(image: image, kind: a?.kind ?? .unknown, country: a?.country, otherDocument: a?.otherDocument,
                      findings: a?.findings ?? [])
             }
             previewImage = nil

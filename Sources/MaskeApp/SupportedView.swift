@@ -5,7 +5,10 @@ import SwiftUI
 struct SupportedView: View {
     static let kinds: [DocumentKind] = [.passport, .idCard, .residencePermit, .drivingLicence]
     /// The same items, order and symbols as the switches on the Hide screen.
-    private static let hidden = FindingKind.displayOrder.filter { $0 != .custom }
+    /// Account numbers belong to Pro's documents, so they are listed once Pro is unlocked.
+    private var hidden: [FindingKind] {
+        FindingKind.displayOrder.filter { $0 != .custom && ($0 != .accountNumber || ProAccess.shared.otherDocuments) }
+    }
 
     private func count(_ kind: DocumentKind?) -> Int {
         Countries.all.filter { $0.isSupported && (kind.map($0.documents.contains) ?? true) }.count
@@ -14,7 +17,7 @@ struct SupportedView: View {
     var body: some View {
         List {
             Section {
-                ForEach(Self.hidden, id: \.self) { kind in
+                ForEach(hidden, id: \.self) { kind in
                     Label {
                         Text(kind.title).foregroundStyle(Color.ink)
                     } icon: {
@@ -35,7 +38,9 @@ struct SupportedView: View {
                     }
                     .listRowBackground(Color.card)
                 }
-            } header: { Text("Documents") }
+            } header: { Text("Identity documents") }
+
+            ProSection()
 
             Section {
                 NavigationLink {
@@ -54,7 +59,6 @@ struct SupportedView: View {
             } header: { Text("Countries") }
             footer: { Text("Review every mask before sharing.") }
 
-            ProSection()
         }
         .scrollContentBackground(.hidden)
         .background(Color.paper.ignoresSafeArea())

@@ -123,6 +123,61 @@ MaskCopy is free. Made by TangSpark.
 
 **What's New**: First release.
 
+### English (U.S.), version 1.1.0
+
+Decided 19 November 2026: the name moves from ID copies to document copies, because MaskCopy Pro adds payslips, bank statements and bills. The free app still copies identity documents only.
+
+**Name** (30): MaskCopy: Safe Document Copies
+
+**Subtitle** (30): Hide numbers before you share
+
+**Promotional text** (170):
+Share a copy of your passport, ID card, payslip or bank statement with the numbers, photo and account details covered. Everything stays on your iPhone.
+
+**Keywords** (100):
+passport,id card,payslip,bank statement,redact,watermark,privacy,residence permit,licence,scan
+
+**Description** (4000):
+
+Landlords, employers, banks and agencies ask for copies of your documents. Most of them don't need your personal number, document number, account number or photo. MaskCopy makes a copy with those parts covered, marked with who it's for, and never sends your document anywhere.
+
+FOUND AND COVERED
+• Scan with the camera, or pick a photo or a PDF of up to four pages
+• MaskCopy straightens the document and suggests what to cover: personal and document numbers, the machine-readable zone, the card access number, addresses, barcodes and the photo
+• Personal numbers are recognised by their check digits, for example BSN, fødselsnummer, personnummer, PESEL, codice fiscale, NRIC, MyKad, Emirates ID and Chinese resident ID numbers
+
+YOU DECIDE
+• Every suggestion is a box you can see before anything is shared
+• Turn a kind on or off, drag a box to move it, tap it to zoom in and adjust its corners, or add your own
+• Recognition varies by document version and photo, so check every box before you share
+
+A COPY FOR ONE RECIPIENT
+• The recipient, the purpose and the date are written across the document, so the copy can't be passed on as yours somewhere else
+• Covered parts are painted over, never blurred
+• Save or share as JPG or PDF, without location or camera details
+
+MASKCOPY PRO
+• Payslips, bank statements and bills, with account numbers (IBAN, card, sort code and account number), tax and social security numbers and addresses covered
+• One purchase, shared with your family
+
+PRIVATE BY DESIGN
+• Everything happens on your iPhone with Apple's on-device text and image recognition
+• No account, no analytics, no tracking, no uploads
+• Nothing is kept: the document is forgotten when you finish
+• Open source, so anyone can check
+
+Passports, national ID cards, residence permits and driving licences from 30 countries are recognised field by field: the Netherlands, Germany, France, the United Kingdom, Italy, Spain, Norway, Sweden, Denmark, Finland, Belgium, Poland, Ireland, Switzerland, Austria, Portugal, the United States, Canada, Australia, New Zealand, China, Hong Kong, Taiwan, Japan, South Korea, Singapore, Malaysia, Saudi Arabia, Egypt and the United Arab Emirates. Passports from other countries still have their machine-readable zone found.
+
+MaskCopy is free for identity documents. MaskCopy Pro is an optional in-app purchase. Made by TangSpark.
+
+**What's New**:
+• MaskCopy Pro: payslips, bank statements and bills
+• Saudi Arabia, Egypt and the United Arab Emirates
+• More documents from the United States and Canada
+• A short tour of what MaskCopy covers
+
+**In-app purchase**: add MaskCopy Pro to the version page before submitting (the first in-app purchase must go with a version). Its App Store Connect details are in the private repository.
+
 ### English (U.K.)
 
 Same as English (U.S.); the copy already uses British spelling ("licence"). Add the localization only if the listing should appear separately in the UK storefront.

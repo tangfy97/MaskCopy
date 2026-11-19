@@ -5,12 +5,12 @@ import UIKit
 /// It remembers only which tour revision it has shown (`MaskeTourSeen`), on this iPhone.
 enum Tour {
     /// Raise this when an update adds something to show; everyone then sees the whole tour again.
-    static let current = 2
+    static let current = 3
     static let seenKey = "MaskeTourSeen"
     /// Countries this tour revision adds: the globe lights them last and zooms in on them.
     static let newCountries: Set<String> = ["SA", "EG"]
 
-    enum Scene { case masks, watermark, globe }
+    enum Scene { case masks, watermark, globe, pro }
 
     struct Page: Identifiable {
         let id: String
@@ -27,7 +27,7 @@ enum Tour {
                  detail: Text("Saved as a flat JPG or PDF")),
             Page(id: "globe", scene: .globe, title: Text("\(Countries.supported.count) countries"),
                  detail: Text("Full list: \(Image(systemName: "info.circle")) on the first screen")),
-        ]
+        ] + ProTour.pages
     }
 
     /// The whole tour after installing and after every update that raises `current`.
@@ -87,6 +87,7 @@ private struct TourPageView: View {
                         case .masks: SpecimenScene(active: active)
                         case .watermark: WatermarkScene(active: active)
                         case .globe: GlobeScene(active: active)
+                        case .pro: ProTourScene(active: active)
                         }
                     }
                     .frame(maxWidth: 360)

@@ -42,6 +42,7 @@ struct HomeView: View {
                         .controlSize(.large)
                         .tint(.fjord)
                         Spacer(minLength: 32)
+                        ProHomeEntry()
                     }
                     .padding(.horizontal, 24)
                     .frame(maxWidth: .infinity)

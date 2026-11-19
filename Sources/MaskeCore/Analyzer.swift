@@ -155,35 +155,40 @@ public struct Analyzer {
         if kind == .unknown, barcodes.contains(where: { $0.1?.contains("ANSI ") == true }) { kind = .drivingLicence }
 
         var result = PageAnalysis(kind: kind, country: country, mrz: mrz, findings: page.merged(), lines: lines.map { String(format: "%@  [%.3f %.3f %.3f %.3f]", $0.text, $0.box.minX, $0.box.minY, $0.box.width, $0.box.height) })
-        result.isOtherDocument = Self.isOtherDocument(kind: kind, mrz: mrz, folded: folded, aspect: aspect, findings: result.findings)
+        result.otherDocument = Self.otherDocument(kind: kind, mrz: mrz, folded: folded, aspect: aspect, findings: result.findings)
         return result
     }
 
     /// Titles of payslips, bank statements, bills and tax letters, folded.
-    static let otherDocumentTitles = [
-        "PAYSLIP", "PAY SLIP", "PAY ADVICE", "PAY STATEMENT", "PAYROLL", "SALARY STATEMENT", "EARNINGS STATEMENT",
-        "GEHALTSABRECHNUNG", "LOHNABRECHNUNG", "ENTGELTABRECHNUNG", "VERDIENSTABRECHNUNG",
-        "LOONSTROOK", "SALARISSTROOK", "SALARISSPECIFICATIE", "NOMINA", "RECIBO DE SALARIOS",
-        "BULLETIN DE PAIE", "BULLETIN DE SALAIRE", "LONSEDDEL", "LØNSEDDEL", "LONSPECIFIKATION", "LØNSPECIFIKATION",
-        "LONNSSLIPP", "LØNNSSLIPP", "SALARY SLIP", "工资单", "工资条", "薪资单",
-        "BANK STATEMENT", "STATEMENT OF ACCOUNT", "ACCOUNT STATEMENT", "KONTOAUSZUG", "REKENINGAFSCHRIFT",
-        "RELEVE DE COMPTE", "EXTRACTO DE CUENTA", "KONTOUDTOG", "KONTOUTSKRIFT", "银行对账单", "对账单",
-        "INVOICE", "RECHNUNG", "FACTUUR", "FACTURE", "FACTURA", "FAKTURA", "发票",
-        "TAX RETURN", "STEUERBESCHEID", "AANSLAG INKOMSTENBELASTING", "AVIS D'IMPOSITION", "PAYMENT SUMMARY",
-    ].map(\.foldedUpper)
+    static let otherDocumentTitles: [(OtherDocumentKind, [String])] = ([
+        (.payslip, [
+            "PAYSLIP", "PAY SLIP", "PAY ADVICE", "PAY STATEMENT", "PAYROLL", "SALARY STATEMENT", "EARNINGS STATEMENT",
+            "GEHALTSABRECHNUNG", "LOHNABRECHNUNG", "ENTGELTABRECHNUNG", "VERDIENSTABRECHNUNG",
+            "LOONSTROOK", "SALARISSTROOK", "SALARISSPECIFICATIE", "NOMINA", "RECIBO DE SALARIOS",
+            "BULLETIN DE PAIE", "BULLETIN DE SALAIRE", "LONSEDDEL", "LØNSEDDEL", "LONSPECIFIKATION", "LØNSPECIFIKATION",
+            "LONNSSLIPP", "LØNNSSLIPP", "SALARY SLIP", "工资单", "工资条", "薪资单",
+        ]),
+        (.bankStatement, [
+            "BANK STATEMENT", "STATEMENT OF ACCOUNT", "ACCOUNT STATEMENT", "KONTOAUSZUG", "REKENINGAFSCHRIFT",
+            "RELEVE DE COMPTE", "EXTRACTO DE CUENTA", "KONTOUDTOG", "KONTOUTSKRIFT", "银行对账单", "对账单",
+        ]),
+        (.bill, ["INVOICE", "RECHNUNG", "FACTUUR", "FACTURE", "FACTURA", "FAKTURA", "发票"]),
+        (.tax, ["TAX RETURN", "STEUERBESCHEID", "AANSLAG INKOMSTENBELASTING", "AVIS D'IMPOSITION", "PAYMENT SUMMARY"]),
+    ] as [(OtherDocumentKind, [String])]).map { ($0.0, $0.1.map(\.foldedUpper)) }
 
     /// Only positive evidence counts, so an identity document read badly (blurred, glare, a back with
     /// little text) is never taken for something else: a title of such a document, or a tall page
     /// with an account or card number and nothing of an identity document.
-    static func isOtherDocument(kind: DocumentKind, mrz: MRZ?, folded: [String], aspect: CGFloat, findings: [Finding]) -> Bool {
-        guard kind == .unknown, mrz == nil else { return false }
+    static func otherDocument(kind: DocumentKind, mrz: MRZ?, folded: [String], aspect: CGFloat, findings: [Finding]) -> OtherDocumentKind? {
+        guard kind == .unknown, mrz == nil else { return nil }
         let text = folded.joined(separator: "\n")
-        if otherDocumentTitles.contains(where: { word in word.count >= 8 ? text.contains(word) : !tokenRanges(of: word, in: text).isEmpty }) {
-            return true
+        for (other, titles) in otherDocumentTitles
+        where titles.contains(where: { word in word.count >= 8 ? text.contains(word) : !tokenRanges(of: word, in: text).isEmpty }) {
+            return other
         }
-        let financial = findings.contains { $0.note.contains("IBAN") || $0.note.localizedCaseInsensitiveContains("payment card") }
+        let financial = findings.contains { $0.kind == .accountNumber || $0.note.contains("IBAN") || $0.note.localizedCaseInsensitiveContains("payment card") }
         let identity = findings.contains { [.photo, .machineReadableZone, .cardAccessNumber].contains($0.kind) }
-        return aspect < 0.8 && financial && !identity
+        return aspect < 0.8 && financial && !identity ? .financial : nil
     }
 
     // MARK: Vision
@@ -934,6 +939,23 @@ struct Page {
                 rank[f.id] = fr
             }
         }
+        for i in out.indices where out[i].kind == .personalNumber && Self.isAccount(note: out[i].note) {
+            out[i].kind = .accountNumber
+        }
         return out
+    }
+
+    /// Account labels, matched whole (so "PERMANENT ACCOUNT NUMBER", India's PAN, stays personal).
+    private static let accountLabels: Set<String> = [
+        "SORT CODE", "ACCOUNT NO", "ACCOUNT NUMBER", "A/C NO", "KONTONUMMER", "KONTONR", "KONTO NR", "KONTO",
+        "REG./KONTO", "REKENINGNUMMER",
+    ]
+
+    /// A number found as an IBAN, a payment card or beside an account label.
+    static func isAccount(note: String) -> Bool {
+        note.components(separatedBy: ", ").contains { part in
+            part == "IBAN" || part == "Payment card"
+                || (part.hasPrefix("label ") && accountLabels.contains(String(part.dropFirst(6))))
+        }
     }
 }

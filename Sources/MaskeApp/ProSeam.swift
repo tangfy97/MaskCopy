@@ -27,11 +27,52 @@ struct ProSection: View {
     }
 }
 
-/// The unlock button where the free app refuses a document. Nothing without Pro.
-struct ProUnlockButton: View {
+/// Pro's place at the bottom of Home. Nothing without Pro.
+struct ProHomeEntry: View {
     var body: some View {
         #if MASKCOPY_PRO
-        ProUnlockAction()
+        ProHomeCapsule()
+        #endif
+    }
+}
+
+/// What the app shows instead of a document the free app refuses, in builds that can sell Pro.
+struct ProRefusal: View {
+    let chooseAnother: () -> Void
+    var body: some View {
+        #if MASKCOPY_PRO
+        ProRefusalView(chooseAnother: chooseAnother)
+        #endif
+    }
+}
+
+/// A mark beside the screen title while a Pro document is open. Nothing without Pro.
+struct ProTitleBadge: View {
+    let isProDocument: Bool
+    var body: some View {
+        #if MASKCOPY_PRO
+        if isProDocument { ProSeal() }
+        #endif
+    }
+}
+
+/// Pro's page at the end of the tour. None without Pro.
+enum ProTour {
+    static var pages: [Tour.Page] {
+        #if MASKCOPY_PRO
+        [Tour.Page(id: "pro", scene: .pro, title: Text("Payslips and bank statements"), detail: Text("MaskCopy Pro"))]
+        #else
+        []
+        #endif
+    }
+}
+
+/// The picture on Pro's tour page. Nothing without Pro.
+struct ProTourScene: View {
+    let active: Bool
+    var body: some View {
+        #if MASKCOPY_PRO
+        ProTourPicture(active: active)
         #endif
     }
 }

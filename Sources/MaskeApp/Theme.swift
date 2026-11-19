@@ -280,6 +280,7 @@ extension FindingKind {
         switch self {
         case .photo: "Photo"
         case .personalNumber: "Personal number"
+        case .accountNumber: "Account number"
         case .documentNumber: "Document number"
         case .machineReadableZone: "Machine-readable zone"
         case .barcode: "Barcode"
@@ -293,6 +294,7 @@ extension FindingKind {
         switch self {
         case .photo: "person.crop.square"
         case .personalNumber: "number"
+        case .accountNumber: "creditcard"
         case .documentNumber: "doc.text"
         case .machineReadableZone: "barcode.viewfinder"
         case .barcode: "barcode"
@@ -435,5 +437,27 @@ struct NewBadge: View {
             .padding(.vertical, 4)
             .background(Color.fjord, in: Capsule())
             .accessibilityIdentifier("new-badge")
+    }
+}
+
+extension OtherDocumentKind {
+    var title: LocalizedStringKey {
+        switch self {
+        case .payslip: "Payslip"
+        case .bankStatement: "Bank statement"
+        case .bill: "Bill"
+        case .tax: "Tax document"
+        case .financial: "Financial document"
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .payslip: "banknote"
+        case .bankStatement: "building.columns"
+        case .bill: "doc.text"
+        case .tax: "percent"
+        case .financial: "creditcard"
+        }
     }
 }
