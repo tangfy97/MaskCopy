@@ -142,7 +142,7 @@ passport,id card,payslip,bank statement,redact,watermark,privacy,residence permi
 Landlords, employers, banks and agencies ask for copies of your documents. Most of them don't need your personal number, document number, account number or photo. MaskCopy makes a copy with those parts covered, marked with who it's for, and never sends your document anywhere.
 
 FOUND AND COVERED
-• Scan with the camera, or pick a photo or a PDF of up to four pages
+• Scan with the camera, or pick a photo or a PDF of up to four pages (twelve with Pro)
 • MaskCopy straightens the document and suggests what to cover: personal and document numbers, the machine-readable zone, the card access number, addresses, barcodes and the photo
 • Personal numbers are recognised by their check digits, for example BSN, fødselsnummer, personnummer, PESEL, codice fiscale, NRIC, MyKad, Emirates ID and Chinese resident ID numbers
 
@@ -158,6 +158,10 @@ A COPY FOR ONE RECIPIENT
 
 MASKCOPY PRO
 • Payslips, bank statements and bills, with account numbers (IBAN, card, sort code and account number), tax and social security numbers and addresses covered
+• On bank statements, transactions are hidden and salary stays readable
+• Several documents in one PDF, with a checklist for renting, a job or a visa
+• Up to 12 pages per document
+• A list of who has your copy, kept on your iPhone, with a reminder to ask for deletion
 • One purchase, shared with your family
 
 PRIVATE BY DESIGN
@@ -171,10 +175,10 @@ Passports, national ID cards, residence permits and driving licences from 30 cou
 MaskCopy is free for identity documents. MaskCopy Pro is an optional in-app purchase. Made by TangSpark.
 
 **What's New**:
-• MaskCopy Pro: payslips, bank statements and bills
+• MaskCopy Pro: payslips and bank statements, several documents in one PDF, up to 12 pages, and a list of who has your copy
 • Saudi Arabia, Egypt and the United Arab Emirates
 • More documents from the United States and Canada
-• A short tour of what MaskCopy covers
+• A clearer Documents page and a short tour
 
 **Screenshots (1.1.0)**: six 1206 × 2622 opaque PNGs in [appstore/screenshots/en](appstore/screenshots/en), replacing the 1.0.0 set. Captured on the iPhone 18 Pro Simulator by `StoreShotUITests` in the private repository (`TEST_RUNNER_MASKCOPY_STORESHOTS=<folder> xcodebuild test … -only-testing:MaskeUITests/StoreShotUITests`, status bar overridden to 9:41), then `scripts/storeshot.swift` for the headline. Screens 1–2 use the Dutch 2021 passport specimen (RvIG), shown unaltered; the Simulator's masks on it are complete level rectangles with no hand edits. Screens 3–4 use synthetic bank statements and payslips.
 
@@ -248,3 +252,7 @@ Build 14 upload completed at 18:22 Amsterdam time on 17 November 2026 (Upload su
 ## Build 15 (1.1.0)
 
 Uploaded 18:54 Amsterdam time, 17 November 2026 (Upload succeeded / EXPORT SUCCEEDED, Processing). The animated tour replaces build 14's drawings; the app is otherwise the same. Archive: 1.1.0 (15), strict signature, 1.9 MB, with the tour's three open-licence specimens (sources in NOTICE) and the globe data. Select build 15, not 14, when the 1.1.0 version page is made.
+
+## 1.1.0 version page (19 November 2026)
+
+Entered in App Store Connect: version 1.1.0 created (Prepare for Submission) with the 1.1.0 promotional text, description, keywords and What's New above; the six new screenshots (the 1.0.0 set was removed from this version only; it stays in the Asset Library); build 20; new App Review notes covering MaskCopy Pro and the attached Dutch 2021 passport specimen; automatic release kept from 1.0.0. App Information: name "MaskCopy: Safe Document Copies" and subtitle "Hide numbers before you share" saved (released with the next version). The MaskCopy Pro in-app purchase has the new Pro sheet as its review screenshot and updated review notes, and was added to the draft submission. Not done: adding 1.1.0 to the draft and Submit for Review (the owner's step, after testing build 20).
