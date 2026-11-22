@@ -4,6 +4,8 @@ All notable changes to MaskCopy are listed here. Versions follow [Semantic Versi
 
 ## [Unreleased]
 
+- App Store builds: the Pro entry on Home is a filled "Unlock Pro" button, and the Pro sheet compares Free and Pro side by side with the purchase pinned below. If the App Store doesn't answer, the button offers Try Again instead of waiting forever (App Review could not find the purchase on 1.1.0 build 20).
+
 United States, Canada, the United Arab Emirates, the United Kingdom, Germany, the Netherlands, Spain, France, Denmark, India, China and Australia, from field-by-field reviews of their documents.
 
 - Canada: social insurance numbers (Luhn), Ontario health numbers with version code (Luhn), British Columbia personal health numbers (Mod 11), Quebec health insurance numbers (NAM) and Quebec driving licence numbers are recognised; the permanent resident card is supported (ID No / N° ID). French labels (N° de passeport, Numéro du permis, Numéro d'assurance maladie, NAS, UCI/IUC …) and French street addresses (RUE, BOUL., AVENUE, CHEMIN …) are found.
